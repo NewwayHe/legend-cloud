@@ -147,6 +147,8 @@ legend-cloud
 
 - B2C单体版地址：[https://gitee.com/legendmall/legend](https://gitee.com/legendmall/legend)
 - 前端-平台端工程地址：[https://gitee.com/legendmall/legend-cloud-admin-ui](https://gitee.com/legendmall/legend-cloud-admin-ui)
+- 前端-商家端工程地址：[https://gitee.com/legendmall/legend-cloud-shop-ui](https://gitee.com/legendmall/legend-cloud-shop-ui)
+- 前端-用户端工程地址：[https://gitee.com/legendmall/legend-cloud-user-ui](https://gitee.com/legendmall/legend-cloud-user-ui)
 
 ## 技术解析
 > 后续阶段性推出一些企业级验证的技术解析文章，敬请期待
