@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 附件表 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="AdminMenu">
+			<!--通过角色查询菜单信息-->
+			<Method name="getByRoleId">
+				<![CDATA[
+				   	SELECT
+					ls_admin_menu.*
+					FROM
+					ls_admin_menu
+					LEFT JOIN ls_admin_role_menu ON ls_admin_menu.id = ls_admin_role_menu.menu_id
+					WHERE
+					1=1
+					{? AND ls_admin_role_menu.role_id = $roleId$}
+					ORDER BY
+					ls_admin_menu.sort DESC
+				]]>
+			</Method>
+
+			<!--通过角色查询菜单信息-->
+			<Method name="getByRoleIds">
+				<![CDATA[
+				   	SELECT
+					ls_admin_menu.*
+					FROM
+					ls_admin_menu
+					LEFT JOIN ls_admin_role_menu ON ls_admin_menu.id = ls_admin_role_menu.menu_id
+					WHERE
+					1=1
+					{@ AND ls_admin_role_menu.role_id IN $roleIds$}
+					ORDER BY
+					ls_admin_menu.sort DESC
+				]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

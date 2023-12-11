@@ -1,0 +1,51 @@
+server:
+  port: 8079
+
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  application:
+    name: @artifactId@
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_HOST:http://192.168.0.16}:${NACOS_PORT:8868}
+        namespace: ${NACOS_NAMESPACE:bbc700-code}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nacos}
+      config:
+        namespace: ${NACOS_NAMESPACE:bbc700-code}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nacos}
+        server-addr: ${spring.cloud.nacos.discovery.server-addr}
+        file-extension: yml
+        shared-configs:
+          - data-id: application-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}
+            refresh: true
+  profiles:
+    active: @profiles.active@
+  config:
+    import:
+      - optional:nacos:${spring.application.name}.${spring.cloud.nacos.config.file-extension}
+
+
+## spring security 配置
+security:
+  oauth2:
+    client:
+      ignore-urls:
+        - /actuator/**
+        - /v2/api-docs
+        - /druid/**
+        - /cache/**
+        - /db/**
+        - /decodeSnowflakeId/**
+        - /css/**
+        - /login/**
+
+#用户名密码
+legendshop:
+  admin:
+    username: ${ADMIN-NAME:root}
+    password: ${ADMIN-PASSWORD:root@123}

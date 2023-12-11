@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 商品商品优惠券商品 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="CouponShop">
+			<!--查询优惠券全店铺-->
+			<Method name="queryGeneral">
+				<![CDATA[
+		     		SELECT lc.id, ls.id AS shopId, ls.shop_name, ls.shop_avatar
+		     		FROM ls_coupon_shop lc
+		     		LEFT JOIN ls_shop_detail ls ON lc.shop_id = ls.id
+		     		WHERE
+		     		 	{? lc.coupon_id = $couponId$}
+	            ]]>
+			</Method>
+			<Method name="queryGeneralCount">
+				<![CDATA[
+		     		SELECT COUNT(ls.id)
+		     		FROM ls_coupon_shop lc
+		     		LEFT JOIN ls_shop_detail ls ON lc.shop_id = ls.id
+		     		WHERE
+		     		 	{? lc.coupon_id = $couponId$}
+	            ]]>
+			</Method>
+
+			<!--查询优惠券可使用的店铺-->
+			<Method name="queryContains">
+				<![CDATA[
+		     		 SELECT lc.id, ls.id AS shopId, ls.shop_name, ls.shop_avatar
+		     		 FROM ls_coupon_shop lc
+		     		 LEFT JOIN ls_shop_detail ls ON lc.shop_id = ls.id
+		     		 WHERE
+		     		 	{? lc.coupon_id = $couponId$}
+	            ]]>
+			</Method>
+			<Method name="queryContainsCount">
+				<![CDATA[
+		     		SELECT COUNT(ls.id)
+		     		FROM ls_coupon_shop lc
+		     		LEFT JOIN ls_shop_detail ls ON lc.shop_id = ls.id
+		     		WHERE
+						{? lc.coupon_id = $couponId$}
+	            ]]>
+			</Method>
+
+			<!--查询优惠券除不可用的店铺外的所有店铺-->
+			<Method name="queryExclusion">
+				<![CDATA[
+		     		 SELECT lc.id, ls.id AS shopId, ls.shop_name, ls.shop_avatar
+		     		 FROM ls_coupon_shop lc
+		     		 LEFT JOIN ls_shop_detail ls ON lc.shop_id = ls.id
+		     		 WHERE
+		     		 	{? lc.coupon_id = $couponId$}
+	            ]]>
+			</Method>
+			<Method name="queryExclusionCount">
+				<![CDATA[
+		     		SELECT COUNT(ls.id)
+		     		FROM ls_coupon_shop lc
+		     		LEFT JOIN ls_shop_detail ls ON lc.shop_id = ls.id
+		     		WHERE
+						{? lc.coupon_id = $couponId$}
+	            ]]>
+			</Method>
+
+
+			<!-- start 平台优惠券立即使用查询店铺列表 -->
+
+			<!--查询优惠券全店铺-->
+			<Method name="queryGeneralShop">
+				<![CDATA[
+		     		SELECT
+					  *
+					FROM
+					  (SELECT
+						ls.id AS shopId,
+						ls.shop_name,
+						ls.shop_avatar,
+						lp.id
+					  FROM
+						ls_shop_detail ls
+						INNER JOIN ls_product lp
+						  ON ls.id = lp.shop_id
+					  WHERE lp.status = 1
+					  GROUP BY lp.id,
+						ls.id
+					  HAVING COUNT(lp.id) > 0) ls
+					GROUP BY ls.shopId
+	            ]]>
+			</Method>
+			<Method name="queryGeneralShopCount">
+				<![CDATA[
+		     		SELECT
+					  COUNT(DISTINCT ls.shopId)
+					FROM
+					  (SELECT
+						ls.id AS shopId,
+						ls.shop_name,
+						ls.shop_avatar,
+						lp.id
+					  FROM
+						ls_shop_detail ls
+						INNER JOIN ls_product lp
+						  ON ls.id = lp.shop_id
+					  WHERE lp.status = 1
+					  GROUP BY lp.id,
+						ls.id
+					  HAVING COUNT(lp.id) > 0) ls
+	            ]]>
+			</Method>
+
+
+			<!--查询优惠券可使用的店铺-->
+			<Method name="queryContainsShop">
+				<![CDATA[
+		     		SELECT
+					  *
+					FROM
+					  (SELECT
+						ls.id AS shopId,
+						ls.shop_name,
+						ls.shop_avatar,
+						lp.id
+					  FROM
+						ls_coupon_shop lc
+						LEFT JOIN ls_shop_detail ls
+						  ON lc.shop_id = ls.id
+						INNER JOIN ls_product lp
+						  ON ls.id = lp.shop_id
+					  WHERE lp.status = 1 AND {? lc.coupon_id = $couponId$}
+					  GROUP BY lp.id,
+						ls.id
+					  HAVING COUNT(lp.id) > 0) ls
+					GROUP BY ls.shopId
+	            ]]>
+			</Method>
+			<Method name="queryContainsShopCount">
+				<![CDATA[
+		     		SELECT
+					  COUNT(DISTINCT ls.shopId)
+					FROM
+					  (SELECT
+						ls.id AS shopId,
+						ls.shop_name,
+						ls.shop_avatar,
+						lp.id
+					  FROM
+						ls_coupon_shop lc
+						LEFT JOIN ls_shop_detail ls
+						  ON lc.shop_id = ls.id
+						INNER JOIN ls_product lp
+						  ON ls.id = lp.shop_id
+					  WHERE lp.status = 1 AND {? lc.coupon_id = $couponId$}
+					  GROUP BY lp.id,
+						ls.id
+					  HAVING COUNT(lp.id) > 0) ls
+	            ]]>
+			</Method>
+
+			<!--查询优惠券除不可用的店铺外的所有店铺 暂时没有用上-->
+			<Method name="queryExclusionShop">
+				<![CDATA[
+		     		SELECT
+					  *
+					FROM
+					  (SELECT
+						ls.id AS shopId,
+						ls.shop_name,
+						ls.shop_avatar,
+						lp.id
+					  FROM
+						ls_shop_detail ls
+						INNER JOIN ls_product lp
+						  ON ls.id = lp.shop_id
+					  WHERE
+					  lp.status = 1 AND
+					  ls.id NOT IN (SELECT shop_id FROM ls_coupon_shop WHERE {? coupon_id = $couponId$})
+					  GROUP BY lp.id,
+						ls.id
+					  HAVING COUNT(lp.id) > 0) ls
+					GROUP BY ls.shopId
+	            ]]>
+			</Method>
+			<Method name="queryExclusionShopCount">
+				<![CDATA[
+		     		SELECT
+					  COUNT(DISTINCT ls.shopId)
+					FROM
+					  (SELECT
+						ls.id AS shopId,
+						ls.shop_name,
+						ls.shop_avatar,
+						lp.id
+					  FROM
+						ls_shop_detail ls
+						INNER JOIN ls_product lp
+						  ON ls.id = lp.shop_id
+					  WHERE
+					  lp.status = 1 AND
+					  ls.id NOT IN (SELECT shop_id FROM ls_coupon_shop WHERE {? coupon_id = $couponId$})
+					  GROUP BY lp.id,
+						ls.id
+					  HAVING COUNT(lp.id) > 0) ls
+	            ]]>
+			</Method>
+
+			<!-- end 平台优惠券立即使用查询店铺列表 -->
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

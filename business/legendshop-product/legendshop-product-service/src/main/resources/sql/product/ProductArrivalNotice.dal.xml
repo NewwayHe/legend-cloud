@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 分类 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="ProductArrivalNotice">
+
+			<!-- 根据skuId和仓库Id查看设置到货通知的用户 -->
+			<Method name="getArriInformUserBySkuIdAndWhId">
+				<![CDATA[
+					 SELECT a.id,a.user_id as userId,u.nick_name as nickName,a.create_time
+						FROM ls_product_arrival_notice a,ls_user_detail u
+						WHERE a.status = 0  AND u.user_id=a.user_id
+					 {? AND a.sku_id = $skuId$}
+					 {? AND a.shop_id = $shopId$}
+					 ORDER BY a.create_time DESC
+				 ]]>
+			</Method>
+			<Method name="getArriInformUserBySkuIdAndWhIdCount">
+				<![CDATA[
+					 SELECT count(1)
+						FROM ls_product_arrival_notice a,ls_user_detail u
+						WHERE a.status = 0  AND u.user_id=a.user_id
+					 {? AND a.sku_id = $skuId$}
+					 {? AND a.shop_id = $shopId$}
+					 ORDER BY a.create_time DESC
+				 ]]>
+			</Method>
+			<!-- 到货通知商品查询	 -->
+			<Method name="productPage">
+				<![CDATA[
+					 select sku.id ,sku.product_id,p.pic,p.name,sku.cn_properties,sku.price
+						from ls_product p,ls_sku sku
+						where p.id=sku.product_id and sku.stocks=0 and p.op_status=1 and p.status=1
+						and p.del_status = 1
+						{? AND p.name like $productName$}
+					  	{? AND p.shop_id = $shopId$}
+					    ORDER BY p.create_time DESC
+				 ]]>
+			</Method>
+			<Method name="productPageCount">
+				<![CDATA[
+					 select count(1)
+						from ls_product p,ls_sku sku
+						where p.id=sku.product_id and sku.stocks=0 and p.op_status=1 and p.status=1
+						and p.del_status = 1
+						{? AND p.name like $productName$}
+					  	{? AND p.shop_id = $shopId$}
+				 ]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

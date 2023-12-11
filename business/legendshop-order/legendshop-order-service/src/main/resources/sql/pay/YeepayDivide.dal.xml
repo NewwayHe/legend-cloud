@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 易宝支付分账信息 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="YeepayDivide">
+			<Method name="methodName">
+				<![CDATA[
+		     		querySql
+	            ]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

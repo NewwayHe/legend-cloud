@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 分类 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="Category">
+			<!-- 是否存在三级类目 -->
+			<Method name="isExistThirdCategory">
+				<![CDATA[
+					SELECT COUNT(*) FROM
+					(SELECT COALESCE(g2.id) AS catId
+					FROM ls_category cat1
+					INNER JOIN
+					(
+					SELECT cat2.id AS id,cat2.parent_id AS parentId,cat2.status AS status
+					FROM ls_category cat2
+					)g1 ON g1.status = 1 AND g1.parentId = cat1.id
+					INNER JOIN
+					(
+					SELECT cat3.id AS id,cat3.parent_id AS parentId,cat3.status AS status
+					FROM ls_category cat3
+					)g2 ON g2.status = 1 AND g2.parentId = g1.id
+					WHERE cat1.status = 1 AND cat1.parent_id = 0 ORDER BY cat1.id) o WHERE o.catId = ?
+				 ]]>
+			</Method>
+
+			<!-- 获取平台类目excelList -->
+			<Method name="getCateGoryExportDTOList">
+				<![CDATA[
+					SELECT coalesce(g2.id,g1.id,cat1.id) as categoryId,CONCAT(cat1.name,IFNULL(g1.name,''),IFNULL(g2.name,'')) AS categoryName
+					FROM ls_category cat1
+					LEFT JOIN
+					(
+					SELECT cat2.id AS id,cat2.parent_id AS parentId,cat2.status AS status,
+					CASE cat2.name
+					WHEN NULL THEN ''
+					ELSE CONCAT('|',cat2.name)
+					END 'name'
+					FROM ls_category cat2
+					)g1 ON g1.status = 1 AND g1.parentId = cat1.id AND TYPE = 'P'
+					LEFT JOIN
+					(
+					SELECT cat3.id AS id,cat3.parent_id AS parentId,cat3.status AS status,
+					CASE cat3.name
+					WHEN NULL THEN ''
+					ELSE CONCAT('|',cat3.name)
+					END 'name'
+					FROM ls_category cat3
+					)g2 ON g2.status = 1 AND g2.parentId = g1.id
+					WHERE cat1.status = 1 AND cat1.parent_id = 0 AND TYPE = 'P' order by categoryId
+				 ]]>
+			</Method>
+
+			<!-- 获取店铺类目excelList -->
+			<Method name="getShopCateGoryExportDTOList">
+				<![CDATA[
+					SELECT coalesce(g2.id,g1.id,cat1.id) as categoryId,concat(cat1.name,ifnull(g1.name,''),ifnull(g2.name,'')) as categoryName
+					FROM ls_shop_cat cat1
+					LEFT JOIN
+					(
+					SELECT cat2.id AS id,cat2.parent_id AS parentId,cat2.status AS status,
+					CASE cat2.name
+					WHEN NULL THEN ''
+					ELSE CONCAT('|',cat2.name)
+					END 'name'
+					FROM ls_shop_cat cat2
+					)g1 ON g1.status = 1 AND g1.parentId = cat1.id
+					LEFT JOIN
+					(
+					SELECT cat3.id AS id,cat3.parent_id AS parentId,cat3.status AS status,
+					CASE cat3.name
+					WHEN NULL THEN ''
+					ELSE CONCAT('|',cat3.name)
+					END 'name'
+					FROM ls_shop_cat cat3
+					)g2 ON g2.status = 1 AND g2.parentId = g1.id
+					WHERE cat1.status = 1 AND cat1.parent_id IS NULL and cat1.shop_id = ? order by categoryId
+				 ]]>
+			</Method>
+
+			<Method name="queryByParentId">
+				<![CDATA[
+					SELECT c.id,c.seq,c.status ,c.parent_id,parentCate.name as parentName,c.icon,c.type,c.grade,c.name,
+						(case when
+							(SELECT count(1) FROM ls_category f where f.parent_id=c.id) = 0
+							then false
+						 else true
+						  end)
+						as hasChildren
+					FROM ls_category c LEFT JOIN ls_category parentCate on c.parent_id= parentCate.id
+					where c.parent_id= ?
+					and (c.status= ? or 2=?)
+				]]>
+			</Method>
+
+			<Method name="queryById">
+				<![CDATA[
+					SELECT cat.icon,cat.update_time,aggName.id aggId, aggName.name aggName,cat.type,cat.parent_id,parentCate.name
+					as parentName,cat.return_valid_period, cat.create_time,cat.recomm_con,cat.grade,
+					cat.name,cat.id,cat.seq,cat.status FROM ls_category cat left join(
+					select agg.id,agg.name,aggcat.category_id catid from ls_product_property_agg_category aggcat,ls_product_property_agg agg where agg.id=aggcat.agg_id) aggName on aggName.catid = cat.id
+					LEFT JOIN ls_category parentCate
+					on cat.parent_id= parentCate.id where cat.id = ?
+				]]>
+			</Method>
+			<Method name="queryByIdName">
+				<![CDATA[
+					SELECT cat.icon,cat.update_time,aggName.id aggId, aggName.name aggName,cat.type,cat.parent_id,parentCate.name
+					as parentName,cat.return_valid_period, cat.create_time,cat.recomm_con,cat.grade,
+					cat.name,cat.id,cat.seq,cat.status FROM ls_category cat left join(
+					select agg.id,agg.name,aggcat.category_id catid from ls_product_property_agg_category aggcat,ls_product_property_agg agg where agg.id=aggcat.agg_id) aggName on aggName.catid = cat.id
+					LEFT JOIN ls_category parentCate
+					on cat.parent_id= parentCate.id where cat.name = ?
+				]]>
+			</Method>
+			<Method name="queryBriefAllOnline">
+				<![CDATA[
+					SELECT c.id,c.seq,c.parent_id,c.icon,c.type,c.grade,c.name
+					FROM ls_category c WHERE c.status=1
+				]]>
+			</Method>
+
+			<Method name="queryProductList">
+				<![CDATA[
+					SELECT p.id as productId, p.pic, p.name AS productName,p.price,s.shop_name AS shopName, p.status, p.buys, p.op_status, p.del_status,
+					b.brand_name as brandName
+					from ls_product p
+					LEFT JOIN ls_shop_detail s ON p.shop_id = s.id
+					LEFT JOIN ls_brand b ON b.id = p.brand_id
+					WHERE 1=1
+					{? and ( p.global_first_cat_id = $categoryId1$}
+					{? or p.global_second_cat_id = $categoryId2$}
+			    	{? or p.global_third_cat_id = $categoryId3$ )}
+					{? and p.name like $productName$}
+					{? and s.shop_name like $shopName$}
+					{? and p.status = $status$}
+					{? and p.del_status != $delStatus$}
+					{$orderBy$}
+				]]>
+			</Method>
+			<Method name="queryProductListCount">
+				<![CDATA[
+					SELECT count(1) from ls_product p
+					LEFT JOIN ls_shop_detail s ON p.shop_id = s.id
+					WHERE 1=1
+					{? and ( p.global_first_cat_id = $categoryId1$}
+					{? or p.global_second_cat_id = $categoryId2$}
+			    	{? or p.global_third_cat_id = $categoryId3$ )}
+					{? and p.name like $productName$}
+					{? and s.shop_name like $shopName$}
+					{? and p.status = $status$}
+					{? and p.del_status != $delStatus$}
+					{$orderBy$}
+				]]>
+			</Method>
+
+			<!--[商家端] 类目下的商品列表-->
+			<Method name="queryProductListInShop">
+				<![CDATA[
+					SELECT p.id as productId, p.pic, p.name AS productName,p.price,s.shop_name AS shopName, p.status, p.buys, p.op_status, p.del_status,
+					b.brand_name as brandName
+					from ls_product p
+					LEFT JOIN ls_shop_detail s ON p.shop_id = s.id
+					LEFT JOIN ls_brand b ON b.id = p.brand_id
+					WHERE 1=1
+					{? and ( p.shop_first_cat_id = $shopCategoryId1$}
+					{? or p.shop_second_cat_id = $shopCategoryId2$}
+			    	{? or p.shop_third_cat_id = $shopCategoryId3$ ) }
+					{? and p.name like $productName$}
+					{? and s.shop_name like $shopName$}
+					{? and p.status = $status$}
+					{? and p.del_status != $delStatus$}
+					{? and p.shop_id = $shopId$}
+					{$orderBy$}
+				]]>
+			</Method>
+
+			<Method name="queryProductListInShopCount">
+				<![CDATA[
+					SELECT count(1) from ls_product p
+					LEFT JOIN ls_shop_detail s ON p.shop_id = s.id
+					WHERE 1=1
+					{? and ( p.shop_first_cat_id = $shopCategoryId1$}
+					{? or p.shop_second_cat_id = $shopCategoryId2$}
+			    	{? or p.shop_third_cat_id = $shopCategoryId3$ ) }
+					{? and p.name like $productName$}
+					{? and s.shop_name like $shopName$}
+					{? and p.status = $status$}
+					{? and p.del_status != $delStatus$}
+					{? and p.shop_id = $shopId$}
+					{$orderBy$}
+				]]>
+			</Method>
+
+			<Method name="queryAllOnlineByProductPropertyAggId">
+				<![CDATA[
+					SELECT
+					  c.id,
+					  c.seq,
+					  c.parent_id,
+					  c.icon,
+					  c.type,
+					  c.grade,
+					  c.name,
+					  lac.agg_id
+					FROM
+					  ls_category c
+					  LEFT JOIN ls_product_property_agg_category lac
+						ON c.id = lac.category_id
+					WHERE c.status = 1
+				]]>
+			</Method>
+			<Method name="queryProductListById">
+				<![CDATA[
+					SELECT p.id
+					from ls_product p
+					LEFT JOIN ls_shop_detail s ON p.shop_id = s.id
+					LEFT JOIN ls_brand b ON b.id = p.brand_id
+					WHERE 1=1
+					{? and ( p.global_first_cat_id = $categoryId1$}
+					{? or p.global_second_cat_id = $categoryId1$}
+			    	{? or p.global_third_cat_id = $categoryId1$ )}
+					{? and p.del_status != $delStatus$}
+					{$orderBy$}
+				]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

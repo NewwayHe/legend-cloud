@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 易宝支付地区编码表 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="YeepayLocation">
+			<Method name="loadProvince">
+				<![CDATA[
+		     		SELECT * FROM ls_yeepay_location GROUP BY province_code
+	            ]]>
+			</Method>
+			<Method name="loadCity">
+				<![CDATA[
+		     		SELECT *
+		     		FROM ls_yeepay_location
+		     		WHERE {? province_code = $provinceCode$ }
+		     		GROUP BY city_code
+	            ]]>
+			</Method>
+			<Method name="loadArea">
+				<![CDATA[
+		     		SELECT *
+		     		FROM ls_yeepay_location
+		     		WHERE {? city_code = $cityCode$ }
+		     		GROUP BY area_code
+	            ]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

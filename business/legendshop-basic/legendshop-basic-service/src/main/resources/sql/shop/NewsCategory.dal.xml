@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 新闻图片 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="NewsCategory">
+			<Method name="queryNewsCategoryTree">
+				<![CDATA[
+
+               	SELECT *
+				FROM ls_news_cat
+				WHERE 1=1
+					{? and display_page in ($displayPage$, 3)}
+					{? and status = $status$}
+				order by seq asc
+                 {? limit 0, $limit$}
+				]]>
+				<!--
+				SELECT *
+				FROM ls_news_cat
+				WHERE 1=1
+					{? and display_page in ($displayPage$, 3)}
+					{? and status = $status$}
+				order by seq asc-->
+				<!--SELECT *
+				FROM ls_news_cat LN INNER JOIN
+				ls_news ls ON ln.id=ls.news_category_id
+				WHERE 1=1
+				{? and display_page in ($displayPage$, 3)}
+				{? and status = $status$}
+				ORDER BY ln.seq ASC
+				-->
+			</Method>
+			<!--SELECT DISTINCT ln.news_category_name
+			FROM ls_news_cat LN INNER JOIN
+			ls_news ls ON ln.id=ls.news_category_id
+			WHERE 1=1
+			ORDER BY ln.seq ASC
+			SELECT lns.id,lns.news_title newsName,lns.news_category_id id FROM ls_news lns LEFT JOIN ls_news_cat lnc ON lns.news_category_id=lnc.id ORDER BY lns.news_category_id-->
+			<Method name="queryNewsCategoryPage">
+				<![CDATA[
+
+
+               SELECT * FROM ls_news_cat lnc WHERE EXISTS (SELECT * FROM ls_news lns WHERE lns.news_category_id = lnc.id AND lns.status = 1)
+
+
+
+				]]>
+			</Method>
+			<Method name="queryNewsCategoryPageCount">
+				<![CDATA[
+
+
+               SELECT count(*) FROM ls_news_cat lnc WHERE EXISTS (SELECT * FROM ls_news lns WHERE lns.news_category_id = lnc.id)
+
+
+				]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

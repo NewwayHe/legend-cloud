@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 消息 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="Message">
+
+			<Method name="getMsgText"><![CDATA[
+				SELECT lmt.title, lmt.text, lm.send_user_id AS sendUserId,lm.receive_user_id AS receiveUserId,lm.global_flag AS globalFlag, lmt.rec_date AS recDate
+				FROM ls_msg_text lmt, ls_msg lm WHERE lmt.id = lm.text_id AND lm.msg_id = ?
+            ]]></Method>
+
+			<Method name="getBusinessId"><![CDATA[
+				SELECT * from ls_receiver where 1=1
+				{? AND business_id = $BusinessId$}
+            ]]></Method>
+
+			<Method name="getSystemMessages"><![CDATA[
+           		SELECT lm.id, lm.user_level AS userLevel,lst.title AS title,lst.text AS TEXT FROM ls_msg lm,ls_msg_text lst 
+				WHERE lm.text_id =lst.id AND lm.global_flag = 1 AND lm.msg_id = ?
+            ]]></Method>
+
+
+			<Method name="calUnreadMsgCount"><![CDATA[
+                SELECT COUNT(m.id) FROM (SELECT m. *, ms.user_id AS userId,ms.status AS realstatus  
+				FROM ls_msg m JOIN ls_msg_status ms ON m.id =ms.msg_id
+				WHERE m.global_flag =1 UNION ALL SELECT m1.*,m1.receive_user_id AS userId,m1.status AS realstatus FROM ls_msg m1 WHERE m1.global_flag = 0) m 
+				WHERE m.realstatus=0 AND m.delete_status2 = 0 AND m.userId = ?
+               ]]></Method>
+
+
+			<Method name="inboxSiteInformationCount">
+				<![CDATA[
+					SELECT count(*)
+					FROM ls_msg lm, ls_msg_text lst, ls_user_detail ud
+					WHERE lm.text_id =lst.id AND ud.id=lm.send_user_id 
+					AND lm.delete_status2 = 0
+					AND lm.global_flag = 0
+					{? AND lm.receive_user_id = $userId$}
+        	   ]]>
+			</Method>
+
+			<Method name="inboxSiteInformation">
+				<![CDATA[
+					SELECT lm.id, lm.status AS STATUS, ud.nick_name, lst.title AS title ,lst.rec_date AS recDate,lst.text AS TEXT,lm.receive_user_id AS receiveUserId
+					FROM ls_msg lm, ls_msg_text lst, ls_user_detail ud
+					WHERE lm.text_id =lst.id AND ud.id=lm.send_user_id 
+					AND lm.delete_status2 = 0
+					AND lm.global_flag = 0
+					{? AND lm.receive_user_id = $userId$}
+					ORDER BY lst.rec_date DESC
+        	   ]]>
+			</Method>
+
+			<Method name="queryMyMsgCount">
+				<![CDATA[
+					SELECT count(*)
+                    FROM ls_msg m inner JOIN ls_receiver r ON m.id = r.business_id
+                    {? AND r.user_id = $receiverId$}
+					{? AND r.user_type = $userType$}
+					{? AND r.business_type=$businessType$}
+					{? AND m.type = $type$}
+					ORDER BY m.rec_date DESC
+        	   ]]>
+			</Method>
+
+			<Method name="getNoticeUnreadMsgCount">
+				<![CDATA[
+				   	 SELECT
+						(SELECT
+							count(*)
+						 FROM
+							ls_pub lp
+						 LEFT JOIN
+							ls_receiver lr ON lp.id = lr.business_id
+							{? AND lr.user_id = $userId$}
+							AND lr.user_type = 1
+						 WHERE
+							lp.type = 0
+							AND lp.status = 1
+							AND (lp.start_time <= NOW() or lp.start_time is null)
+							AND (lp.end_time >= NOW()  or lp.end_time is null) ) -
+						(SELECT
+							COUNT(*)
+						 FROM
+							ls_receiver lr
+						 LEFT JOIN
+							ls_pub lp ON lp.id = lr.business_id
+							{? AND lr.user_id = $userId$}
+							AND lr.user_type = 1
+						 WHERE
+							lp.type = 0
+							AND lp.STATUS = 1
+						    AND lr.STATUS = 1)
+					AS NoticeUnreadMsgCount
+        	   ]]>
+			</Method>
+
+			<Method name="queryMyMsg">
+				<![CDATA[
+				    SELECT m.title,m.content,m.type,m.detail_id,m.rec_date,m.id,r.business_id,r.user_type as user_type,r.status
+                    FROM ls_msg m inner JOIN ls_receiver r ON m.id = r.business_id
+                    {? AND r.user_id = $receiverId$}
+					{? AND r.user_type = $userType$}
+					{? AND r.business_type=$businessType$}
+					{? AND m.type = $type$}
+					ORDER BY m.rec_date DESC
+        	   ]]>
+			</Method>
+
+			<Method name="outboxSiteInformationCount">
+				<![CDATA[
+					SELECT count(*) 
+					FROM ls_msg lm, ls_msg_text lst,ls_user_detail ud
+					WHERE lm.text_id = lst.id AND ud.id = lm.receive_user_id 
+					AND lm.delete_status = 0
+					AND lm.global_flag = 0
+					{? AND lm.send_user_id = $userId$}
+					ORDER BY lst.rec_date DESC
+        	   ]]>
+			</Method>
+
+			<Method name="outboxSiteInformation">
+				<![CDATA[
+					SELECT lm.id, lm.status AS STATUS, ud.nick_name AS receiveName, lst.title AS title ,lst.rec_date AS recDate 
+					FROM ls_msg lm, ls_msg_text lst,ls_user_detail ud
+					WHERE lm.text_id = lst.id AND ud.id = lm.receive_user_id 
+					AND lm.delete_status = 0
+					AND lm.global_flag = 0
+					{? AND lm.send_user_id = $userId$}
+					ORDER BY lst.rec_date DESC
+        	   ]]>
+			</Method>
+
+
+			<!-- 以下SQL需要调整 -->
+			<Method name="systemInformationCount">
+				<![CDATA[
+					   select count(*) from ls_msg lm join ls_msg_usrgrad lmu on lm.msg_id = lmu.msg_id 
+						{? and lmu.grade_id = $gradeId$}
+						join ls_msg_text lst on lm.text_id =lst.id
+						left join ls_msg_status lms on lm.msg_id = lms.msg_id
+						{? and lms.user_name = $userName$}
+						where  lms.status !=-1 
+						{? or (lms.status is null and lst.rec_date > $userRegtime$ )}
+		        	   ]]>
+			</Method>
+
+			<Method name="systemInformation">
+				<![CDATA[
+					   select lm.msg_id as msgId, lst.text as text, lst.title as title ,lst.rec_date as recDate,coalesce(ud.nick_name,lm.send_name) as sendName, lms.status as status
+						from ls_msg lm join ls_msg_usrgrad lmu on lm.msg_id = lmu.msg_id 
+						{? and lmu.grade_id = $gradeId$}
+						join ls_user_detail ud on ud.user_name=lm.send_name 
+						join ls_msg_text lst on lm.text_id =lst.id
+						left join ls_msg_status lms on lm.msg_id = lms.msg_id
+						{? and lms.user_name = $userName$}
+						where  lms.status !=-1 
+						{? or (lms.status is null and lst.rec_date > $userRegtime$ )}
+						order by lst.rec_date desc
+		        	   ]]>
+			</Method>
+
+
+			<Method name="getUserCenterInBoxCount">
+				<![CDATA[
+			   select  count(*) from ls_msg lm, ls_msg_text lst, ls_user_detail ud
+			    where lm.text_id =lst.id and ud.user_name=lm.send_name 
+			    and lm.delete_status2 = 0
+			    and lm.is_global = 0
+				{? and lm.receive_name = $userName$}
+        	   ]]>
+			</Method>
+
+			<Method name="getUserCenterInBox">
+				<![CDATA[
+			   select lm.msg_id as msgId, lm.status as status, coalesce(ud.nick_name,lm.send_name) as sendName, lst.title as title ,lst.rec_date as recDate,lst.text as text,lm.receive_name as receiveName
+			   from ls_msg lm, ls_msg_text lst, ls_user_detail ud
+				where lm.text_id =lst.id and ud.user_name=lm.send_name 
+				and lm.delete_status2 = 0
+				and lm.is_global = 0
+				{? and lm.receive_name = $userName$}
+				order by lst.rec_date desc
+        	   ]]>
+			</Method>
+
+			<!-- 后台发送系统通知 -->
+			<Method name="getSystemMessagesCount">
+				<![CDATA[
+			    select count(*) from ls_msg lm, ls_msg_text lst  where lm.text_id =lst.id  and lm.is_global = 1 and status != -1 {? and lst.title = $title$}
+        	   ]]>
+			</Method>
+
+			<Method name="getSystemMessages">
+				<![CDATA[
+			   select lm.msg_id as msgId, lm.user_level as userLevel, lst.title as title ,lst.rec_date as recDate from ls_msg lm, ls_msg_text lst 
+				where lm.text_id =lst.id and lm.is_global = 1 and status != -1 {? and lst.title like $title$} order by lst.rec_date desc
+        	   ]]>
+			</Method>
+
+
+			<Method name="getUserCenterOutBoxCount">
+				<![CDATA[
+			   select  count(*) from ls_msg lm, ls_msg_text lst, ls_user_detail ud
+			    where lm.text_id =lst.id and ud.user_name=lm.receive_name 
+			    and lm.delete_status = 0
+			    and lm.is_global = 0
+				{? and lm.send_name = $userName$}
+        	   ]]>
+			</Method>
+
+			<Method name="getUserCenterOutBox">
+				<![CDATA[
+			   select lm.msg_id as msgId, lm.status as status, coalesce(ud.nick_name,lm.receive_name) as receiveName, lst.title as title ,lst.rec_date as recDate 
+			   from ls_msg lm, ls_msg_text lst , ls_user_detail ud
+				where lm.text_id =lst.id and ud.user_name=lm.receive_name 
+				and lm.delete_status = 0
+				and lm.is_global = 0
+				{? and lm.send_name = $userName$}
+				order by lst.rec_date desc
+        	   ]]>
+			</Method>
+
+			<!-- 前台接收系统通知 -->
+			<Method name="userCenterSystemInformationCount">
+				<![CDATA[
+					   SELECT COUNT(*) FROM ls_msg lm JOIN ls_msg_usrgrad lmu ON lm.msg_id = lmu.msg_id 
+						{? AND lmu.grade_id = $gradeId$}
+						JOIN ls_msg_text lst ON lm.text_id =lst.id
+						LEFT JOIN ls_msg_status lms ON lm.msg_id = lms.msg_id
+						{? AND lms.user_name = $userName$}
+						WHERE  lms.status !=-1 
+						{? or (lms.status is null AND lst.rec_date > $userRegtime$ )}
+		        	   ]]>
+			</Method>
+
+			<Method name="userCenterSystemInformation">
+				<![CDATA[
+					   SELECT lm.msg_id AS msgId, lst.text AS text, lst.title AS title ,lst.rec_date AS recDate, lm.send_name AS sendName, lms.status AS status
+					   FROM ls_msg lm JOIN ls_msg_usrgrad lmu ON lm.msg_id = lmu.msg_id 
+						{? AND lmu.grade_id = $gradeId$}
+						JOIN ls_msg_text lst on lm.text_id =lst.id
+						LEFT JOIN ls_msg_status lms ON lm.msg_id = lms.msg_id
+						{? AND lms.user_name = $userName$}
+						WHERE  lms.status !=-1
+						{? OR (lms.status is null AND lst.rec_date > $userRegtime$ )}
+						ORDER BY lst.rec_date DESC, lm.status ASC
+		        	   ]]>
+			</Method>
+
+			<Method name="getUnReadMsgNum">
+				<![CDATA[
+			   select  count(*) from ls_msg lm, ls_msg_text lst, ls_user_detail ud
+				where lm.text_id =lst.id 
+				and ud.user_name = lm.receive_name  
+				and lm.delete_status2 = 0
+				and lm.is_global = 0
+				and lm.status = 0
+				{? and lm.receive_name = $userName$}
+			   ]]>
+			</Method>
+
+
+			<!-- 以上SQL需要调整 -->
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

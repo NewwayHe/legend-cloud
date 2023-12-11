@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 投诉表的SQL -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="ProductConsult">
+			<Method name="queryProductConsultPage">
+				<![CDATA[
+				SELECT
+				lpc.*,
+				lp.name AS productName,lp.pic AS pic,
+				ls.shop_name  AS shopName,
+				IF(lp.status = 1 AND lp.op_status = 1 AND lp.del_status = 1, 0, 1) AS productInvalid,
+				lud.nick_name AS askUserName,
+  				lou.mobile AS askUserIphone
+				FROM
+				ls_product_consult lpc
+				LEFT JOIN ls_product lp
+				ON lpc.product_id = lp.id
+				LEFT JOIN ls_shop_detail ls
+				ON lpc.shop_id = ls.id
+				LEFT JOIN ls_user_detail lud
+				ON lpc.ask_user_id = lud.user_id
+				LEFT JOIN ls_ordinary_user lou
+				ON lud.user_id = lou.id
+				WHERE
+				1=1
+				{? AND lpc.content LIKE $content$}
+				{? AND lp.name LIKE $name$}
+				{? AND ls.shop_name LIKE $shopName$}
+				{? AND lpc.ask_user_id = $askUserId$}
+				{? AND lpc.del_sts = $delSts$}
+				{? AND lpc.status = $status$}
+				{? AND lpc.reply_sts = $replySts$}
+				{? AND lpc.rec_date <= $endDate$}
+				{? AND lpc.rec_date >= $startDate$}
+				{? AND lpc.shop_id = $shopId$}
+				order by lpc.rec_date desc
+				]]>
+			</Method>
+			<Method name="queryProductConsultPageCount">
+				<![CDATA[
+				SELECT
+				count(*)
+				FROM
+				ls_product_consult lpc
+				LEFT JOIN ls_product lp
+				ON lpc.product_id = lp.id
+				LEFT JOIN ls_shop_detail ls
+				ON lpc.shop_id = ls.id
+				WHERE
+				1=1
+				{? AND lpc.content LIKE $content$}
+				{? AND lp.name LIKE $name$}
+				{? AND ls.shop_name LIKE $shopName$}
+				{? AND lpc.ask_user_id = $askUserId$}
+				{? AND lpc.del_sts = $delSts$}
+				{? AND lpc.status = $status$}
+				{? AND lpc.reply_sts = $replySts$}
+				{? AND lpc.rec_date <= $endDate$}
+				{? AND lpc.rec_date >= $startDate$}
+				{? AND lpc.shop_id = $shopId$}
+				order by lpc.rec_date desc
+				]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>
+
+

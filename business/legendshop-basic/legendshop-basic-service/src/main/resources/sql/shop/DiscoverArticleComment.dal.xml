@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 新闻图片 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="DiscoverArticleComment">
+
+			<Method name="queryPage"><![CDATA[
+				SELECT lou.avatar as avatar ,a.* , b.nick_name
+		        FROM ls_discover_comm AS a left JOIN ls_user_detail AS b  ON a.user_id=b.user_id
+		        left join ls_ordinary_user lou on lou.id=a.user_id
+		        WHERE 1=1
+				{? and a.dis_id = $disId$}
+	            {? and a.parent_id = $parentId$}
+				{? and a.status = $status$}
+				{? and a.delete_status = $deleteStatus$}
+				{? and a.content like $content$}
+				ORDER BY a.create_time DESC
+            ]]></Method>
+
+			<Method name="queryPageCount"><![CDATA[
+				SELECT COUNT(*)
+		        FROM ls_discover_comm AS a left JOIN ls_user_detail AS b  ON a.user_id=b.user_id
+		        left join ls_ordinary_user lou on lou.id=a.user_id
+		        WHERE 1=1
+				{? and a.dis_id = $disId$}
+	            {? and a.parent_id = $parentId$}
+				{? and a.status = $status$}
+				{? and a.delete_status = $deleteStatus$}
+				{? and a.content like $content$}
+				ORDER BY a.create_time DESC
+            ]]></Method>
+
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 商品回复 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="Sku">
+			<Method name="stocksList">
+				<![CDATA[
+		     		select sku.id,sku.product_id,p.pic,p.name,sku.cn_properties,sku.price,sku.buys,sku.stocks,
+		     		sku.actual_stocks,p.stocks_arm,p.status from ls_sku sku,ls_product p
+						where p.id=sku.product_id  and p.del_status = 1
+					  AND p.id= ?
+					 ORDER BY p.create_time DESC
+	            ]]>
+			</Method>
+
+			<Method name="stockPage">
+				<![CDATA[
+		     		select sku.id,sku.product_id,IF(sku.pic IS NOT NULL AND sku.pic != '', sku.pic, p.pic) pic,p.name,sku.cn_properties,sku.price,sku.buys,sku.stocks,
+		     		sku.actual_stocks,p.stocks_arm,p.status from ls_sku sku,ls_product p
+						where p.id=sku.product_id
+					 {? AND p.name like $name$}
+					 {? AND p.shop_id = $shopId$}
+					 {? AND p.id = $productId$}
+					 {@ AND p.del_status in $delStatus$}
+					 ORDER BY p.create_time DESC
+	            ]]>
+			</Method>
+			<Method name="stockPageCount">
+				<![CDATA[
+		     		select count(*) from ls_sku sku,ls_product p
+						where p.id=sku.product_id
+					 {? AND p.name like $name$}
+					 {? AND p.shop_id = $shopId$}
+					 {? AND p.id = $productId$}
+					 {@ AND p.del_status in $delStatus$}
+					 ORDER BY p.create_time DESC
+	            ]]>
+			</Method>
+			<Method name="stocksArmPage">
+				<![CDATA[
+		     		SELECT sku.id,sku.product_id,
+					p.pic,p.name,sku.cn_properties,sku.stocks,p.stocks_arm,p.status
+					FROM ls_sku sku,ls_product p
+					WHERE p.id=sku.product_id AND op_status=1 and p.del_status = 1
+					AND sku.actual_stocks <= p.stocks_arm
+					{? AND p.name like $name$}
+					{? AND p.shop_id = $shopId$}
+					{? AND p.id = $productId$}
+					ORDER BY p.create_time DESC
+	            ]]>
+			</Method>
+			<Method name="stocksArmPageCount">
+				<![CDATA[
+		     		SELECT count(sku.id)
+					FROM ls_sku sku,ls_product p
+					WHERE p.id=sku.product_id AND op_status=1 and p.del_status = 1
+					AND sku.actual_stocks <= p.stocks_arm
+					{? AND p.name like $name$}
+					{? AND p.shop_id = $shopId$}
+					{? AND p.id = $productId$}
+	            ]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

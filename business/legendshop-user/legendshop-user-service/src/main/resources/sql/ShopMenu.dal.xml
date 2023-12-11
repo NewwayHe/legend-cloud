@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 附件表 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="ShopMenu">
+			<!--通过角色查询菜单信息-->
+			<Method name="getByRoleId">
+				<![CDATA[
+				   	SELECT
+					ls_shop_menu.*
+					FROM
+					ls_shop_menu
+					LEFT JOIN ls_shop_role_menu ON ls_shop_menu.id = ls_shop_role_menu.menu_id
+					WHERE
+					1=1
+					{? AND ls_shop_role_menu.role_id = $roleId$}
+					ORDER BY
+					ls_shop_menu.sort DESC
+				]]>
+			</Method>
+
+			<!--通过角色查询子账号菜单信息-->
+			<Method name="getSubUserByRoleId">
+				<![CDATA[
+				   	SELECT
+					ls_shop_menu.*
+					FROM
+					ls_shop_menu
+					LEFT JOIN ls_shop_sub_role_menu ON ls_shop_menu.id = ls_shop_sub_role_menu.menu_id
+					WHERE
+					1=1
+					{? AND ls_shop_sub_role_menu.role_id = $roleId$}
+					ORDER BY
+					ls_shop_menu.sort DESC
+				]]>
+			</Method>
+
+			<!--通过角色查询菜单信息-->
+			<Method name="getByRoleIds">
+				<![CDATA[
+				   	SELECT
+						ls_shop_menu.*
+					FROM
+						ls_shop_menu
+						LEFT JOIN ls_shop_role_menu ON ls_shop_menu.id = ls_shop_role_menu.menu_id
+					WHERE
+						1=1
+						{@ AND ls_shop_role_menu.role_id IN $roleIds$}
+					ORDER BY
+						ls_shop_menu.sort DESC
+				]]>
+			</Method>
+
+			<!--通过子账号角色查询菜单信息-->
+			<Method name="getSubUserByRoleIds">
+				<![CDATA[
+				   	SELECT
+						ls_shop_menu.*
+					FROM
+						ls_shop_menu
+						LEFT JOIN ls_shop_sub_role_menu ON ls_shop_menu.id = ls_shop_sub_role_menu.menu_id
+					WHERE
+						1=1
+						{@ AND ls_shop_sub_role_menu.role_id IN $roleIds$}
+					ORDER BY
+						ls_shop_menu.sort DESC
+				]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

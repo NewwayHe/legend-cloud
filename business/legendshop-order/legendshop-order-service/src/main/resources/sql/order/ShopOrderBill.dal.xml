@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 投诉表的SQL -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="ShopOrderBill">
+			<Method name="getshopOrderBillCount">
+				SELECT *
+				FROM ls_shop_order_bill
+				WHERE 1=1
+				AND STATUS = 1
+				AND shop_id = ?
+				ORDER BY start_date DESC LIMIT 1
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

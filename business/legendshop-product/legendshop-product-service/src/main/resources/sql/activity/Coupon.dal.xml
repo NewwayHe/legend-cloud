@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 商品优惠券 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="Coupon">
+			<Method name="queryByUserId">
+				<![CDATA[
+		     		SELECT coupon.id,
+		     			usr.id AS userCouponId,
+						coupon.shop_provider_flag,
+						coupon.shop_id,
+						coupon.title,
+						coupon.remark,
+						coupon.COUNT,
+						coupon.use_count,
+						coupon.receive_count,
+						coupon.amount,
+						coupon.min_point,
+						coupon.receive_start_time,
+						coupon.receive_end_time,
+						usr.use_start_time,
+						usr.use_end_time,
+						coupon.use_day_later,
+						coupon.within_day,
+						coupon.use_type,
+						coupon.receive_type,
+						coupon.per_day_limit,
+						coupon.per_total_limit,
+						usr.STATUS,
+						coupon.description,
+						coupon.pic,
+						coupon.designated_user,
+						coupon.create_time,
+						coupon.update_time,
+						usr.non_payment_refundable_flag,
+						usr.payment_refundable_flag,
+						usr.payment_all_after_sales_refundable_flag FROM ls_coupon coupon,ls_coupon_user usr
+					WHERE coupon.shop_provider_flag=?
+					and coupon.id=usr.coupon_id
+					and user_id=? AND usr.STATUS=?
+					GROUP BY coupon.id
+					ORDER BY coupon.use_end_time
+	            ]]>
+			</Method>
+			<Method name="queryCouponPage">
+				<![CDATA[
+		     		SELECT c.id,c.title,c.receive_type ,c.use_type,c.status,c.pic,
+		     			CONCAT(c.receive_start_time,"至",c.receive_end_time)as receiveTime ,c.min_point,c.amount,
+						if(c.use_start_time is not null, CONCAT(c.use_start_time,"至",c.use_end_time), CONCAT("领取", c.use_day_later,"天后",c.within_day, "天内可用"))as useTime ,
+						if(c.min_point=0,CONCAT("无门槛，减",c.amount,"元"),CONCAT("满",c.min_point,"元减",c.amount,"元"))as rule,
+						if(c.per_day_limit=0,if(c.per_total_limit=0,"不限领",CONCAT(per_total_limit,"张/人活动")),CONCAT(c.per_day_limit,"张/人天")) as receiveLimit,
+						CONCAT(use_count,"  |  ",c.receive_count,"  |  ",count) as countCn, c.shop_id, ls.shop_name
+						from ls_coupon c
+						LEFT JOIN ls_shop_detail ls ON c.shop_id = ls.id
+						where 1=1
+							{? and c.shop_id=$shopId$}
+							{? and c.shop_provider_flag=$shopProviderFlag$}
+							{? and ls.shop_name LIKE $shopName$}
+							{? and c.title LIKE $name$}
+							{? and c.receive_start_time<=$receiveTimeEnd$}
+							{? and c.receive_end_time>=$receiveTimeBeg$}
+							{? and c.use_start_time<=$useTimeEnd$}
+							{? and c.use_end_time>=$useTimeBeg$}
+							{? and c.receive_type= $receiveType$}
+							{? and c.platform_delete_status = $platformDeleteStatus$}
+							{$useType$}
+							{$deleteStatus$}
+							{? and c.status= $status$}
+					order by c.create_time desc
+	            ]]>
+			</Method>
+			<Method name="queryCouponPageCount">
+				<![CDATA[
+		     		SELECT count(c.id) from ls_coupon c
+		     		LEFT JOIN ls_shop_detail ls ON c.shop_id = ls.id
+		     		where 1=1
+						{? and c.shop_id=$shopId$}
+						{? and c.shop_provider_flag=$shopProviderFlag$}
+						{? and ls.shop_name LIKE $shopName$}
+						{? and c.title LIKE $name$}
+						{? and c.receive_start_time<=$receiveTimeEnd$}
+						{? and c.receive_end_time>=$receiveTimeBeg$}
+						{? and c.use_start_time<=$useTimeEnd$}
+						{? and c.use_end_time>=$useTimeBeg$}
+						{? and c.receive_type= $receiveType$}
+						{? and c.platform_delete_status = $platformDeleteStatus$}
+						{$useType$}
+						{$deleteStatus$}
+						{? and c.status= $status$}
+	            ]]>
+			</Method>
+			<Method name="getCouponByUserCouponIdAndShopId">
+				<![CDATA[
+		     		SELECT lc.*
+		     		FROM ls_coupon_user lcu
+		     			LEFT JOIN ls_coupon lc
+		     			ON lcu.coupon_id = lc.id
+		     		WHERE 1=1
+		     		{? and lcu.id = $userCouponId$}
+		     		{? and lc.shop_id = $shopId$}
+	            ]]>
+			</Method>
+			<Method name="queryCoupon">
+				<![CDATA[
+		     	select c.amount, c.count, c.id, c.min_point, c.pic, c.receive_count, c.receive_type, c.shop_id, c.title, c.use_count, c.use_day_later,c.status,
+		     	c.use_type,s.shop_name, c.designated_user, c.shop_provider_flag, c.create_time, c.receive_start_time,c.platform_delete_status, c.receive_end_time
+		     	from ls_coupon c left join ls_shop_detail s on s.id=c.shop_id
+		     	where 1=1  and c.receive_type <>1
+                AND c.receive_start_time< NOW() AND c.receive_end_time>NOW()
+		     	{? and c.status=$status$ }
+		     	{? and c.title like $name$}
+		     	{? and c.shop_provider_flag=$shopProviderFlag$}
+		     	{? and (c.shop_id=$shopId$ OR c.shop_id = 0) }
+		     	{? and c.receive_type=$receiveType$}
+	            ]]>
+			</Method>
+			<Method name="queryCouponCount">
+				<![CDATA[
+		     	select count(*)
+		     	from ls_coupon c left join ls_shop_detail s on s.id=c.shop_id
+		     	where 1=1  and c.receive_type <>1
+		     	and c.receive_start_time< now() and c.receive_end_time>now()
+		     	{? and c.status=$status$ }
+		     	{? and c.title like $name$}
+		     	{? and c.shop_provider_flag=$shopProviderFlag$}
+		     	{? and (c.shop_id=$shopId$ OR c.shop_id = 0) }
+		     	{? and c.receive_type=$receiveType$}
+	            ]]>
+			</Method>
+
+
+			<!--优惠劵-->
+			<Method name="pageActivityShopCoupon">
+				<![CDATA[
+		     SELECT
+				DISTINCT lc.id id,
+				lsd.shop_name shop_name,
+				title,
+				CONCAT(receive_start_time,"至",receive_end_time) as receive_time,
+				receive_type ,
+				IF(lc.min_point = 0,"无门槛",CONCAT( "￥", lc.min_point )) min_point,
+			  	CONCAT( "￥", amount ) amount,
+				IFNULL(u.user_count,0) receive_count,
+				IFNULL(receive_count,0) already_count,
+				IFNULL(ur.already_user_count,0) already_user_count,
+				IFNULL(use_count,0) 		use_count
+			FROM
+				ls_coupon lc
+				LEFT JOIN ls_coupon_user lcu ON lcu.coupon_id = lc.id
+			    LEFT JOIN ls_shop_detail lsd ON lc.shop_id = lsd.id
+				LEFT JOIN ( SELECT coupon_title, coupon_id, count(  DISTINCT user_id ) user_count FROM ls_coupon_user GROUP BY coupon_id ) u ON u.coupon_id = lc.id
+				LEFT JOIN ( SELECT
+					coupon_id,
+					COUNT(DISTINCT user_id) already_user_count
+				FROM
+				  	ls_coupon_order
+				GROUP BY coupon_id ) ur ON ur.coupon_id = lc.id
+			WHERE
+			   lc.platform_delete_status=0
+				{? and shop_provider_flag=$shopProviderFlag$}
+				{? and lc.receive_start_time<=$receiveEndTime$}
+				{? and lc.receive_end_time>=$receiveStartTime$}
+				{! order by lc.create_time desc || $orderBy$}
+	            ]]>
+			</Method>
+
+			<Method name="pageActivityShopCouponCount">
+				<![CDATA[
+			SELECT count(*) FROM(
+				SELECT
+				DISTINCT lc.id id,
+				lsd.shop_name shop_name,
+				title,
+				CONCAT(receive_start_time,"至",receive_end_time) as receive_time,
+				receive_type ,
+				IF(lc.min_point = 0,"无门槛",CONCAT( "￥", lc.min_point )) min_point,
+			  	CONCAT( "￥", amount ) amount,
+				IFNULL(u.user_count,0) receive_count,
+				IFNULL(receive_count,0) already_count,
+				IFNULL(ur.already_user_count,0) already_user_count,
+				IFNULL(use_count,0) use_count
+			FROM
+				ls_coupon lc
+				LEFT JOIN ls_coupon_user lcu ON lcu.coupon_id = lc.id
+			    LEFT JOIN ls_shop_detail lsd ON lc.shop_id = lsd.id
+				LEFT JOIN ( SELECT coupon_title, coupon_id, count( DISTINCT user_id ) user_count FROM ls_coupon_user GROUP BY coupon_id ) u ON u.coupon_id = lc.id
+				LEFT JOIN ( SELECT
+					coupon_id,
+					COUNT(DISTINCT user_id) already_user_count
+				FROM
+				  	ls_coupon_order
+				GROUP BY coupon_id ) ur ON ur.coupon_id = lc.id
+			WHERE
+			  lc.platform_delete_status=0
+				{? and shop_provider_flag=$shopProviderFlag$}
+				{? and lc.receive_start_time<=$receiveEndTime$}
+				{? and lc.receive_end_time>=$receiveStartTime$}
+				{! order by lc.create_time desc || $orderBy$}
+			 )t
+	            ]]>
+			</Method>
+
+
+			<Method name="pageActivityPlatformCoupon">
+				<![CDATA[
+			SELECT
+				DISTINCT lc.id id,
+				title,
+				CONCAT(receive_start_time,"至",receive_end_time) as receive_time,
+				receive_type ,
+				IF(lc.min_point = 0,"无门槛",CONCAT( "￥", lc.min_point )) min_point,
+				CONCAT( "￥", amount ) amount,
+			    IFNULL(u.user_count,0) receive_count,
+				IFNULL(receive_count,0) already_count,
+				IFNULL(ur.already_user_count,0) already_user_count,
+				IFNULL(use_count,0) use_count
+			FROM
+				ls_coupon lc
+				LEFT JOIN ls_coupon_user lcu ON lcu.coupon_id = lc.id
+				LEFT JOIN ( SELECT coupon_title, coupon_id, count( DISTINCT  user_id ) user_count FROM ls_coupon_user GROUP BY coupon_id ) u ON u.coupon_id = lc.id
+				LEFT JOIN ( SELECT
+					coupon_id,
+					COUNT(DISTINCT user_id) already_user_count
+				FROM
+				  	ls_coupon_order
+				GROUP BY coupon_id ) ur ON ur.coupon_id = lc.id
+			WHERE
+			    lc.platform_delete_status=0
+				{? and shop_provider_flag=$shopProviderFlag$}
+				{? and lc.receive_start_time<=$receiveEndTime$}
+				{? and lc.receive_end_time>=$receiveStartTime$}
+				{! order by lc.create_time desc || $orderBy$}
+	            ]]>
+			</Method>
+
+			<Method name="pageActivityPlatformCouponCount">
+				<![CDATA[
+			SELECT count(*) FROM
+				(SELECT
+				DISTINCT lc.id id,
+				title,
+				CONCAT(receive_start_time,"至",receive_end_time) as receive_time,
+				receive_type ,
+				IF(lc.min_point = 0,"无门槛",CONCAT( "￥", lc.min_point )) min_point,
+				CONCAT( "￥", amount ) amount,
+			    IFNULL(u.user_count,0) receive_count,
+				IFNULL(receive_count,0) already_count,
+				IFNULL(ur.already_user_count,0) already_user_count,
+				IFNULL(use_count,0) use_count
+			FROM
+				ls_coupon lc
+				LEFT JOIN ls_coupon_user lcu ON lcu.coupon_id = lc.id
+				LEFT JOIN ( SELECT coupon_title, coupon_id, count( DISTINCT user_id ) user_count FROM ls_coupon_user GROUP BY coupon_id ) u ON u.coupon_id = lc.id
+				LEFT JOIN ( SELECT
+					coupon_id,
+					COUNT(DISTINCT user_id) already_user_count
+				FROM
+				  	ls_coupon_order
+				GROUP BY coupon_id ) ur ON ur.coupon_id = lc.id
+			WHERE
+			   lc.platform_delete_status=0
+				{? and shop_provider_flag=$shopProviderFlag$}
+				{? and lc.receive_start_time<=$receiveEndTime$}
+				{? and lc.receive_end_time>=$receiveStartTime$}
+				{! order by lc.create_time desc || $orderBy$}
+				)t
+				  ]]>
+			</Method>
+
+
+			<!--			导出-->
+			<Method name="getFlowExcelPlatform">
+				<![CDATA[
+			SELECT
+			 DISTINCT lc.id id,
+				title,
+				CONCAT( receive_start_time, "至", receive_end_time ) AS receive_time,
+				( CASE receive_type WHEN 0 THEN '免费领取' WHEN 1 THEN '卡密领取' ELSE '积分兑换' END ) receive_type,
+			IF
+				(
+					lc.min_point = 0,
+					"无门槛",
+				CONCAT( "￥", lc.min_point )) min_point,
+				CONCAT( "￥", amount ) amount,
+				IFNULL(u.user_count,0) receive_count,
+				IFNULL(receive_count,0) already_count,
+				IFNULL(ur.already_user_count,0) already_user_count,
+				IFNULL(use_count,0) 		use_count
+			FROM
+				ls_coupon lc
+				LEFT JOIN ls_coupon_user lcu ON lcu.coupon_id = lc.id
+				LEFT JOIN ( SELECT coupon_title, coupon_id, count( DISTINCT   user_id ) user_count FROM ls_coupon_user GROUP BY coupon_id ) u ON u.coupon_id = lc.id
+				LEFT JOIN ( SELECT
+					coupon_id,
+					COUNT(DISTINCT user_id) already_user_count
+				FROM
+				  	ls_coupon_order
+				GROUP BY coupon_id ) ur ON ur.coupon_id = lc.id
+			WHERE
+				lc.platform_delete_status=0
+				{? and shop_provider_flag=$shopProviderFlag$}
+				{? and lc.receive_start_time<=$receiveEndTime$}
+				{? and lc.receive_end_time>=$receiveStartTime$}
+				{! order by lc.create_time desc || $orderBy$}
+	            ]]>
+			</Method>
+			<!--商家导出-->
+			<Method name="getFlowExcelShop">
+				<![CDATA[
+			SELECT
+				 DISTINCT lc.id id,
+				lsd.shop_name shop_name,
+				title,
+				CONCAT(receive_start_time,"至",receive_end_time) as receive_time,
+				( CASE receive_type WHEN 0 THEN '免费领取' WHEN 1 THEN '卡密领取' ELSE '积分兑换' END ) receive_type,
+				IF(lc.min_point = 0,"无门槛",CONCAT( "￥", lc.min_point )) min_point,
+			  	CONCAT( "￥", amount ) amount,
+				IFNULL(u.user_count,0) receive_count,
+				IFNULL(receive_count,0) already_count,
+				IFNULL(ur.already_user_count,0) already_user_count,
+				IFNULL(use_count,0) use_count
+			FROM
+				ls_coupon lc
+				LEFT JOIN ls_coupon_user lcu ON lcu.coupon_id = lc.id
+				LEFT JOIN ls_shop_detail lsd ON lc.shop_id = lsd.id
+				LEFT JOIN ( SELECT coupon_title, coupon_id, count( DISTINCT  user_id ) user_count FROM ls_coupon_user GROUP BY coupon_id ) u ON u.coupon_id = lc.id
+				LEFT JOIN ( SELECT
+					coupon_id,
+					COUNT(DISTINCT user_id) already_user_count
+				FROM
+				  	ls_coupon_order
+				GROUP BY coupon_id ) ur ON ur.coupon_id = lc.id
+			WHERE
+			  lc.platform_delete_status=0
+				{? and shop_provider_flag=$shopProviderFlag$}
+				{? and lc.receive_start_time<=$receiveEndTime$}
+				{? and lc.receive_end_time>=$receiveStartTime$}
+				{! order by lc.create_time desc || $orderBy$}
+	            ]]>
+			</Method>
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

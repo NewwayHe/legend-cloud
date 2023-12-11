@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 种草标签的SQL -->
+<DataAccessLayer>
+	<BusinessObjects>
+
+		<!--不分页查询-->
+		<Object objectName="GrassLabel">
+			<Method name="getList">
+				<![CDATA[
+		     		SELECT
+					  	l.*
+					FROM
+					  	ls_grass_label l
+					WHERE 1=1
+					{? and l.name like $name$}
+					{? and l.status = $status$}
+					{? and l.recommend_flag = $recommendFlag$}
+					order by create_time desc
+	            ]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

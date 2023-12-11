@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 敏感字处理 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="SensWord">
+
+			<Method name="getBySensWord">
+				<![CDATA[
+                 SELECT
+                    words
+                 from
+                    ls_sens_word
+                 where
+                    1=1
+                 {? AND words = $words$ }
+				 {? AND id != $id$}
+                ]]>
+			</Method>
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

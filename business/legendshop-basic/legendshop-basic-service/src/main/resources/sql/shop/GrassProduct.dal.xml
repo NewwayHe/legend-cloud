@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 新闻图片 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="GrassProduct">
+
+			<Method name="queryProductList">
+				<![CDATA[
+				SELECT
+					gp.*
+				FROM
+					ls_grass_product gp LEFT JOIN ls_product p ON gp.product_id=p.id
+				WHERE
+					p.status = 1
+					AND gp.grass_article_id = ?
+            ]]></Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

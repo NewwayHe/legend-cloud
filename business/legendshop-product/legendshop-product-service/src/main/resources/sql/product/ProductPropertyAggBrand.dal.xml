@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 品牌 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="ProductPropertyAggBrand">
+
+			<Method name="queryByPage">
+				<![CDATA[
+					select brand.*,agg.id as aggBrandId ,agg.agg_id from ls_product_property_agg_brand agg ,ls_brand brand
+						where agg.brand_id=brand.id and delete_flag=0
+						{? and agg.agg_id = $aggId$ }
+						{? and brand.id = $brandId$ }
+						ORDER BY agg.brand_id,agg.seq
+			   ]]>
+			</Method>
+			<Method name="queryByPageCount">
+				<![CDATA[
+					select count(1) from ls_product_property_agg_brand agg ,ls_brand brand
+						where agg.brand_id=brand.id  and delete_flag=0
+						{? and agg.agg_id = $aggId$ }
+			   ]]>
+			</Method>
+			<Method name="queryBrandListByCategory">
+				<![CDATA[
+					SELECT brand.id,brand_name from ls_product_property_agg_category cat,ls_product_property_agg_brand aggbrand,ls_brand brand
+					WHERE aggbrand.agg_id=cat.agg_id and brand.id=aggbrand.brand_id and delete_flag=0
+					and cat.category_id=?
+			   ]]>
+			</Method>
+			<Method name="queryBrandListBrand">
+				<![CDATA[
+
+			   ]]>
+			</Method>
+		</Object>
+
+	</BusinessObjects>
+</DataAccessLayer>

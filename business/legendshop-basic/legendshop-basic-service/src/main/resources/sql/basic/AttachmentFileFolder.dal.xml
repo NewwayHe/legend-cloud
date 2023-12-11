@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 消息 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="AttachmentFileFolder">
+
+			<Method name="queryAttachmentByFileFolder">
+				<![CDATA[
+				select DISTINCT la.`id` as id, "0" as type, la.`file_name` as name, la.`create_time`, lff.parent_id as parent_id, file_path as url, video_path as video_url,la.ext as ext, user_type, la.managed_flag as managed_flag, laf.file_folder_id, lff.type_id
+				 from `ls_attachment_file_folder` AS lff
+				 left join `ls_attachment_folder` AS laf
+				 on lff.`id` = laf.`file_folder_id`
+				 left join `ls_attachment` AS la
+				 on la.id = laf.`attachment_id`
+				 where managed_flag = 1 and la.status = 1
+				 {? and file_folder_id = $id$}
+				 {? and shop_id = $shopId$}
+				 {? and parent_id = $parentId$}
+				 {? and la.file_name like $keyWord$}
+				 {? and lff.user_type = $userType$}
+				 {! order by la.create_time desc || $orderBy$}
+				 {$limit$}
+				]]>
+
+
+			</Method>
+
+
+			<Method name="queryAttachmentByFileFolderCount">
+				<![CDATA[
+				select count(DISTINCT la.`id`)
+				 from `ls_attachment_file_folder` AS lff
+				 left join `ls_attachment_folder` AS laf
+				 on lff.`id` = laf.`file_folder_id`
+				 left join `ls_attachment` AS la
+				 on la.id = laf.`attachment_id`
+				 where managed_flag = 1 and la.status = 1
+				 {? and parent_id = $parentId$}
+				 {? and file_folder_id = $id$}
+				 {? and shop_id = $shopId$}
+				 {? and lff.user_type = $userType$}
+				 {? and la.file_name like $keyWord$}
+        	   ]]>
+			</Method>
+
+			<Method name="page">
+				<![CDATA[
+				select file_name as name, id, "1" as type, parent_id, user_type , create_time,shop_id, type_id
+				 from ls_attachment_file_folder
+				 where 1 = 1
+				 {? and parent_id = $parentId$}
+				 {? and id = $id$}
+				 {? and shop_id = $shopId$}
+				 {? and file_name like $keyWord$}
+				 {? and type_id = $typeId$}
+				 {? and user_type = $userType$}
+				 {! order by create_time desc || $orderBy$}
+				]]>
+			</Method>
+
+			<Method name="pageCount">
+				<![CDATA[
+				select count(*) from ls_attachment_file_folder
+				where 1 = 1
+				{? and parent_id = $parentId$}
+				{? and id = $id$}
+				{? and shop_id = $shopId$}
+				{? and file_name like $keyWord$}
+				{? and type_id = $typeId$}
+				{? and user_type = $userType$}
+				{$orderBy$}
+				]]>
+			</Method>
+
+
+			<Method name="saveShop">
+				<![CDATA[S
+					insert into ls_attachment_file_folder
+					(file_name, parent_id, type_id, creat_time, shop_id, user_type)
+					values(?, ?, 1, ?, 1)
+				]]>
+			</Method>
+
+			<Method name="queryPageAllFolder">
+				<![CDATA[
+					SELECT laf_1.file_name, laf_1.id, laf_1.parent_id, laf_1.user_type, laf_1.type_id, laf_1.shop_id, laf_1.create_time,
+					 IF ((SELECT COUNT(*) FROM `ls_attachment_file_folder` AS laf_2 WHERE laf_2.parent_id = laf_1.id) > 0, TRUE, FALSE) AS isNext
+					 FROM `ls_attachment_file_folder` AS laf_1
+					 WHERE 1 = 1
+					 {? AND laf_1.parent_id = $id$}
+					 {? AND laf_1.shop_id = $shopId$}
+					 {? AND laf_1.user_type = $userType$}
+					 {! order by create_time desc || $orderBy$}
+				]]>
+			</Method>
+
+
+			<!-- 以上SQL需要调整 -->
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

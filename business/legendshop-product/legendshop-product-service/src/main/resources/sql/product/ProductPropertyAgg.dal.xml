@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 品牌 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="ProductPropertyAgg">
+
+			<Method name="queryExceptParamId">
+				<![CDATA[
+			  		select agg.id,agg.name from ls_product_property_agg agg
+						where  agg.id not in
+							(
+								select aggParam.agg_id from ls_product_property_agg_param aggParam,ls_product_property b
+								where b.id=aggParam.prop_id
+								{? and b.id = $id$ }
+							)
+						 {? and agg.name like $name$ }
+			   ]]>
+			</Method>
+			<Method name="queryExceptParamIdCount">
+				<![CDATA[
+					select count(1) from ls_product_property_agg agg
+						where  agg.id not in
+							(
+								select aggParam.agg_id from ls_product_property_agg_param aggParam,ls_product_property b
+								where b.id=aggParam.prop_id
+								{? and b.id = $id$ }
+							)
+						 {? and agg.name like $name$ }
+			   ]]>
+			</Method>
+
+			<Method name="queryExceptSpecificationId">
+				<![CDATA[
+			  		select agg.id,agg.name from ls_product_property_agg agg
+					where  agg.id not in
+						(
+							select spec.agg_id from ls_product_property_agg_specification spec,ls_product_property b
+							where b.id=spec.prop_id
+							{? and b.id = $id$ }
+							)
+						 {? and agg.name like $name$ }
+			   ]]>
+			</Method>
+			<Method name="queryExceptSpecificationIdCount">
+				<![CDATA[
+					select count(1) from ls_product_property_agg agg
+					where  agg.id not in
+						(
+							select spec.agg_id from ls_product_property_agg_specification spec,ls_product_property b
+							where b.id=spec.prop_id
+							{? and b.id = $id$ }
+							)
+						 {? and agg.name like $name$ }
+			   ]]>
+			</Method>
+
+			<Method name="queryExceptParamGroupId">
+				<![CDATA[
+					select agg.id,agg.name from ls_product_property_agg agg
+						where  agg.id not in
+							(
+								select aggParam.agg_id from ls_product_property_agg_param_group aggParam,ls_param_group b
+								where b.id=aggParam.group_id
+								{? and b.id = $id$ }
+							)
+						  {? and agg.name like $name$ }
+			]]>
+			</Method>
+			<Method name="queryExceptParamGroupIdCount">
+				<![CDATA[
+					select count(1) from ls_product_property_agg agg
+					where  agg.id not in
+							(
+								select aggParam.agg_id from ls_product_property_agg_param_group aggParam,ls_param_group b
+								where b.id=aggParam.group_id
+								{? and b.id = $id$ }
+							)
+						  {? and agg.name like $name$ }
+			   ]]>
+			</Method>
+		</Object>
+
+	</BusinessObjects>
+</DataAccessLayer>

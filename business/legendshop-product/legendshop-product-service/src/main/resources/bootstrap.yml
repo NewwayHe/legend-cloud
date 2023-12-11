@@ -1,0 +1,95 @@
+server:
+  port: 8087
+
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  main:
+    allow-circular-references: true
+  application:
+    name: @artifactId@
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_HOST:http://192.168.0.16}:${NACOS_PORT:8868}
+        namespace: ${NACOS_NAMESPACE:bbc700-code}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nacos}
+      config:
+        namespace: ${NACOS_NAMESPACE:bbc700-code}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nacos}
+        server-addr: ${spring.cloud.nacos.discovery.server-addr}
+        file-extension: yml
+        shared-configs:
+          - data-id: application-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}
+            refresh: true
+  config:
+    import:
+      - optional:nacos:${spring.application.name}.${spring.cloud.nacos.config.file-extension}
+  profiles:
+    active: @profiles.active@
+
+
+
+## spring security 配置
+security:
+  oauth2:
+    client:
+      client-id: admin
+      client-secret: admin
+      ignore-urls:
+        - /actuator/**
+        # swagger UI
+        - /v3/api-docs
+        - /doc.html
+        - /swagger-resources
+        - /webjars/**
+
+        - /druid/**
+        - /views   #商品详情
+        - /category    #所有分类
+        - /brand/all   #所有品牌
+        - /comment/getComScore  #评分数
+        - /comment/page  #评论分页
+        - /shopCategory/getByShopIdAndStatus  #商家分类
+        - /comment/analysis #评论统计
+        - /snapshot/get # 快照查询
+        - /p/transport/calculate/fee # 运费计算
+        - /brand/p/{\\d+} #根据id查询品牌
+        # search模块
+        - /product  #搜索商品
+        - /product/searchProductByCategoryId  #分类id搜索商品
+        - /product/getProductPageListByGroup  #商品分组
+        - /product/views
+        # activity模块
+        - /distribution/build/invitation/relationship
+        - /coupon/getById # 优惠券详情
+        - /marketingActivity  #获取营销活动
+
+        # 商品分享文案
+        - /distribution/poster
+
+        # 积分设置
+        - /integral/setting
+        - /coupon/receivable
+
+        # 根据id查询优惠券详情
+        - /p/coupon/detail
+
+        #积分商城
+        - /p/integralSku/page
+        - /p/integralAdvertise/list
+        - /coupon/intergral/receivable
+        - /integral/sku/category
+
+#swagger文档分组
+springdoc:
+  group-configs:
+    - group: "商品服务"
+      paths-to-match: '/**'
+      packages-to-scan:
+        - com.legendshop.product
+        - com.legendshop.search
+        - com.legendshop.activity

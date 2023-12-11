@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 收藏的店铺SQL -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="OrdinaryUser">
+			<Method name="distributionPage">
+				<![CDATA[
+					SELECT
+				  		lo.*,
+				  		lu.nick_name,lu.consumption_amount,lu.consumption_order_count,lu.recent_consumption_time,
+				  		ldl.grade
+					FROM ls_ordinary_user lo
+					LEFT JOIN ls_user_detail lu ON lo.id = lu.user_id
+					LEFT JOIN ls_distribution ld ON lo.id = ld.user_id
+					left join ls_distribution_level ldl on ld.level_id = ldl.id
+					WHERE 1=1
+					{? and lo.id LIKE $userId$}
+					{? and lo.username LIKE $username$}
+					{? and lu.nick_name LIKE $nickName$}
+					{? and lo.mobile LIKE $mobile$}
+					{? and lo.lock_flag = $lockFlag$}
+					{? and ldl.grade = $grade$}
+				]]>
+			</Method>
+			<Method name="distributionPageCount">
+				<![CDATA[
+					SELECT
+				  		COUNT(lo.id)
+					FROM ls_ordinary_user lo
+					LEFT JOIN ls_user_detail lu ON lo.id = lu.user_id
+					LEFT JOIN ls_distribution ld ON lo.id = ld.user_id
+					left join ls_distribution_level ldl on ld.level_id = ldl.id
+					WHERE 1=1
+					{? and lo.username LIKE $username$}
+					{? and lu.nick_name LIKE $nickName$}
+					{? and lo.mobile LIKE $mobile$}
+					{? and lo.lock_flag = $lockFlag$}
+					{? and ldl.grade = $grade$}
+				]]>
+			</Method>
+			<!--查询普通用户分页-->
+			<Method name="queryPage">
+				<![CDATA[
+				   select  u.username, u.del_flag as delFlag, u.lock_flag as lockFlag, u.mobile, u.avatar, u.create_time as createTime, u.update_time AS updateTime,
+				    u.id,d.consumption_amount,d.consumption_order_count,d.recent_consumption_time,d.nick_name
+				   from ls_ordinary_user u
+			       left join ls_user_detail d
+			       on d.user_id = u.id
+			       where
+			       1=1
+			       {? AND u.username = $username$}
+			       {? AND u.mobile = $mobile$}
+			       {? AND u.lock_flag = $lockFlag$}
+			       {? AND d.nick_name = $nickname$}
+			       ORDER BY u.create_time DESC
+				]]>
+			</Method>
+			<Method name="queryPageCount">
+				<![CDATA[
+				   select count(u.id)
+				   from ls_ordinary_user u
+			       left join ls_user_detail d
+			       on d.user_id = u.id
+			       where
+			       1=1
+			       {? AND u.username = $username$}
+			       {? AND u.mobile = $mobile$}
+			       {? AND u.lock_flag = $lockFlag$}
+			       {? AND d.nick_name = $nickname$}
+			       ORDER BY u.create_time DESC
+				]]>
+			</Method>
+			<!--用户端查询普通用户分页-->
+			<Method name="querySearchPage">
+				<![CDATA[
+			      SELECT u.id, u.avatar,d.nick_name,IFNULL(gc.fanscount,0) AS fanscount,IFNULL(lgc.articleCount,0) articleCount
+                  FROM ls_ordinary_user u
+                  LEFT JOIN ls_user_detail d ON d.user_id = u.id
+                  LEFT JOIN (SELECT grauser_id,COUNT(*) AS fanscount,grauser_type FROM ls_grass_concern  WHERE grauser_type=2 GROUP BY grauser_id) gc ON u.id = gc.grauser_id
+                  LEFT JOIN (SELECT user_id,COUNT(1) AS articleCount FROM ls_grass_article WHERE STATUS=1  AND audit=1 GROUP BY user_id) lgc ON u.id = lgc.user_id
+                  WHERE 1=1  AND u.del_flag=1 AND u.lock_flag=1
+			      {? AND d.nick_name like $nickname$}
+				]]>
+			</Method>
+			<Method name="querySearchPageCount">
+				<![CDATA[
+			    SELECT count(*)
+				  FROM ls_ordinary_user u
+                  LEFT JOIN ls_user_detail d ON d.user_id = u.id
+                  LEFT JOIN (SELECT grauser_id,COUNT(*) AS fanscount,grauser_type FROM ls_grass_concern  WHERE grauser_type=2 GROUP BY grauser_id) gc ON u.id = gc.grauser_id
+                  LEFT JOIN (SELECT user_id,COUNT(1) AS articleCount FROM ls_grass_article WHERE STATUS=1  AND audit=1 GROUP BY user_id) lgc ON u.id = lgc.user_id
+                  WHERE 1=1  AND u.del_flag=1 AND u.lock_flag=1
+			       {? AND d.nick_name = $nickname$}
+				]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>
+
+
+

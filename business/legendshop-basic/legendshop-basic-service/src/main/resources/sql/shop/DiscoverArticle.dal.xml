@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 新闻图片 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="DiscoverArticle">
+
+			<Method name="queryPage"><![CDATA[
+				SELECT a.id,a.name,a.intro,a.content,a.page_view,a.thumb_num,a.comments_num,a.image,a.writer_name,a.status,a.create_time,a.publish_time,COUNT(1) AS num
+		        FROM ls_discover_product AS p RIGHT JOIN ls_discover_article AS a  ON a.id=p.dis_id
+		        WHERE 1=1
+				{? and a.name like $name$}
+				{? and a.create_time >= $beginTime$}
+				{? and a.create_time <= $endTime$}
+				{? and a.status = $status$}
+				GROUP BY a.id
+				order by a.create_time desc
+            ]]></Method>
+
+			<Method name="queryPageCount"><![CDATA[
+				SELECT COUNT(*)	FROM
+                (SELECT COUNT(1) FROM ls_discover_product AS p RIGHT JOIN ls_discover_article AS a
+                ON a.id=p.dis_id
+                 WHERE 1=1
+				{? and a.name like $name$}
+				{? and a.create_time >= $beginTime$}
+				{? and a.create_time <= $endTime$}
+				{? and a.status = $status$}
+				GROUP BY a.id) c
+            ]]></Method>
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

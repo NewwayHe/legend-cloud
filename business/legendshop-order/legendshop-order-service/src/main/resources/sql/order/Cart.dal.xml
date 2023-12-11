@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 购物车 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="Cart">
+
+			<Method name="reSaveToCart">
+				<![CDATA[
+					UPDATE ls_basket SET basket_count = ?,is_failure = 0,store_id = ? WHERE user_id=? AND basket_id=? AND is_failure = 1
+			   ]]>
+			</Method>
+			<Method name="saveToCart">
+				<![CDATA[
+					UPDATE ls_basket SET basket_count = basket_count+?,is_failure = 0,store_id = ? WHERE user_id=? AND basket_id=?
+			   ]]>
+			</Method>
+
+			<Method name="queryByUserId">
+				SELECT c.*,sd.shop_name,IF(s.pic='',p.pic,s.pic) AS pic,s.cn_properties AS specification,s.properties AS
+				propertiesIds,
+				s.stocks AS stock,p.name AS skuName,p.trans_id as transId,s.price as newPrice, p.pre_sell_flag
+				FROM ls_cart c
+				LEFT JOIN ls_shop_detail sd ON c.shop_id = sd.id
+				LEFT JOIN ls_product p ON c.product_id = p.id
+				LEFT JOIN ls_sku s ON c.sku_id = s.id
+				WHERE p.status = 1 AND sd.status =1 AND c.user_id = ?
+				and p.op_status = 1 and p.del_status = 1
+				and s.stocks > 0
+				ORDER BY c.id DESC
+			</Method>
+
+			<Method name="queryInvalidProductList">
+				<![CDATA[
+				SELECT c.*,sd.shop_name,IF(s.pic='',p.pic,s.pic) AS pic,s.cn_properties AS productSpecification ,p.name AS skuName
+				FROM ls_cart c
+				LEFT JOIN ls_shop_detail sd ON c.shop_id = sd.id
+				LEFT JOIN ls_product p ON c.product_id = p.id
+				LEFT JOIN ls_sku s ON c.sku_id = s.id
+				WHERE (p.status != 1 or sd.status != 1 or p.op_status != 1 or p.del_status != 1 or s.stocks <= 0)
+				AND c.user_id = ?
+				ORDER BY c.id DESC
+				]]>
+			</Method>
+
+			<Method name="cleanExpiryProdList">
+				<![CDATA[
+				delete from ls_cart where id in(
+				select id from (
+				select c.id
+				from ls_cart c
+				left join ls_shop_detail sd on c.shop_id = sd.id
+				left join ls_product p on c.product_id = p.id
+				left join ls_sku s on c.sku_id = s.id
+				where (p.status != 1 or sd.status != 1 or p.op_status != 1 or p.del_status != 1) and c.user_id = ?) as tmp)
+				]]>
+			</Method>
+		</Object>
+
+	</BusinessObjects>
+</DataAccessLayer>

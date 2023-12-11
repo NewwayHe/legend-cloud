@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 活动广告表的SQL -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="ArticleComment">
+
+			<Method name="getArticleCommentLinkArt"><![CDATA[
+				SELECT ac.id,a.id AS artId,a.name AS artName,ac.create_time AS createTime,ac.content,
+				ud.id,ud.nick_name AS nickName FROM ls_article_comment ac INNER JOIN ls_article
+				a ON a.id = ac.art_id INNER JOIN ls_user_detail ud ON ud.id = ac.user_id WHERE ac.id = ?
+            ]]></Method>
+
+			<Method name="getArticleCommentPage">
+				SELECT ac.id, a.id AS artId, a.name AS artName, ac.create_time AS createTime, ac.content, ac.status,
+				ud.id AS userId, ud.nick_name AS nickName
+				FROM ls_article_comment ac INNER JOIN ls_article a ON a.id = ac.art_id
+				INNER JOIN ls_user_detail ud ON ud.id = ac.user_id
+				WHERE 1 = 1
+				{? AND a.name LIKE $artName$}
+				{? AND ac.content LIKE $content$}
+				ORDER BY ac.create_time DESC
+
+			</Method>
+
+			<Method name="getArticleCommentPageCount">
+				SELECT COUNT(1) FROM ls_article_comment ac INNER JOIN ls_article a ON a.id = ac.art_id
+				INNER JOIN ls_user_detail ud ON ud.id = ac.user_id
+				WHERE 1 = 1
+				{? AND a.name LIKE $artName$}
+				{? AND ac.content LIKE $content$}
+			</Method>
+
+
+			<Method name="queryMyArticleCommentsPage">
+				SELECT d.nick_name,o.avatar,c.id,c.user_id,c.art_id,c.create_time,t.name as art_name,c.content,t.pic
+				FROM ls_article_comment c LEFT JOIN ls_article t on t.id = c.art_id
+				LEFT JOIN ls_ordinary_user o ON c.user_id = o.id LEFT JOIN ls_user_detail d on o.id = d.user_id
+				WHERE 1 = 1
+				{? AND t.user_id = $userId$}
+				ORDER BY c.create_time DESC
+			</Method>
+
+			<Method name="queryMyArticleCommentsPageCount">
+				SELECT count(*) FROM ls_article_comment c LEFT JOIN ls_article t on t.id = c.art_id
+				LEFT JOIN ls_ordinary_user o ON c.user_id = o.id LEFT JOIN ls_user_detail d on o.id = d.user_id
+				WHERE 1 = 1
+				{? AND t.user_id = $userId$}
+			</Method>
+
+			<Method name="queryMyGrassArticleCommentsPage">
+				SELECT
+				c.id,
+				c.gra_id,
+				a.type,
+				c.user_id,
+				lou.avatar AS userImage,
+				a.title,
+				c.content,
+				d.nick_name,
+				c.create_time,
+				lp.content as parentContent,
+				a.image
+				FROM
+				ls_grass_comment c
+				LEFT JOIN ls_grass_article a
+				ON c.gra_id = a.id
+				LEFT JOIN ls_user_detail d
+				ON c.user_id = d.user_id
+				LEFT JOIN ls_ordinary_user lou
+				ON c.user_id = lou.id
+				left join ls_grass_comment lp
+				on lp.id = c.parent_id
+				where 1=1
+				{? and (lp.user_id = $userId$ }
+				{? or (a.user_id = $userId$ and a.type = 2)) }
+				UNION
+				SELECT
+				c.id,
+				c.dis_id AS gra_id,
+				'1' AS `type`,
+				c.user_id,
+				lou.avatar AS userImage,
+				a.name AS title,
+				c.content,
+				d.nick_name,
+				c.create_time,
+				lp.content as parentContent,
+				a.image
+				FROM
+				ls_discover_comm c
+				left join ls_discover_article a
+				on c.dis_id = a.id
+				LEFT JOIN ls_user_detail d
+				ON c.user_id = d.user_id
+				LEFT JOIN ls_ordinary_user lou
+				ON c.user_id = lou.id
+				left join ls_discover_comm lp
+				on lp.id = c.parent_id
+				WHERE 1 = 1
+				{? and lp.user_id = $userId$}
+				ORDER BY create_time DESC
+			</Method>
+
+			<Method name="queryMyGrassArticleCommentsPageCount">
+				SELECT
+				(SELECT
+				COUNT(c.id)
+				FROM
+				ls_grass_comment c
+				LEFT JOIN ls_grass_article a
+				ON c.gra_id = a.id
+				LEFT JOIN ls_user_detail d
+				ON c.user_id = d.user_id
+				LEFT JOIN ls_ordinary_user lou
+				ON c.user_id = lou.id
+				left join ls_grass_comment lp
+				on lp.id = c.parent_id
+				WHERE 1 = 1
+				{? and (lp.user_id = $userId$ }
+				{? or (a.user_id = $userId$ and a.type = 2))})
+				+
+				(SELECT
+				COUNT(c.id)
+				FROM
+				ls_discover_comm c
+				LEFT JOIN ls_user_detail d
+				ON c.user_id = d.user_id
+				LEFT JOIN ls_ordinary_user lou
+				ON c.user_id = lou.id
+				left join ls_discover_comm lp
+				on lp.id = c.parent_id
+				WHERE 1 = 1
+				{? and lp.user_id = $userId$}) AS count
+			</Method>
+
+			<Method name="queryGrassArticleCommentsPage">
+				SELECT c.*,a.nick_name FROM ls_grass_comment c LEFT JOIN ls_user_detail a on a.user_id = c.user_id
+				WHERE 1 = 1
+				{? AND c.gra_id = $graId$}
+				{? AND c.parent_id = $parentId$}
+				{? AND c.status =$status$}
+				{? AND c.delete_status = $deleteStatus$}
+				ORDER BY c.create_time DESC
+			</Method>
+
+			<Method name="queryGrassArticleCommentsPageCount">
+				SELECT count(*) FROM ls_grass_comment c LEFT JOIN ls_user_detail a on a.user_id = c.user_id
+				WHERE 1 = 1
+				{? AND c.gra_id = $graId$}
+				{? AND c.parent_id = $parentId$}
+				{? AND c.status =$status$}
+				{? AND c.delete_status = $deleteStatus$}
+				ORDER BY c.create_time DESC
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

@@ -1,0 +1,1754 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 商品咨询 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="ProductCount">
+			<!-- 根据时间查询SPU的数量 -->
+			<Method name="queryProdSpuCount">
+				<![CDATA[
+				select
+				count(*)
+				from ls_product lp
+				where 1=1
+				and lp.del_status <> -2
+				{? and lp.shop_id = $shopId$}
+				{? and lp.create_time >= $startDate$}
+				{? and lp.create_time <= $endDate$}
+				 ]]>
+			</Method>
+			<!-- 根据时间查询SKU的数量 -->
+			<Method name="queryProdSkuCount">
+				<![CDATA[
+				select
+				count(*)
+				from ls_product lp
+				left join ls_sku ls on lp.id = ls.product_id
+				where 1=1
+				and lp.del_status <> -2
+				{? and lp.shop_id = $shopId$}
+				{? and lp.create_time >= $startDate$}
+				{? and lp.create_time <= $endDate$}
+				 ]]>
+			</Method>
+			<!-- 根据时间查询在售SKU的数量 -->
+			<Method name="queryProdSkuSaleCount">
+				<![CDATA[
+				select
+				count(*)
+				from ls_product lp
+				left join ls_sku ls on lp.id = ls.product_id
+				where 1=1
+				and lp.del_status = 1
+				and lp.status = 1
+				and lp.op_status = 1
+				{? and lp.shop_id = $shopId$}
+				{? and lp.create_time >= $startDate$}
+				{? and lp.create_time <= $endDate$}
+				 ]]>
+			</Method>
+			<!-- 根据时间查询SPU的访问数 -->
+			<Method name="queryProdViews">
+				<![CDATA[
+				select
+				sum(lpv.view_frequency)
+				from ls_product_view lpv
+				where 1=1
+				{? and lpv.shop_id = $shopId$}
+				{? and lpv.create_time >= $startDate$}
+				{? and lpv.create_time <= $endDate$}
+				 ]]>
+			</Method>
+			<!-- 根据时间查询最多SKU的一级类目（不包括永久删除的SPU） -->
+			<Method name="querySkuByCategory">
+				<![CDATA[
+				select lc.name as category_name,count(*) as sku_num from ls_category lc
+				left join ls_product lp on lc.id = lp.global_first_cat_id
+				left join ls_sku ls on lp.id = ls.product_id
+				where lc.parent_id = -1
+				and lp.del_status <> -2
+				{? and lp.create_time < $endDate$}
+				group by lc.id
+				order by count(*) desc
+				limit 5;
+				 ]]>
+			</Method>
+			<!-- 根据时间查询最多SKU的一级类目（不包括永久删除的SPU） -->
+			<Method name="queryShopProdSkuByCategory">
+				<![CDATA[
+				select lc.name as category_name,count(*) as sku_num from ls_shop_cat lc
+				left join ls_product lp on lc.id = lp.shop_first_cat_id
+				left join ls_sku ls on lp.id = ls.product_id
+				where lc.parent_id = -1
+				and lp.del_status <> -2
+				{? and lp.create_time < $endDate$}
+				{? and lp.shop_id = $shopId$}
+				group by lc.id
+				order by count(*) desc
+				limit 5;
+				 ]]>
+			</Method>
+			<!-- 查询店铺 -->
+			<Method name="queryAllShop">
+				<![CDATA[
+				select lsd.id,lsd.shop_name,lsd.shop_address from ls_shop_detail lsd where lsd.status = 1;
+				 ]]>
+			</Method>
+			<!-- 查询商品List -->
+			<Method name="queryAllGood">
+				<![CDATA[
+				select lp.id as good_id,lp.name as good_name from ls_product lp
+				where 1=1
+				and lp.del_status <> -2
+				{? and lp.shop_id = $shopId$}
+				group by lp.id
+				 ]]>
+			</Method>
+
+			<!--			&lt;!&ndash; 根据时间和店铺id查询SPU的数量 &ndash;&gt;-->
+			<!--			<Method name="queryProdSpuCountByShopId">-->
+			<!--				<![CDATA[-->
+			<!--				select count(*) from ls_product lp-->
+			<!--				where 1=1-->
+			<!--				{? and lp.shop_id = $id$}-->
+			<!--				{? and lp.create_time >= $startDate$}-->
+			<!--				{? and lp.create_time <= $endDate$}-->
+			<!--				 ]]>-->
+			<!--			</Method>-->
+			<!-- 店铺id查询商品访问折线图 -->
+			<Method name="queryProductViewLineByShopId">
+				<![CDATA[
+				select
+				sum(lpv.view_people) as people,
+				sum(lpv.view_frequency) as frequency,
+				sum(case when source = 'MP' then view_people else 0 end) as mp_people,
+				sum(case when source = 'MP' then view_frequency else 0 end) as mp_frequency,
+				sum(case when source = 'MINI' then view_people else 0 end) as mini_people,
+				sum(case when source = 'MINI' then view_frequency else 0 end) as mini_frequency,
+				sum(case when source = 'App' then view_people else 0 end) as app_people,
+				sum(case when source = 'App' then view_frequency else 0 end) as app_frequency,
+				sum(case when source = 'H5' then view_people else 0 end) as h5_people,
+				sum(case when source = 'H5' then view_frequency else 0 end) as h5_frequency
+				from ls_product_view lpv
+				where 1 = 1
+				{? and lpv.shop_id = $shopId$}
+				{? and lpv.create_time <= $endDate$}
+				{? and lpv.create_time >= $startDate$}
+				group by lpv.shop_id
+				 ]]>
+			</Method>
+			<!-- 商品id查询商品访问折线图 -->
+			<Method name="queryProductViewLineByProdId">
+				<![CDATA[
+				select
+				sum(lpv.view_people) as people,
+				sum(lpv.view_frequency) as frequency,
+				sum(case when source = 'MINI' then view_people else 0 end) as mini_people,
+				sum(case when source = 'MINI' then view_frequency else 0 end) as mini_frequency,
+				sum(case when source = 'H5' then view_people else 0 end) as h5_people,
+				sum(case when source = 'H5' then view_frequency else 0 end) as h5_frequency
+				from ls_product_view lpv
+				where 1 = 1
+				{? and lpv.product_id = $goodId$}
+				{? and lpv.create_time <= $endDate$}
+				{? and lpv.create_time >= $startDate$}
+				group by lpv.product_id
+				 ]]>
+			</Method>
+			<!-- 查询所有商品访问折线图 -->
+			<Method name="queryProductViewLineAll">
+				<![CDATA[
+				select
+				sum(lpv.view_people) as people,
+				sum(lpv.view_frequency) as frequency,
+				sum(case when source = 'MINI' then view_people else 0 end) as mini_people,
+				sum(case when source = 'MINI' then view_frequency else 0 end) as mini_frequency,
+				sum( CASE WHEN source = 'MP' THEN view_people ELSE 0 END ) AS mp_people,
+				sum( CASE WHEN source = 'MP' THEN view_frequency ELSE 0 END ) AS mp_frequency,
+				sum(case when source = 'H5' then view_people else 0 end) as h5_people,
+				sum(case when source = 'H5' then view_frequency else 0 end) as h5_frequency
+				from ls_product_view lpv
+				where 1 = 1
+				{? and lpv.shop_id = $shopId$}
+				{? and lpv.product_id = $goodId$}
+				{? and lpv.create_time <= $endDate$}
+				{? and lpv.create_time >= $startDate$}
+				 ]]>
+			</Method>
+			<!-- 查询商品访问概况 -->
+			<Method name="queryProdViewDetailPage">
+				<![CDATA[
+				select
+				lp.shop_id,ls.shop_name,lp.id as good_id,lp.name as good_name,
+				sum(lpv.view_people) as people,
+				sum(lpv.view_frequency) as frequency,
+				sum(case when source = 'MINI' then view_people else 0 end) as mini_people,
+				sum(case when source = 'MINI' then view_frequency else 0 end) as mini_frequency,
+				sum(case when source = 'H5' then view_people else 0 end) as h5_people,
+				sum(case when source = 'H5' then view_frequency else 0 end) as h5_frequency,
+				sum(case when source = 'App' then view_people else 0 end) as app_people,
+				sum(case when source = 'App' then view_frequency else 0 end) as app_frequency,
+				sum(case when source = 'Mp' then view_people else 0 end) as mp_people,
+				sum(case when source = 'MP' then view_frequency else 0 end) as mp_frequency
+				from ls_product lp
+				left join ls_product_view lpv
+				on lpv.product_id = lp.id
+				{? and lpv.create_time <= $endDate$}
+				{? and lpv.create_time >= $startDate$}
+				left join ls_shop_detail ls
+				on ls.id = lp.shop_id
+				where lp.del_status <> -2
+				{? and lp.shop_id = $shopId$}
+				{? and ls.shop_name = $shopName$}
+				{? and lp.id = $goodId$}
+				{? and lp.name = $goodName$}
+				group by lp.id
+				{$orderBy$}
+				 ]]>
+			</Method>
+			<Method name="queryProdViewDetailPageCount">
+				<![CDATA[
+				select count(*) from(
+				select
+				lp.shop_id,ls.shop_name,lp.id as good_id,lp.name as good_name,
+				sum(lpv.view_people) as people,
+				sum(lpv.view_frequency) as frequency,
+				sum(case when source = 'MINI' then view_people else 0 end) as mini_people,
+				sum(case when source = 'MINI' then view_frequency else 0 end) as mini_frequency,
+				sum(case when source = 'H5' then view_people else 0 end) as h5_people,
+				sum(case when source = 'H5' then view_frequency else 0 end) as h5_frequency
+				from ls_product lp
+				left join ls_product_view lpv
+				on lpv.product_id = lp.id
+				{? and lpv.create_time <= $endDate$}
+				{? and lpv.create_time >= $startDate$}
+				left join ls_shop_detail ls
+				on ls.id = lp.shop_id
+				where lp.del_status <> -2
+				{? and lp.shop_id = $shopId$}
+				{? and ls.shop_name = $shopName$}
+				{? and lp.id = $goodId$}
+				{? and lp.name = $goodName$}
+				group by lp.id
+				) as p
+				 ]]>
+			</Method>
+
+			<!-- 查询商品访问概况Excel -->
+			<Method name="queryProdViewDetailPageExcel">
+				<![CDATA[
+				select
+				lp.shop_id,ls.shop_name,lp.id as good_id,lp.name as good_name,
+				sum(lpv.view_people) as people,
+				sum(lpv.view_frequency) as frequency,
+				sum(case when source = 'MINI' then view_people else 0 end) as mini_people,
+				sum(case when source = 'MINI' then view_frequency else 0 end) as mini_frequency,
+				sum(case when source = 'H5' then view_people else 0 end) as h5_people,
+				sum(case when source = 'H5' then view_frequency else 0 end) as h5_frequency,
+				sum(case when source = 'App' then view_people else 0 end) as app_people,
+				sum(case when source = 'App' then view_frequency else 0 end) as app_frequency,
+				sum(case when source = 'Mp' then view_people else 0 end) as mp_people,
+				sum(case when source = 'MP' then view_frequency else 0 end) as mp_frequency
+				from ls_product lp
+				left join ls_product_view lpv
+				on lpv.product_id = lp.id
+				{? and lpv.create_time <= $endDate$}
+				{? and lpv.create_time >= $startDate$}
+				left join ls_shop_detail ls
+				on ls.id = lp.shop_id
+				where lp.del_status <> -2
+				{? and lp.shop_id = $shopId$}
+				{? and ls.shop_name = $shopName$}
+				{? and lp.id = $goodId$}
+				{? and lp.name = $goodName$}
+				group by lp.id
+				{$orderBy$}
+				 ]]>
+			</Method>
+
+			<!-- 根据类目名模糊查询 -->
+			<Method name="queryCategoryByName">
+				<![CDATA[
+				select * from ls_category lc
+				where 1=1
+				{? and lc.name like $name$}
+				 ]]>
+			</Method>
+
+			<!-- 根据类目名模糊查询 -->
+			<Method name="queryCategoryList">
+				<![CDATA[
+				select * from ls_category lc
+				where 1=1
+				{? and lc.name like $name$}
+				{? and lc.grade like $grade$}
+				 ]]>
+			</Method>
+			<!-- 根据类目id查询 -->
+			<Method name="queryCategoryById">
+				<![CDATA[
+				select * from ls_category lc
+				where 1=1
+				{? and lc.id = $id$}
+				 ]]>
+			</Method>
+			<!-- 查询一级类目下的通过审核且为删除的SKU数 -->
+			<Method name="queryCategory">
+				<![CDATA[
+				SELECT
+					lc.id,
+				 	lc.name as category_name,
+				 	COUNT(DISTINCT ls.id) as sku_num
+				FROM
+					ls_category lc
+					LEFT JOIN ls_product lp
+						ON lc.id = lp.global_first_cat_id
+						and lp.del_status <> -2
+					LEFT JOIN ls_sku ls
+						ON lp.id = ls.product_id
+				WHERE 1=1
+				  	{? and lc.id = $id$}
+				group by lc.id
+				 ]]>
+			</Method>
+			<!-- 查询二级类目下的通过审核且为删除的SKU数 -->
+			<Method name="querySecondCategory">
+				<![CDATA[
+				SELECT
+					lc.id,
+				 	lc.name as category_name,
+				 	COUNT(DISTINCT ls.id) as sku_num
+				FROM
+					ls_category lc
+					LEFT JOIN ls_product lp
+						ON lc.id = lp.global_second_cat_id
+						and lp.del_status <> -2
+					LEFT JOIN ls_sku ls
+						ON lp.id = ls.product_id
+				WHERE 1=1
+					{? and lc.parent_id = $id$}
+					{? and lc.id = $categoryId$}
+				group by lc.id
+				 ]]>
+			</Method>
+			<!-- 查询三级类目下的通过审核且为删除的SKU数 -->
+			<Method name="queryThirdCategory">
+				<![CDATA[
+				SELECT
+					lc.id,
+				 	lc.name as category_name,
+				 	COUNT(DISTINCT ls.id) as sku_num
+				FROM
+					ls_category lc
+					LEFT JOIN ls_product lp
+						ON lc.id = lp.global_third_cat_id
+						and lp.del_status <> -2
+					LEFT JOIN ls_sku ls
+						ON lp.id = ls.product_id
+				WHERE 1=1
+					{? and lc.parent_id = $id$}
+					{? and lc.id = $categoryId$}
+				group by lc.id
+				 ]]>
+			</Method>
+			<!-- 查询商品类目概况分页 -->
+			<Method name="queryCategoryPage">
+				<![CDATA[
+				SELECT
+					a.firstId,
+					a.secondId,
+					a.thirdId,
+					a.firstName,
+					a.secondName,
+					a.thirdName,
+					IFNULL(sku_count, 0) AS sku_amount,
+					IFNULL(SUM(actualAmount), 0) AS turnover,
+					IFNULL(SUM(basketCount), 0) AS amount,
+					IFNULL(SUM(view_people), 0) AS view_people,
+					IFNULL(SUM(views), 0) AS views,
+					IFNULL(SUM(basketCount) / SUM(views), 0) AS buy_rate
+				FROM
+				  	(SELECT
+						lv.product_id,
+						(SELECT
+						  COUNT(DISTINCT ls.id)
+						FROM
+							ls_product lsp
+							LEFT JOIN ls_sku ls
+								ON lsp.id = ls.product_id
+						WHERE lsp.del_status <> - 2
+						 	AND (
+								(
+									lc.thirdId >0
+									AND lsp.global_third_cat_id = lc.thirdId
+								)
+								OR (
+									lc.thirdId <0
+									AND lc.secondId >0
+									AND lc.secondId = lsp.global_second_cat_id
+								)
+								OR (
+									lc.thirdId <0
+									AND lc.secondId <0
+									AND lc.firstId >0
+									AND lc.firstId = lsp.global_first_cat_id
+								)
+						 	)) AS sku_count,
+						(SELECT
+						 	SUM(loi.actual_amount)
+						FROM
+						  	ls_order_item loi,
+						  	ls_order lo
+						WHERE loi.order_id = lo.id
+						  	AND loi.product_id = lv.product_id
+						  	{? AND loi.create_time <= $endDate$}
+						  	{? AND loi.create_time >= $startDate$}
+						  	AND lo.status = 20
+						  	AND loi.refund_status <> 2) AS actualAmount,
+						(SELECT
+						  	SUM(loi.basket_count)
+						FROM
+						  	ls_order_item loi,
+						  	ls_order lo
+						WHERE loi.order_id = lo.id
+						 	AND loi.product_id = lv.product_id
+						 	{? AND loi.create_time <= $endDate$}
+						 	{? AND loi.create_time >= $startDate$}
+						 	AND lo.status = 20
+						 	AND loi.refund_status <> 2) AS basketCount,
+						lc.firstId AS firstId,
+						lc.firstName AS firstName,
+						lc.secondId AS secondId,
+						lc.secondName AS secondName,
+						lc.thirdId AS thirdId,
+						lc.thirdName AS thirdName,
+						IFNULL(lv.view_people, 0) AS view_people,
+						IFNULL(lv.view_frequency, 0) AS views
+				  	FROM
+					(
+					SELECT
+						lcf.id AS firstId,
+						lcf.name AS firstName,
+						lcs.id AS secondId,
+						lcs.name AS secondName,
+						lct.id AS thirdId,
+						lct.name AS thirdName
+					FROM
+						 ls_category lcf
+						 LEFT JOIN ls_category lcs
+							ON lcf.id = lcs.parent_id
+							AND lcs.grade = 2
+						 LEFT JOIN ls_category lct
+							ON lcs.id = lct.parent_id
+							AND lct.grade = 3
+					WHERE lcf.grade = 1
+					{? and (lcf.name like $firstName$}
+					{? or lcs.name like $secondName$}
+					{? or lct.name like $thirdName$)}
+					UNION
+					SELECT
+						lcf.id AS firstId,
+						lcf.name AS firstName,
+						lcs.id AS secondId,
+						lcs.name AS secondName,
+						NULL,
+						NULL
+					FROM
+						ls_category lcf
+						LEFT JOIN ls_category lcs
+							ON lcf.id = lcs.parent_id
+							AND lcs.grade = 2
+					WHERE lcf.grade = 1
+					{? and (lcf.name like $firstName$}
+					{? or lcs.name like $secondName$)}
+					UNION
+					SELECT
+					  	id AS firstId,NAME AS firstName,NULL,NULL,NULL,NULL
+					FROM
+					  	ls_category
+					WHERE grade = 1
+					{? and name like $firstName$}
+					) lc
+					LEFT JOIN ls_product lp
+						ON lc.firstId = lp.global_first_cat_id
+						AND ((lc.secondId = lp.global_second_cat_id AND lp.global_second_cat_id IS NOT NULL) OR (lp.global_second_cat_id IS NULL AND lc.secondId IS NULL) OR (lp.global_second_cat_id IS NOT NULL AND lc.secondId IS NULL))
+      					AND ((lc.thirdId = lp.global_third_cat_id AND lp.global_third_cat_id IS NOT NULL) OR (lp.global_third_cat_id IS NULL AND lc.thirdId IS NULL) OR (lp.global_third_cat_id IS NOT NULL AND lc.thirdId IS NULL))
+					LEFT JOIN
+					 	(SELECT
+							product_id,
+							SUM(view_people) AS view_people,
+							SUM(view_frequency) AS view_frequency
+					 	FROM
+							ls_product_view lv
+					 	WHERE 1=1
+					 		{? AND lv.create_time <= $endDate$}
+							{? AND lv.create_time >= $startDate$}
+					 	GROUP BY lv.product_id) lv
+					 	ON lp.id = lv.product_id) a
+				GROUP BY a.thirdId,
+				 	a.secondId,
+				 	a.firstId
+				{! ORDER BY sku_amount DESC || $orderBy$}
+				 ]]>
+			</Method>
+			<!-- 查询商品类目概况分页 -->
+			<Method name="queryCategoryPageCount">
+				<![CDATA[
+
+				SELECT
+				COUNT(*)FROM (
+				SELECT
+					a.firstId,
+					a.secondId,
+					a.thirdId,
+					a.firstName,
+					a.secondName,
+					a.thirdName,
+					IFNULL(sku_count, 0) AS sku_amount,
+					IFNULL(SUM(actualAmount), 0) AS turnover,
+					IFNULL(SUM(basketCount), 0) AS amount,
+					IFNULL(SUM(view_people), 0) AS view_people,
+					IFNULL(SUM(views), 0) AS views,
+					IFNULL(SUM(basketCount) / SUM(views), 0) AS buy_rate
+				FROM
+				  	(SELECT
+						lv.product_id,
+						(SELECT
+						  COUNT(DISTINCT ls.id)
+						FROM
+							ls_product lsp
+							LEFT JOIN ls_sku ls
+								ON lsp.id = ls.product_id
+						WHERE lsp.del_status <> - 2
+						 	AND (
+								(
+									lc.thirdId >0
+									AND lsp.global_third_cat_id = lc.thirdId
+								)
+								OR (
+									lc.thirdId <0
+									AND lc.secondId IS NOT NULL
+									AND lc.secondId = lsp.global_second_cat_id
+								)
+								OR (
+									lc.thirdId <0
+									AND lc.secondId <0
+									AND lc.firstId >0
+									AND lc.firstId = lsp.global_first_cat_id
+								)
+						 	)) AS sku_count,
+						(SELECT
+						 	SUM(loi.actual_amount)
+						FROM
+						  	ls_order_item loi,
+						  	ls_order lo
+						WHERE loi.order_id = lo.id
+						  	AND loi.product_id = lv.product_id
+						  	{? AND loi.create_time <= $endDate$}
+						  	{? AND loi.create_time >= $startDate$}
+						  	AND lo.status = 20
+						  	AND loi.refund_status <> 2) AS actualAmount,
+						(SELECT
+						  	SUM(loi.basket_count)
+						FROM
+						  	ls_order_item loi,
+						  	ls_order lo
+						WHERE loi.order_id = lo.id
+						 	AND loi.product_id = lv.product_id
+						 	{? AND loi.create_time <= $endDate$}
+						 	{? AND loi.create_time >= $startDate$}
+						 	AND lo.status = 20
+						 	AND loi.refund_status <> 2) AS basketCount,
+						lc.firstId AS firstId,
+						lc.firstName AS firstName,
+						lc.secondId AS secondId,
+						lc.secondName AS secondName,
+						lc.thirdId AS thirdId,
+						lc.thirdName AS thirdName,
+						IFNULL(lv.view_people, 0) AS view_people,
+						IFNULL(lv.view_frequency, 0) AS views
+				  	FROM
+					(
+					SELECT
+						lcf.id AS firstId,
+						lcf.name AS firstName,
+						lcs.id AS secondId,
+						lcs.name AS secondName,
+						lct.id AS thirdId,
+						lct.name AS thirdName
+					FROM
+						 ls_category lcf
+						 LEFT JOIN ls_category lcs
+							ON lcf.id = lcs.parent_id
+							AND lcs.grade = 2
+						 LEFT JOIN ls_category lct
+							ON lcs.id = lct.parent_id
+							AND lct.grade = 3
+					WHERE lcf.grade = 1
+					{? and (lcf.name like $firstName$}
+					{? or lcs.name like $secondName$}
+					{? or lct.name like $thirdName$)}
+					UNION
+					SELECT
+						lcf.id AS firstId,
+						lcf.name AS firstName,
+						lcs.id AS secondId,
+						lcs.name AS secondName,
+						NULL,
+						NULL
+					FROM
+						ls_category lcf
+						LEFT JOIN ls_category lcs
+							ON lcf.id = lcs.parent_id
+							AND lcs.grade = 2
+					WHERE lcf.grade = 1
+					{? and (lcf.name like $firstName$}
+					{? or lcs.name like $secondName$)}
+					UNION
+					SELECT
+					  	id AS firstId,NAME AS firstName,NULL,NULL,NULL,NULL
+					FROM
+					  	ls_category
+					WHERE grade = 1
+					{? and name like $firstName$}
+					) lc
+					LEFT JOIN ls_product lp
+						ON lc.firstId = lp.global_first_cat_id
+						AND ((lc.secondId = lp.global_second_cat_id AND lp.global_second_cat_id IS NOT NULL) OR (lp.global_second_cat_id IS NULL AND lc.secondId IS NULL) OR (lp.global_second_cat_id IS NOT NULL AND lc.secondId IS NULL))
+      					AND ((lc.thirdId = lp.global_third_cat_id AND lp.global_third_cat_id IS NOT NULL) OR (lp.global_third_cat_id IS NULL AND lc.thirdId IS NULL) OR (lp.global_third_cat_id IS NOT NULL AND lc.thirdId IS NULL))
+					LEFT JOIN
+					 	(SELECT
+							product_id,
+							SUM(view_people) AS view_people,
+							SUM(view_frequency) AS view_frequency
+					 	FROM
+							ls_product_view lv
+					 	WHERE 1=1
+					 		{? AND lv.create_time <= $endDate$}
+							{? AND lv.create_time >= $startDate$}
+					 	GROUP BY lv.product_id) lv
+					 	ON lp.id = lv.product_id) a
+				GROUP BY a.thirdId,
+				 	a.secondId,
+				 	a.firstId
+				) AS p
+
+				 ]]>
+			</Method>
+
+			<!-- 查询商品类目概况分页 -->
+			<Method name="queryCategoryPageExcel">
+				<![CDATA[
+				SELECT
+					a.firstId,
+					a.secondId,
+					a.thirdId,
+					a.firstName,
+					a.secondName,
+					a.thirdName,
+					IFNULL(sku_count, 0) AS sku_amount,
+					IFNULL(SUM(actualAmount), 0) AS turnover,
+					IFNULL(SUM(basketCount), 0) AS amount,
+					IFNULL(SUM(view_people), 0) AS view_people,
+					IFNULL(SUM(views), 0) AS views,
+					IFNULL(SUM(basketCount) / SUM(views), 0) AS buy_rate
+				FROM
+				  	(SELECT
+						lv.product_id,
+						(SELECT
+						  COUNT(DISTINCT ls.id)
+						FROM
+							ls_product lsp
+							LEFT JOIN ls_sku ls
+								ON lsp.id = ls.product_id
+						WHERE lsp.del_status <> - 2
+						 	AND (
+								(
+									lc.thirdId IS NOT NULL
+									AND lsp.global_third_cat_id = lc.thirdId
+								)
+								OR (
+									lc.thirdId IS NULL
+									AND lc.secondId IS NOT NULL
+									AND lc.secondId = lsp.global_second_cat_id
+								)
+								OR (
+									lc.thirdId IS NULL
+									AND lc.secondId IS NULL
+									AND lc.firstId IS NOT NULL
+									AND lc.firstId = lsp.global_first_cat_id
+								)
+						 	)) AS sku_count,
+						(SELECT
+						 	SUM(loi.actual_amount)
+						FROM
+						  	ls_order_item loi,
+						  	ls_order lo
+						WHERE loi.order_id = lo.id
+						  	AND loi.product_id = lv.product_id
+						  	{? AND loi.create_time <= $endDate$}
+						  	{? AND loi.create_time >= $startDate$}
+						  	AND lo.status = 20
+						  	AND loi.refund_status <> 2) AS actualAmount,
+						(SELECT
+						  	SUM(loi.basket_count)
+						FROM
+						  	ls_order_item loi,
+						  	ls_order lo
+						WHERE loi.order_id = lo.id
+						 	AND loi.product_id = lv.product_id
+						 	{? AND loi.create_time <= $endDate$}
+						 	{? AND loi.create_time >= $startDate$}
+						 	AND lo.status = 20
+						 	AND loi.refund_status <> 2) AS basketCount,
+						lc.firstId AS firstId,
+						lc.firstName AS firstName,
+						lc.secondId AS secondId,
+						lc.secondName AS secondName,
+						lc.thirdId AS thirdId,
+						lc.thirdName AS thirdName,
+						IFNULL(lv.view_people, 0) AS view_people,
+						IFNULL(lv.view_frequency, 0) AS views
+				  	FROM
+					(
+					SELECT
+						lcf.id AS firstId,
+						lcf.name AS firstName,
+						lcs.id AS secondId,
+						lcs.name AS secondName,
+						lct.id AS thirdId,
+						lct.name AS thirdName
+					FROM
+						 ls_category lcf
+						 LEFT JOIN ls_category lcs
+							ON lcf.id = lcs.parent_id
+							AND lcs.grade = 2
+						 LEFT JOIN ls_category lct
+							ON lcs.id = lct.parent_id
+							AND lct.grade = 3
+					WHERE lcf.grade = 1
+					{? and (lcf.name like $firstName$}
+					{? or lcs.name like $secondName$}
+					{? or lct.name like $thirdName$)}
+					UNION
+					SELECT
+						lcf.id AS firstId,
+						lcf.name AS firstName,
+						lcs.id AS secondId,
+						lcs.name AS secondName,
+						NULL,
+						NULL
+					FROM
+						ls_category lcf
+						LEFT JOIN ls_category lcs
+							ON lcf.id = lcs.parent_id
+							AND lcs.grade = 2
+					WHERE lcf.grade = 1
+					{? and (lcf.name like $firstName$}
+					{? or lcs.name like $secondName$)}
+					UNION
+					SELECT
+					  	id AS firstId,NAME AS firstName,NULL,NULL,NULL,NULL
+					FROM
+					  	ls_category
+					WHERE grade = 1
+					{? and name like $firstName$}
+					) lc
+					LEFT JOIN ls_product lp
+						ON lc.firstId = lp.global_first_cat_id
+						AND ((lc.secondId = lp.global_second_cat_id AND lp.global_second_cat_id IS NOT NULL) OR (lp.global_second_cat_id IS NULL AND lc.secondId IS NULL) OR (lp.global_second_cat_id IS NOT NULL AND lc.secondId IS NULL))
+      					AND ((lc.thirdId = lp.global_third_cat_id AND lp.global_third_cat_id IS NOT NULL) OR (lp.global_third_cat_id IS NULL AND lc.thirdId IS NULL) OR (lp.global_third_cat_id IS NOT NULL AND lc.thirdId IS NULL))
+					LEFT JOIN
+					 	(SELECT
+							product_id,
+							SUM(view_people) AS view_people,
+							SUM(view_frequency) AS view_frequency
+					 	FROM
+							ls_product_view lv
+					 	WHERE 1=1
+					 		{? AND lv.create_time <= $endDate$}
+							{? AND lv.create_time >= $startDate$}
+					 	GROUP BY lv.product_id) lv
+					 	ON lp.id = lv.product_id) a
+				GROUP BY a.thirdId,
+				 	a.secondId,
+				 	a.firstId
+				{! ORDER BY sku_amount DESC || $orderBy$}
+				 ]]>
+			</Method>
+
+			<!-- 查询商品统计搜索概况 -->
+			<Method name="querySearchData">
+				<![CDATA[
+				select lsl.word,count(*) as frequency from ls_search_history lsl
+				where 1 = 1
+				{? and lsl.source = $source$}
+				and lsl.word != ''
+				AND lsl.word IS NOT NULL
+				group by word
+				order by frequency desc
+				 ]]>
+			</Method>
+			<!-- 查询搜索折线图 -->
+			<Method name="querySearchLine">
+				<![CDATA[
+				select lsl.word,sum(people) as people, sum(frequency) as frequency,
+				sum(case when source = 'MINI' then people else 0 end ) as mini_people,
+				sum(case when source = 'MINI' then frequency else 0 end ) as mini_frequency,
+				sum(case when source = 'H5' or source = 'MP' then people else 0 end ) as h5_people,
+				sum(case when source = 'H5' or source = 'MP' then frequency else 0 end ) as h5_frequency
+				from v_search lsl
+				where 1 = 1
+				{? and lsl.word like $word$ }
+				{? and lsl.create_time <= $endDate$}
+				{? and lsl.create_time >= $startDate$}
+				group by lsl.word
+				order by frequency desc
+				limit 10
+				 ]]>
+			</Method>
+			<!-- 查询搜索概况 -->
+			<Method name="querySearchPage">
+				<![CDATA[
+				select
+				word,
+				sum(people) as people,
+				sum(frequency) as frequency,
+				sum(case when source = 'H5' or source = 'MP' then people else 0 end) as h5_people,
+				sum(case when source = 'H5' or source = 'MP' then frequency else 0 end) as h5_frequency,
+				sum(case when source = 'MINI' then people else 0 end) as mini_people,
+				sum(case when source = 'MINI' then frequency else 0 end) as mini_frequency
+				from v_search s
+				where 1 = 1
+				{? and s.word like $word$ }
+				{? and s.create_time <= $endDate$}
+				{? and s.create_time >= $startDate$}
+				and s.word is not null
+				group by s.word
+				{$orderBy$}
+				 ]]>
+			</Method>
+			<Method name="querySearchPageCount">
+				<![CDATA[
+ 				select count(*) from
+ 				(
+				select
+				word
+				from v_search s
+				where 1 = 1
+				{? and s.word like $word$ }
+				{? and s.create_time <= $endDate$}
+				{? and s.create_time >= $startDate$}
+				and s.word is not null
+				group by s.word
+				) as p
+				 ]]>
+			</Method>
+
+			<!-- 查询搜索概况 -->
+			<Method name="querySearchPageExcel">
+				<![CDATA[
+				select
+				word,
+				sum(people) as people,
+				sum(frequency) as frequency,
+				sum(case when source = 'H5' or source = 'MP' then people else 0 end) as h5_people,
+				sum(case when source = 'H5' or source = 'MP' then frequency else 0 end) as h5_frequency,
+				sum(case when source = 'MINI' then people else 0 end) as mini_people,
+				sum(case when source = 'MINI' then frequency else 0 end) as mini_frequency
+				from v_search s
+				where 1 = 1
+				{? and s.word like $word$ }
+				{? and s.create_time <= $endDate$}
+				{? and s.create_time >= $startDate$}
+				and s.word is not null
+				group by s.word
+				{$orderBy$}
+				 ]]>
+			</Method>
+			<!--			&lt;!&ndash; 查询搜索概况 &ndash;&gt;-->
+			<!--			<Method name="querySearchPage">-->
+			<!--				<![CDATA[-->
+			<!--				select lsl.word, count(*) as frequency,-->
+			<!--				sum(lsl.mp_people) as mp_people,-->
+			<!--				count(if(lsl.source = 'MP',1,null)) as mp_frequency,-->
+			<!--				sum(lsl.app_people) as app_people,-->
+			<!--				count(if(lsl.source = 'App',1,null)) as app_frequency,-->
+			<!--				sum(lsl.mini_people) as mini_people,-->
+			<!--				count(if(lsl.source = 'MINI',1,null)) as mini_frequency,-->
+			<!--				sum(lsl.h5_people) as h5_people,-->
+			<!--				count(if(lsl.source = 'H5',1,null)) as h5_frequency-->
+			<!--				from ls_search_history lsl-->
+			<!--				where 1 = 1-->
+			<!--				{? and lsl.word like $word$ }-->
+			<!--				{? and lsl.create_time <= $endDate$}-->
+			<!--				{? and lsl.create_time >= $startDate$}-->
+			<!--				group by lsl.word-->
+			<!--				{$orderBy$}-->
+			<!--				 ]]>-->
+			<!--			</Method>-->
+			<!--			<Method name="querySearchPageCount">-->
+			<!--				<![CDATA[-->
+			<!--				select count(*) from-->
+			<!--				(-->
+			<!--				select lsl.word-->
+			<!--				from ls_search_history lsl-->
+			<!--				where 1 = 1-->
+			<!--				{? and lsl.word like $word$ }-->
+			<!--				{? and lsl.create_time <= $endDate$}-->
+			<!--				{? and lsl.create_time >= $startDate$}-->
+			<!--				group by lsl.word-->
+			<!--				) as p-->
+			<!--				 ]]>-->
+			<!--			</Method>-->
+			<!-- 查询搜索用户数 -->
+			<Method name="querySearchPeople">
+				<![CDATA[
+				select count(distinct lsl.user_id) as people from ls_search_history lsl;
+				 ]]>
+			</Method>
+			<!-- 查询搜索同比 -->
+			<Method name="querySearchFigureYear">
+				<![CDATA[
+				select count(*) from ls_search_history lsl
+				where 1 = 1
+				and lsl.word = ?
+				and lsl.create_time <= ?
+				and lsl.create_time >= ?
+				group by lsl.word
+				 ]]>
+			</Method>
+			<!-- 查询搜索环比 -->
+			<Method name="querySearchFigureMonth">
+				<![CDATA[
+				select count(*) from ls_search_history lsl
+				where 1 = 1
+				and lsl.word = ?
+				and lsl.create_time <= ?
+				and lsl.create_time >= ?
+				group by lsl.word
+				 ]]>
+			</Method>
+
+			<!-- 查询商家端销售排行 -->
+			<Method name="getShopSaleDetailPage">
+				<![CDATA[
+				select
+				lp.id as product_id,lp.name as product_name,ls.price,lp.pic as image,ls.id as sku_id, ld.shop_name,
+				(select IFNULL(SUM(loi.actual_amount), 0) from ls_order_item loi left join ls_order lo on loi.order_id = lo.id
+				where lo.status=20 and loi.refund_status <> 2 and loi.product_id = lp.id
+				{? and loi.create_time <= $endDate$}
+				{? and loi.create_time >= $startDate$}
+				) as deal_amount,
+				(select IFNULL(SUM(loi.basket_count), 0) from ls_order_item loi left join ls_order lo on loi.order_id = lo.id
+				where lo.status=20 and loi.refund_status <> 2 and loi.product_id = lp.id
+				{? and loi.create_time <= $endDate$}
+				{? and loi.create_time >= $startDate$}
+				) as deal_good_num,
+				(select IFNULL(sum(case when lpv.view_frequency>0 then lpv.view_frequency else 0 end), 0) from ls_product_view lpv
+				LEFT JOIN ls_product lp
+				ON lpv.product_id = lp.id WHERE 1=1
+			    {? and lpv.create_time <= $endDate$}
+				{? and lpv.create_time >= $startDate$}
+				) as view_num,
+				(select count(*) from  ls_favorite_product lfp
+				LEFT JOIN ls_product lp
+				ON lfp.product_id = lp.id WHERE 1=1
+				{? and lfp.addtime <= $endDate$}
+				{? and lfp.addtime >= $startDate$}
+				) as favorite_num
+				from ls_product lp
+				left join ls_sku ls on lp.id = ls.product_id
+				left join ls_shop_detail ld on lp.shop_id = ld.id
+				where 1=1
+				{? and lp.shop_id = $shopId$}
+				{? and ld.shop_name like $shopName$}
+				{? and lp.name like $productName$}
+				{? and lp.id like $productId$}
+				group by lp.id
+				{! order by deal_amount desc||$orderBy$}
+				 ]]>
+			</Method>
+			<Method name="getShopSaleDetailPageCount">
+				<![CDATA[
+				select count(*) from
+				(
+				select
+				lp.id,
+				(select count(*) from ls_order_item loi left join ls_order lo on loi.order_id = lo.id
+				where lo.status=20 and loi.refund_status <> 2 and loi.product_id = lp.id
+				{? and loi.create_time <= $endDate$}
+				{? and loi.create_time >= $startDate$}
+				) as deal_amount,
+				(select count(*) from ls_order_item loi left join ls_order lo on loi.order_id = lo.id
+				where lo.status=20 and loi.refund_status <> 2 and loi.product_id = lp.id
+				{? and loi.create_time <= $endDate$}
+				{? and loi.create_time >= $startDate$}
+				) as deal_good_num,
+				(select count(*) from ls_product_view lpv
+				LEFT JOIN ls_product lp
+				ON lpv.product_id = lp.id WHERE 1=1
+				{? and lpv.create_time <= $endDate$}
+				{? and lpv.create_time >= $startDate$}
+				) as view_num,
+				(select count(*) from ls_favorite_product lfp
+				where lfp.product_id = lp.id
+				{? and lfp.addtime <= $endDate$}
+				{? and lfp.addtime >= $startDate$}
+				) as favorite_num
+				from ls_product lp
+				left join ls_sku ls on lp.id = ls.product_id
+				left join ls_shop_detail ld on lp.shop_id = ld.id
+				where 1=1
+				{? and lp.shop_id = $shopId$}
+				{? and ld.shop_name like $shopName$}
+				{? and lp.name like $productName$}
+				{? and lp.id like $productId$}
+				group by lp.id
+				) t
+				 ]]>
+			</Method>
+
+			<!-- 查询商家端销售排行excel -->
+			<Method name="getShopSaleDetailPageExcel">
+				<![CDATA[
+				select
+				lp.id as product_id,lp.name as product_name,ls.price,lp.pic as image,ls.id as sku_id, ld.shop_name,
+				(select IFNULL(SUM(loi.actual_amount), 0) from ls_order_item loi left join ls_order lo on loi.order_id = lo.id
+				where lo.status=20 and loi.refund_status <> 2 and loi.product_id = lp.id
+				{? and loi.create_time <= $endDate$}
+				{? and loi.create_time >= $startDate$}
+				) as deal_amount,
+				(select IFNULL(SUM(loi.basket_count), 0) from ls_order_item loi left join ls_order lo on loi.order_id = lo.id
+				where lo.status=20 and loi.refund_status <> 2 and loi.product_id = lp.id
+				{? and loi.create_time <= $endDate$}
+				{? and loi.create_time >= $startDate$}
+				) as deal_good_num,
+				(select IFNULL(sum(case when lpv.view_frequency>0 then lpv.view_frequency else 0 end), 0) from ls_product_view lpv
+				 LEFT JOIN ls_product lp
+                 ON lpv.product_id = lp.id
+				{? and lpv.create_time <= $endDate$}
+				{? and lpv.create_time >= $startDate$}
+				) as view_num,
+				(select count(*) from ls_favorite_product lfp
+				 LEFT JOIN ls_product lp
+                 ON lfp.product_id = lp.id
+				{? and lfp.addtime <= $endDate$}
+				{? and lfp.addtime >= $startDate$}
+				) as favorite_num
+				from ls_product lp
+				left join ls_sku ls on lp.id = ls.product_id
+				left join ls_shop_detail ld on lp.shop_id = ld.id
+				where 1=1
+				{? and lp.shop_id = $shopId$}
+				{? and ld.shop_name like $shopName$}
+				{? and lp.name like $productName$}
+				{? and lp.id like $productId$}
+				group by lp.id
+				{! order by deal_amount desc||$orderBy$}
+				 ]]>
+			</Method>
+
+			<!-- 查询商家端sku销售趋势折线图 -->
+			<Method name="getShopSaleTrendLine">
+				<![CDATA[
+				select
+				lp.id as product_id,lp.name as product_name,ls.price,
+				(select sum(case when loi.actual_amount>0 then loi.actual_amount else 0 end) from ls_order_item loi left join ls_order lo on loi.order_id = lo.id
+				where lo.status=20 and loi.refund_status <> 2 and loi.product_id = lp.id
+				{? and loi.create_time <= $eDate$}
+				{? and loi.create_time >= $sDate$}
+				) as deal_amount,
+				(select sum(case when loi.actual_amount>0 then loi.actual_amount else 0 end) from ls_order_item loi left join ls_order lo on loi.order_id = lo.id
+				where lo.status=20 and loi.refund_status <> 2 and loi.product_id = lp.id
+				{? and loi.create_time <= $endDate$}
+				{? and loi.create_time >= $startDate$}
+				) as total_deal_amount,
+				(select sum(case when loi.basket_count>0 then loi.basket_count else 0 end) from ls_order_item loi left join ls_order lo on loi.order_id = lo.id
+				where lo.status=20 and loi.refund_status <> 2 and loi.product_id = lp.id
+				{? and loi.create_time <= $eDate$}
+				{? and loi.create_time >= $sDate$}
+				) as deal_good_num,
+				(select sum(case when loi.basket_count>0 then loi.basket_count else 0 end) from ls_order_item loi left join ls_order lo on loi.order_id = lo.id
+				where lo.status=20 and loi.refund_status <> 2 and loi.product_id = lp.id
+				{? and loi.create_time <= $endDate$}
+				{? and loi.create_time >= $startDate$}
+				) as total_deal_good_num,
+				(select sum(case when lpv.view_frequency>0 then lpv.view_frequency else 0 end) from ls_product_view lpv
+				where lpv.product_id = lp.id
+				{? and lpv.create_time <= $eDate$}
+				{? and lpv.create_time >= $sDate$}
+				) as view_num,
+				(select sum(case when lpv.view_frequency>0 then lpv.view_frequency else 0 end) from ls_product_view lpv
+				where lpv.product_id = lp.id
+				{? and lpv.create_time <= $endDate$}
+				{? and lpv.create_time >= $startDate$}
+				) as total_view_num,
+				(select count(*) from ls_favorite_product lfp
+				where lfp.product_id = lp.id
+				{? and lfp.addtime <= $eDate$}
+				{? and lfp.addtime >= $sDate$}
+				) as favorite_num,
+				(select count(*) from ls_favorite_product lfp
+				where lfp.product_id = lp.id
+				{? and lfp.addtime <= $endDate$}
+				{? and lfp.addtime >= $startDate$}
+				) as total_favorite_num
+				from ls_product lp
+				left join ls_sku ls on lp.id = ls.product_id
+				where 1=1
+				{? and lp.id = $prodId$}
+				{? and ls.id = $skuId$}
+				{? and lp.shop_id = $shopId$}
+				{? and lp.id like $productId$}
+				group by lp.id
+				 ]]>
+			</Method>
+
+			<!-- 查询商家端sku销售趋势成交分页 -->
+			<Method name="getShopSaleDealPage">
+				<![CDATA[
+				select
+				sum(loi.actual_amount) as deal_amount,
+				sum(basket_count) as deal_good_num,
+				(select sum(loi2.actual_amount) from ls_order_item loi2
+				left join ls_order lo2 on lo2.id = loi2.order_id
+				where 1=1
+				and lo2.status=20 and loi2.refund_status <> 2
+				{? and loi2.product_id = $prodId$}
+				{? and loi2.sku_id = $skuId$}
+				{? and loi2.create_time >= $startDate$}
+				{? and loi2.create_time <= $endDate$}
+				) as total_deal_amount,
+				(select sum(loi2.basket_count) from ls_order_item loi2
+				left join ls_order lo2 on lo2.id = loi2.order_id
+				where 1=1
+				and lo2.status=20 and loi2.refund_status <> 2
+				{? and loi2.product_id = $prodId$}
+				{? and loi2.sku_id = $skuId$}
+				{? and loi2.create_time >= $startDate$}
+				{? and loi2.create_time <= $endDate$}
+				) as total_deal_good_num,
+				date_format(loi.create_time, '%Y-%m-%d') as time
+				from ls_order_item loi
+				left join ls_order lo on loi.order_id = lo.id
+				where 1=1
+				and lo.status=20 and loi.refund_status <> 2
+				{? and loi.product_id = $prodId$}
+				{? and loi.sku_id = $skuId$}
+				{? and loi.create_time >= $startDate$}
+				{? and loi.create_time <= $endDate$}
+				group by date_format(loi.create_time, '%Y-%m-%d')
+				{$orderBy$}
+				 ]]>
+			</Method>
+			<Method name="getShopSaleDealPageCount">
+				<![CDATA[
+				select count(*) from
+				(
+				select
+				loi.id,
+				(select sum(loi2.actual_amount) from ls_order_item loi2
+				left join ls_order lo2 on lo2.id = loi2.order_id
+				where 1=1
+				and lo2.status=20 and loi2.refund_status <> 2
+				{? and loi2.product_id = $prodId$}
+				{? and loi2.sku_id = $skuId$}
+				{? and loi2.create_time >= $startDate$}
+				{? and loi2.create_time <= $endDate$}
+				) as total_deal_amount,
+				(select sum(loi2.basket_count) from ls_order_item loi2
+				left join ls_order lo2 on lo2.id = loi2.order_id
+				where 1=1
+				and lo2.status=20 and loi2.refund_status <> 2
+				{? and loi2.product_id = $prodId$}
+				{? and loi2.sku_id = $skuId$}
+				{? and loi2.create_time >= $startDate$}
+				{? and loi2.create_time <= $endDate$}
+				) as total_deal_good_num,
+				date_format(loi.create_time, '%Y-%m-%d') as time
+				from ls_order_item loi
+				left join ls_order lo on loi.order_id = lo.id
+				where 1=1
+				and lo.status=20 and loi.refund_status <> 2
+				{? and loi.product_id = $prodId$}
+				{? and loi.sku_id = $skuId$}
+				{? and loi.create_time >= $startDate$}
+				{? and loi.create_time <= $endDate$}
+				group by date_format(loi.create_time, '%Y-%m-%d')
+				) t
+				 ]]>
+			</Method>
+
+			<!-- 查询商家端sku销售趋势访问列表 -->
+			<Method name="getShopSaleViewPage">
+				<![CDATA[
+				select view_frequency as view_num,
+				(select sum(view_frequency) from ls_product_view lpv2
+				where 1=1
+				{? and lpv2.product_id = $prodId$}
+				{? and lpv2.create_time >= $startDate$}
+				{? and lpv2.create_time <= $endDate$}
+				) as total_view_num,
+				create_time as time
+				from ls_product_view lpv
+				where 1=1
+				{? and lpv.product_id = $prodId$}
+				{? and lpv.create_time >= $startDate$}
+				{? and lpv.create_time <= $endDate$}
+				group by lpv.create_time
+				{$orderBy$}
+				 ]]>
+			</Method>
+
+			<!-- 查询商家端sku销售趋势收藏列表 -->
+			<Method name="getShopSaleFavoritePage">
+				<![CDATA[
+				select
+				count(*) as favorite_num,
+				(select count(*) from ls_favorite_product lfp2
+				where 1=1
+				{? and lfp2.product_id = $prodId$}
+				{? and lfp2.addtime >= $startDate$}
+				{? and lfp2.addtime <= $endDate$}
+				) as total_favorite_num,
+				date_format(lfp.addtime,'%Y-%m-%d') as time
+				from ls_favorite_product lfp
+				where 1=1
+				{? and lfp.product_id = $prodId$}
+				{? and lfp.addtime >= $startDate$}
+				{? and lfp.addtime <= $endDate$}
+				group by date_format(lfp.addtime,'%Y-%m-%d')
+				 ]]>
+			</Method>
+
+			<!-- 查询店铺一级类目下的通过审核且为删除的SKU数 -->
+			<Method name="queryShopCategory">
+				<![CDATA[
+				select lc.id,lc.name as category_name,count(*) as sku_num from
+				ls_product_view lv
+				left join ls_product lp on lv.product_id = lp.id
+				left join ls_shop_cat lc on lc.id = lp.shop_first_cat_id
+				left join ls_sku ls on lp.id = ls.product_id
+				LEFT JOIN ls_order_item loi ON ls.id = loi.sku_id
+				where 1=1
+				{? and lc.id = $id$}
+				{? and lv.create_time >= $startDate$ }
+				{? and lv.create_time <= $endDate$ }
+				{? and lv.shop_id = $shopId$}
+				and lp.op_status = 1
+				and lp.del_status <> -2
+				AND loi.refund_status = 0
+				group by lc.id
+				 ]]>
+			</Method>
+			<!-- 查询店铺二级类目下的通过审核且为删除的SKU数 -->
+			<Method name="queryShopSecondCategory">
+				<![CDATA[
+				SELECT
+					lc.id,
+				 	lc.name as category_name,
+				 	COUNT(DISTINCT ls.id) as sku_num
+				FROM
+					ls_shop_cat lc
+					LEFT JOIN ls_product lp
+						ON lc.id = lp.shop_second_cat_id
+						and lp.del_status <> -2
+					LEFT JOIN ls_sku ls
+						ON lp.id = ls.product_id
+				WHERE 1=1
+					{? and lc.parent_id = $id$}
+					{? and lc.id = $categoryId$}
+				group by lc.id
+				 ]]>
+			</Method>
+			<!-- 查询店铺三级类目下的通过审核且为删除的SKU数 -->
+			<Method name="queryShopThirdCategory">
+				<![CDATA[
+				SELECT
+					lc.id,
+				 	lc.name as category_name,
+				 	COUNT(DISTINCT ls.id) as sku_num
+				FROM
+					ls_shop_cat lc
+					LEFT JOIN ls_product lp
+						ON lc.id = lp.shop_third_cat_id
+						and lp.del_status <> -2
+					LEFT JOIN ls_sku ls
+						ON lp.id = ls.product_id
+				WHERE 1=1
+					{? and lc.parent_id = $id$}
+					{? and lc.id = $categoryId$}
+				group by lc.id
+				 ]]>
+			</Method>
+			<!-- 查询商品类目概况分页 -->
+			<Method name="queryShopCategoryPage">
+				<![CDATA[
+				SELECT
+					a.firstId,
+					a.secondId,
+					a.thirdId,
+					a.firstName,
+					a.secondName,
+					a.thirdName,
+					IFNULL(sku_count, 0) AS sku_amount,
+					IFNULL(SUM(actualAmount), 0) AS turnover,
+					IFNULL(SUM(basketCount), 0) AS amount,
+					IFNULL(SUM(view_people), 0) AS view_people,
+					IFNULL(SUM(views), 0) AS views,
+					IFNULL(SUM(basketCount) / SUM(views), 0) AS buy_rate
+				FROM
+				  	(SELECT
+						lv.product_id,
+						(SELECT
+						  COUNT(DISTINCT ls.id)
+						FROM
+							ls_product lsp
+							LEFT JOIN ls_sku ls
+								ON lsp.id = ls.product_id
+						WHERE lsp.del_status <> - 2
+						 	AND (
+								(
+									lc.thirdId IS NOT NULL
+									AND lsp.shop_third_cat_id = lc.thirdId
+								)
+								OR (
+									lc.thirdId IS NULL
+									AND lc.secondId IS NOT NULL
+									AND lc.secondId = lsp.shop_second_cat_id
+								)
+								OR (
+									lc.thirdId IS NULL
+									AND lc.secondId IS NULL
+									AND lc.firstId IS NOT NULL
+									AND lc.firstId = lsp.shop_first_cat_id
+								)
+						 	)) AS sku_count,
+						(SELECT
+						 	SUM(loi.actual_amount)
+						FROM
+						  	ls_order_item loi,
+						  	ls_order lo
+						WHERE loi.order_id = lo.id
+						  	AND loi.product_id = lv.product_id
+						  	{? AND loi.create_time <= $endDate$}
+						  	{? AND loi.create_time >= $startDate$}
+						  	AND lo.status = 20
+						  	AND loi.refund_status <> 2) AS actualAmount,
+						(SELECT
+						  	SUM(loi.basket_count)
+						FROM
+						  	ls_order_item loi,
+						  	ls_order lo
+						WHERE loi.order_id = lo.id
+						 	AND loi.product_id = lv.product_id
+						 	{? AND loi.create_time <= $endDate$}
+						 	{? AND loi.create_time >= $startDate$}
+						 	AND lo.status = 20
+						 	AND loi.refund_status <> 2) AS basketCount,
+						lc.firstId AS firstId,
+						lc.firstName AS firstName,
+						lc.secondId AS secondId,
+						lc.secondName AS secondName,
+						lc.thirdId AS thirdId,
+						lc.thirdName AS thirdName,
+						IFNULL(lv.view_people, 0) AS view_people,
+						IFNULL(lv.view_frequency, 0) AS views
+				  	FROM
+					(
+					SELECT
+						lcf.id AS firstId,
+						lcf.name AS firstName,
+						lcs.id AS secondId,
+						lcs.name AS secondName,
+						lct.id AS thirdId,
+						lct.name AS thirdName
+					FROM
+						 ls_shop_cat lcf
+						 LEFT JOIN ls_shop_cat lcs
+							ON lcf.id = lcs.parent_id
+							AND lcs.grade = 2
+						 LEFT JOIN ls_shop_cat lct
+							ON lcs.id = lct.parent_id
+							AND lct.grade = 3
+					WHERE lcf.grade = 1
+					{? and lcf.shop_id = $shopId$}
+					{? and (lcf.name like $firstName$}
+					{? or lcs.name like $secondName$}
+					{? or lct.name like $thirdName$)}
+					UNION
+					SELECT
+						lcf.id AS firstId,
+						lcf.name AS firstName,
+						lcs.id AS secondId,
+						lcs.name AS secondName,
+						NULL,
+						NULL
+					FROM
+						ls_shop_cat lcf
+						LEFT JOIN ls_shop_cat lcs
+							ON lcf.id = lcs.parent_id
+							AND lcs.grade = 2
+					WHERE lcf.grade = 1
+					{? and lcf.shop_id = $shopId$}
+					{? and (lcf.name like $firstName$}
+					{? or lcs.name like $secondName$)}
+					UNION
+					SELECT
+					  	id AS firstId,NAME AS firstName,NULL,NULL,NULL,NULL
+					FROM
+					  	ls_shop_cat
+					WHERE grade = 1
+					{? and shop_id = $shopId$}
+					{? and name like $firstName$}
+					) lc
+					LEFT JOIN ls_product lp
+						ON lc.firstId = lp.shop_first_cat_id
+						AND ((lc.secondId = lp.shop_second_cat_id AND lp.shop_second_cat_id IS NOT NULL) OR (lp.shop_second_cat_id IS NULL AND lc.secondId IS NULL) OR (lp.shop_second_cat_id IS NOT NULL AND lc.secondId IS NULL))
+      					AND ((lc.thirdId = lp.shop_third_cat_id AND lp.shop_third_cat_id IS NOT NULL) OR (lp.shop_third_cat_id IS NULL AND lc.thirdId IS NULL) OR (lp.shop_third_cat_id IS NOT NULL AND lc.thirdId IS NULL))
+					LEFT JOIN
+					 	(SELECT
+							product_id,
+							SUM(view_people) AS view_people,
+							SUM(view_frequency) AS view_frequency
+					 	FROM
+							ls_product_view lv
+					 	WHERE 1=1
+					 		{? AND lv.create_time <= $endDate$}
+							{? AND lv.create_time >= $startDate$}
+					 	GROUP BY lv.product_id) lv
+					 	ON lp.id = lv.product_id) a
+				GROUP BY a.thirdId,
+				 	a.secondId,
+				 	a.firstId
+				{! ORDER BY sku_amount DESC || $orderBy$}
+				 ]]>
+			</Method>
+			<!-- 查询商品类目概况分页 -->
+			<Method name="queryShopCategoryPageCount">
+				<![CDATA[
+
+				SELECT
+				COUNT(*)FROM (
+				SELECT
+					a.firstId,
+					a.secondId,
+					a.thirdId,
+					a.firstName,
+					a.secondName,
+					a.thirdName,
+					IFNULL(sku_count, 0) AS sku_amount,
+					IFNULL(SUM(actualAmount), 0) AS turnover,
+					IFNULL(SUM(basketCount), 0) AS amount,
+					IFNULL(SUM(view_people), 0) AS view_people,
+					IFNULL(SUM(views), 0) AS views,
+					IFNULL(SUM(basketCount) / SUM(views), 0) AS buy_rate
+				FROM
+				  	(SELECT
+						lv.product_id,
+						(SELECT
+						  COUNT(DISTINCT ls.id)
+						FROM
+							ls_product lsp
+							LEFT JOIN ls_sku ls
+								ON lsp.id = ls.product_id
+						WHERE lsp.del_status <> - 2
+						 	AND (
+								(
+									lc.thirdId IS NOT NULL
+									AND lsp.shop_third_cat_id = lc.thirdId
+								)
+								OR (
+									lc.thirdId IS NULL
+									AND lc.secondId IS NOT NULL
+									AND lc.secondId = lsp.shop_second_cat_id
+								)
+								OR (
+									lc.thirdId IS NULL
+									AND lc.secondId IS NULL
+									AND lc.firstId IS NOT NULL
+									AND lc.firstId = lsp.shop_first_cat_id
+								)
+						 	)) AS sku_count,
+						(SELECT
+						 	SUM(loi.actual_amount)
+						FROM
+						  	ls_order_item loi,
+						  	ls_order lo
+						WHERE loi.order_id = lo.id
+						  	AND loi.product_id = lv.product_id
+						  	{? AND loi.create_time <= $endDate$}
+						  	{? AND loi.create_time >= $startDate$}
+						  	AND lo.status = 20
+						  	AND loi.refund_status <> 2) AS actualAmount,
+						(SELECT
+						  	SUM(loi.basket_count)
+						FROM
+						  	ls_order_item loi,
+						  	ls_order lo
+						WHERE loi.order_id = lo.id
+						 	AND loi.product_id = lv.product_id
+						 	{? AND loi.create_time <= $endDate$}
+						 	{? AND loi.create_time >= $startDate$}
+						 	AND lo.status = 20
+						 	AND loi.refund_status <> 2) AS basketCount,
+						lc.firstId AS firstId,
+						lc.firstName AS firstName,
+						lc.secondId AS secondId,
+						lc.secondName AS secondName,
+						lc.thirdId AS thirdId,
+						lc.thirdName AS thirdName,
+						IFNULL(lv.view_people, 0) AS view_people,
+						IFNULL(lv.view_frequency, 0) AS views
+				  	FROM
+					(
+					SELECT
+						lcf.id AS firstId,
+						lcf.name AS firstName,
+						lcs.id AS secondId,
+						lcs.name AS secondName,
+						lct.id AS thirdId,
+						lct.name AS thirdName
+					FROM
+						 ls_shop_cat lcf
+						 LEFT JOIN ls_shop_cat lcs
+							ON lcf.id = lcs.parent_id
+							AND lcs.grade = 2
+						 LEFT JOIN ls_shop_cat lct
+							ON lcs.id = lct.parent_id
+							AND lct.grade = 3
+					WHERE lcf.grade = 1
+					{? and lcf.shop_id = $shopId$}
+					{? and (lcf.name like $firstName$}
+					{? or lcs.name like $secondName$}
+					{? or lct.name like $thirdName$)}
+					UNION
+					SELECT
+						lcf.id AS firstId,
+						lcf.name AS firstName,
+						lcs.id AS secondId,
+						lcs.name AS secondName,
+						NULL,
+						NULL
+					FROM
+						ls_shop_cat lcf
+						LEFT JOIN ls_shop_cat lcs
+							ON lcf.id = lcs.parent_id
+							AND lcs.grade = 2
+					WHERE lcf.grade = 1
+					{? and lcf.shop_id = $shopId$}
+					{? and (lcf.name like $firstName$}
+					{? or lcs.name like $secondName$)}
+					UNION
+					SELECT
+					  	id AS firstId,NAME AS firstName,NULL,NULL,NULL,NULL
+					FROM
+					  	ls_shop_cat
+					WHERE grade = 1
+					{? and shop_id = $shopId$}
+					{? and name like $firstName$}
+					) lc
+					LEFT JOIN ls_product lp
+						ON lc.firstId = lp.shop_first_cat_id
+						AND ((lc.secondId = lp.shop_second_cat_id AND lp.shop_second_cat_id IS NOT NULL) OR (lp.shop_second_cat_id IS NULL AND lc.secondId IS NULL) OR (lp.shop_second_cat_id IS NOT NULL AND lc.secondId IS NULL))
+      					AND ((lc.thirdId = lp.shop_third_cat_id AND lp.shop_third_cat_id IS NOT NULL) OR (lp.shop_third_cat_id IS NULL AND lc.thirdId IS NULL) OR (lp.shop_third_cat_id IS NOT NULL AND lc.thirdId IS NULL))
+					LEFT JOIN
+					 	(SELECT
+							product_id,
+							SUM(view_people) AS view_people,
+							SUM(view_frequency) AS view_frequency
+					 	FROM
+							ls_product_view lv
+					 	WHERE 1=1
+					 		{? AND lv.create_time <= $endDate$}
+							{? AND lv.create_time >= $startDate$}
+					 	GROUP BY lv.product_id) lv
+					 	ON lp.id = lv.product_id) a
+				GROUP BY a.thirdId,
+				 	a.secondId,
+				 	a.firstId
+				) AS p
+
+				 ]]>
+			</Method>
+			<!-- 查询商品类目概况分页 -->
+			<Method name="queryShopCategoryPageExcel">
+				<![CDATA[
+				SELECT
+					a.firstId,
+					a.secondId,
+					a.thirdId,
+					a.firstName,
+					a.secondName,
+					a.thirdName,
+					IFNULL(sku_count, 0) AS sku_amount,
+					IFNULL(SUM(actualAmount), 0) AS turnover,
+					IFNULL(SUM(basketCount), 0) AS amount,
+					IFNULL(SUM(view_people), 0) AS view_people,
+					IFNULL(SUM(views), 0) AS views,
+					IFNULL(SUM(basketCount) / SUM(views), 0) AS buy_rate
+				FROM
+				  	(SELECT
+						lv.product_id,
+						(SELECT
+						  COUNT(DISTINCT ls.id)
+						FROM
+							ls_product lsp
+							LEFT JOIN ls_sku ls
+								ON lsp.id = ls.product_id
+						WHERE lsp.del_status <> - 2
+						 	AND (
+								(
+									lc.thirdId IS NOT NULL
+									AND lsp.shop_third_cat_id = lc.thirdId
+								)
+								OR (
+									lc.thirdId IS NULL
+									AND lc.secondId IS NOT NULL
+									AND lc.secondId = lsp.shop_second_cat_id
+								)
+								OR (
+									lc.thirdId IS NULL
+									AND lc.secondId IS NULL
+									AND lc.firstId IS NOT NULL
+									AND lc.firstId = lsp.shop_first_cat_id
+								)
+						 	)) AS sku_count,
+						(SELECT
+						 	SUM(loi.actual_amount)
+						FROM
+						  	ls_order_item loi,
+						  	ls_order lo
+						WHERE loi.order_id = lo.id
+						  	AND loi.product_id = lv.product_id
+						  	{? AND loi.create_time <= $endDate$}
+						  	{? AND loi.create_time >= $startDate$}
+						  	AND lo.status = 20
+						  	AND loi.refund_status <> 2) AS actualAmount,
+						(SELECT
+						  	SUM(loi.basket_count)
+						FROM
+						  	ls_order_item loi,
+						  	ls_order lo
+						WHERE loi.order_id = lo.id
+						 	AND loi.product_id = lv.product_id
+						 	{? AND loi.create_time <= $endDate$}
+						 	{? AND loi.create_time >= $startDate$}
+						 	AND lo.status = 20
+						 	AND loi.refund_status <> 2) AS basketCount,
+						lc.firstId AS firstId,
+						lc.firstName AS firstName,
+						lc.secondId AS secondId,
+						lc.secondName AS secondName,
+						lc.thirdId AS thirdId,
+						lc.thirdName AS thirdName,
+						IFNULL(lv.view_people, 0) AS view_people,
+						IFNULL(lv.view_frequency, 0) AS views
+				  	FROM
+					(
+					SELECT
+						lcf.id AS firstId,
+						lcf.name AS firstName,
+						lcs.id AS secondId,
+						lcs.name AS secondName,
+						lct.id AS thirdId,
+						lct.name AS thirdName
+					FROM
+						 ls_shop_cat lcf
+						 LEFT JOIN ls_shop_cat lcs
+							ON lcf.id = lcs.parent_id
+							AND lcs.grade = 2
+						 LEFT JOIN ls_shop_cat lct
+							ON lcs.id = lct.parent_id
+							AND lct.grade = 3
+					WHERE lcf.grade = 1
+					{? and lcf.shop_id = $shopId$}
+					{? and (lcf.name like $firstName$}
+					{? or lcs.name like $secondName$}
+					{? or lct.name like $thirdName$)}
+					UNION
+					SELECT
+						lcf.id AS firstId,
+						lcf.name AS firstName,
+						lcs.id AS secondId,
+						lcs.name AS secondName,
+						NULL,
+						NULL
+					FROM
+						ls_shop_cat lcf
+						LEFT JOIN ls_shop_cat lcs
+							ON lcf.id = lcs.parent_id
+							AND lcs.grade = 2
+					WHERE lcf.grade = 1
+					{? and lcf.shop_id = $shopId$}
+					{? and (lcf.name like $firstName$}
+					{? or lcs.name like $secondName$)}
+					UNION
+					SELECT
+					  	id AS firstId,NAME AS firstName,NULL,NULL,NULL,NULL
+					FROM
+					  	ls_shop_cat
+					WHERE grade = 1
+					{? and shop_id = $shopId$}
+					{? and name like $firstName$}
+					) lc
+					LEFT JOIN ls_product lp
+						ON lc.firstId = lp.shop_first_cat_id
+						AND ((lc.secondId = lp.shop_second_cat_id AND lp.shop_second_cat_id IS NOT NULL) OR (lp.shop_second_cat_id IS NULL AND lc.secondId IS NULL) OR (lp.shop_second_cat_id IS NOT NULL AND lc.secondId IS NULL))
+      					AND ((lc.thirdId = lp.shop_third_cat_id AND lp.shop_third_cat_id IS NOT NULL) OR (lp.shop_third_cat_id IS NULL AND lc.thirdId IS NULL) OR (lp.shop_third_cat_id IS NOT NULL AND lc.thirdId IS NULL))
+					LEFT JOIN
+					 	(SELECT
+							product_id,
+							SUM(view_people) AS view_people,
+							SUM(view_frequency) AS view_frequency
+					 	FROM
+							ls_product_view lv
+					 	WHERE 1=1
+					 		{? AND lv.create_time <= $endDate$}
+							{? AND lv.create_time >= $startDate$}
+					 	GROUP BY lv.product_id) lv
+					 	ON lp.id = lv.product_id) a
+				GROUP BY a.thirdId,
+				 	a.secondId,
+				 	a.firstId
+				{! ORDER BY sku_amount DESC || $orderBy$}
+				 ]]>
+			</Method>
+
+			<Method name="queryShopCategoryByName">
+				SELECT * FROM ls_shop_cat
+				where 1=1
+				{? and shop_id = $shopId$}
+				{? and name like $categoryName$}
+			</Method>
+
+			<Method name="queryShopCategoryById">
+				SELECT * FROM ls_shop_cat
+				where 1=1
+				{? and id = $id$}
+				{? and shop_id = $shopId$}
+			</Method>
+
+			<!-- 查询一级类目下的通过审核且为删除的SKU数 -->
+			<Method name="queryShopTopCategory">
+				<![CDATA[
+				SELECT
+					lc.id,
+				 	lc.name as category_name,
+				 	COUNT(DISTINCT ls.id) as sku_num
+				FROM
+					ls_shop_cat lc
+					LEFT JOIN ls_product lp
+						ON lc.id = lp.shop_first_cat_id
+						and lp.del_status <> -2
+					LEFT JOIN ls_sku ls
+						ON lp.id = ls.product_id
+				WHERE 1=1
+				  	{? and lc.id = $id$}
+				  	{? and lc.shop_id = $shopId$}
+				group by lc.id
+				 ]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

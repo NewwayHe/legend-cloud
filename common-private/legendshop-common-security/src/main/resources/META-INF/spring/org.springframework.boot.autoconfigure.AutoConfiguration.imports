@@ -1,0 +1,4 @@
+com.legendshop.common.security.utils.UserTokenUtil
+com.legendshop.common.security.interceptor.FeignRequestInterceptor
+com.legendshop.common.security.component.PermissionService
+com.legendshop.common.security.service.CustomizeRedisOAuth2AuthorizationService

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<artifactId>common</artifactId>
+	<packaging>pom</packaging>
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.legendshop</groupId>
+		<artifactId>dev</artifactId>
+		<version>LS.7.0.0</version>
+	</parent>
+
+	<modules>
+		<module>legendshop-common-job</module>
+		<module>legendshop-common-core</module>
+		<module>legendshop-common-data</module>
+		<module>legendshop-common-datasource</module>
+		<module>legendshop-common-swagger</module>
+		<module>legendshop-common-log</module>
+		<module>legendshop-common-sms</module>
+		<module>legendshop-common-excel</module>
+		<module>legendshop-common-rabbitmq</module>
+		<module>legendshop-common-validator</module>
+		<module>legendshop-common-logistics</module>
+		<module>legendshop-common-xss</module>
+		<module>legendshop-common-region</module>
+		<module>legendshop-common-feign</module>
+		<module>legendshop-common-sentinel</module>
+		<module>legendshop-common-monitor</module>
+		<module>legendshop-common-wechat</module>
+		<module>legendshop-common-spider</module>
+		<module>legendshop-common-prometheus</module>
+		<module>legendshop-common-id</module>
+		<module>legendshop-common-service</module>
+		<module>legendshop-id-core</module>
+	</modules>
+</project>

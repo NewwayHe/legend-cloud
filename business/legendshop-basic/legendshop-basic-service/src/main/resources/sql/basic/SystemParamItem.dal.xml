@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 系统配置项 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="SystemParamItem">
+
+			<Method name="getEnabledByParentIds">
+				<![CDATA[
+             		select * from ls_sys_param_item
+             		where 1 = 1
+             		and key_word = 'enabled'
+             		{@ and parent_id in $parentId$}
+            	]]>
+			</Method>
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

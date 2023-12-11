@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 新闻图片 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="News">
+
+
+			<Method name="queryPageList"><![CDATA[
+				SELECT n.id,n.seq ,n.news_title,c.news_category_name,n.news_category_id,n.create_time,
+				n.status,n.news_content,n.news_brief,n.type,n.url,c.display_page as displayPage
+				FROM ls_news AS n , ls_news_cat AS c WHERE n.news_category_id=c.id
+				{? and n.news_title like $newsTitle$}
+				{? and n.news_category_id = $newsCategoryId$}
+				{? and n.create_time >= $beginTime$}
+				{? and n.create_time <= $endTime$}
+				{? and n.status = $status$}
+				order by seq asc
+			]]></Method>
+
+			<Method name="queryPageListCount"><![CDATA[
+				SELECT count(1)
+				FROM ls_news AS n , ls_news_cat AS c WHERE n.news_category_id=c.id
+				{? and n.news_title like $newsTitle$}
+				{? and n.news_category_id = $newsCategoryId$}
+				{? and n.create_time >= $beginTime$}
+				{? and n.create_time <= $endTime$}
+				{? and n.status = $status$}
+			]]></Method>
+
+			<Method name="getNewsAndDisPlay"><![CDATA[
+				select n.id, n.news_title, n.news_brief, n.create_time, n.type, n.url, nc.display_page, n.news_category_id
+				from ls_news n left join ls_news_cat nc on n.news_category_id = nc.id
+				where n.status = 1
+				and nc.status = 1
+				{? and n.news_category_id = $id$}
+				{@ and nc.display_page in $displayPageList$}
+				order by n.seq asc
+			]]></Method>
+
+			<Method name="getNewsAndDisPlayCount"><![CDATA[
+				select count(1) from ls_news n
+				left join ls_news_cat nc on n.news_category_id = nc.id
+				where n.status = 1
+				and nc.status = 1
+				{? and n.news_category_id = $id$}
+				{@ and nc.display_page in $displayPageList$}
+			]]></Method>
+
+			<Method name="getByWord">
+				select n.id, n.news_title, n.news_brief, n.create_time, n.type, n.url, nc.display_page,
+				n.news_category_id
+				from ls_news n left join ls_news_cat nc on n.news_category_id = nc.id
+				where n.status = 1
+				and nc.status = 1
+				{? and n.news_title like $word$}
+				{@ and nc.display_page in $displayPageList$}
+				{? and n.news_category_id = $id$}
+				order by n.seq
+			</Method>
+
+			<Method name="getByWordCount">
+				select count(1) from ls_news n
+				left join ls_news_cat nc on n.news_category_id = nc.id
+				where n.status = 1
+				and nc.status = 1
+				{? and n.news_title like $word$}
+				{@ and nc.display_page in $displayPageList$}
+				{? and n.news_category_id = $id$}
+			</Method>
+
+			<Method name="getOnlineNews">
+				<![CDATA[
+				select n.id, n.news_title, n.news_brief, n.create_time, n.type, n.url, n.news_category_id
+				from ls_news n
+				where status = 1
+				{? and news_category_id = $newsCategoryId$}
+				order by seq asc
+				{? limit 0, $limit$}
+				]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

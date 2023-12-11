@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 收藏的店铺SQL -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="FavoriteProduct">
+
+			<!-- 查询收藏商品 -->
+			<Method name="collect">
+				<![CDATA[
+				SELECT f.id,f.product_id AS productId,p.name AS productName,p.price,f.addtime,p.pic,p.stocks,p.buys,p.status,
+				(SELECT MIN(k.price) FROM ls_sku k WHERE k.product_id = f.product_id ) AS min_price,
+                (SELECT MAX(k.price) FROM ls_sku k WHERE k.product_id = f.product_id ) AS max_price,
+				(SELECT COUNT(*) FROM ls_favorite_product lf WHERE lf.product_id = p.id) favoriteCount FROM ls_favorite_product f, ls_product p
+				WHERE f.product_id = p.id
+				and p.status=1
+				and p.op_status=1
+				{? and f.user_id = $userId$}
+				{? and f.addtime >= $startDate$}
+				{? and f.addtime <= $endDate$}
+				{? and p.name like  $name$}
+				ORDER BY f.addtime DESC
+				]]>
+			</Method>
+
+			<Method name="collectCount">
+				<![CDATA[
+				select count(*) as count from ls_favorite_product f, ls_product p where f.product_id=p.id
+				and p.status=1
+				{? and f.user_id=$userId$}
+				{? and f.addtime >= $startDate$}
+				{? and f.addtime <= $endDate$}
+				{? and p.name like  $name$}
+				]]>
+			</Method>
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

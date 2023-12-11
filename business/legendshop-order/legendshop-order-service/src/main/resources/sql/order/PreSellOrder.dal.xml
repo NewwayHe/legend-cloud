@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 投诉表的SQL -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="PreSellOrder">
+			<!-- 查询账单结算预售订单列表 start -->
+			<Method name="getShopOrderBillPreSellPage">
+				<![CDATA[
+					SELECT
+						o.id AS orderId,
+						o.order_number AS orderNumber,
+						o.create_time AS orderTime,
+						IFNULL(o.actual_total_price, '0.00') AS orderAmount,
+						IFNULL(p.pre_deposit_price, '0.00') AS preDepositAmount,
+						IFNULL(p.final_price, '0.00') AS finalAmount,
+						IFNULL(o.freight_price, '0.00') AS freightAmount
+					FROM
+						ls_pre_sell_order p, ls_order o
+					WHERE
+						p.order_id = o.id
+						AND bill_flag = '1'
+						{? AND bill_sn = $billSn$}
+						{? AND shop_id = $shopId$}
+						{? AND order_number = $orderNumber$}
+						{? AND create_time <= $orderEndTime$}
+						{? AND create_time >= $orderStartTime$}
+						{? AND pay_time <= $payEndTime$}
+						{? AND pay_time >= $payStartTime$}
+					ORDER BY o.create_time DESC
+            	]]>
+			</Method>
+			<Method name="getShopOrderBillPreSellPageCount">
+				<![CDATA[
+					SELECT
+						COUNT(*)
+					FROM
+						ls_pre_sell_order p, ls_order o
+					WHERE
+						p.order_id = o.id
+						AND bill_flag = '1'
+						{? AND bill_sn = $billSn$}
+						{? AND shop_id = $shopId$}
+						{? AND order_number = $orderNumber$}
+						{? AND create_time <= $orderEndTime$}
+						{? AND create_time >= $orderStartTime$}
+						{? AND pay_time <= $payEndTime$}
+						{? AND pay_time >= $payStartTime$}
+				]]>
+			</Method>
+			<!-- 查询账单结算预售订单列表 end -->
+
+		</Object>
+
+	</BusinessObjects>
+</DataAccessLayer>

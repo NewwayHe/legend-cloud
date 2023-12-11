@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 预售相关的SQL -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<!-- 公共的 -->
+		<Object objectName="PreSellProduct">
+			<Method name="queryPreSellProduct">
+				<![CDATA[
+					SELECT pp.id AS id, pp.shop_id AS shopId, pp.shop_name AS shopName, pp.product_id AS productId, pp.sku_id AS skuId,
+					pp.pre_sale_start AS preSaleStart, pp.pre_sale_end AS preSaleEnd, pp.scheme_name AS schemeName,
+					pp.pre_delivery_time AS preDeliveryTime,pp.status AS STATUS, pp.create_time AS createTime,p.status AS prodStatus
+					FROM
+					  ls_pre_sell_product pp
+					  LEFT JOIN ls_product p
+					    ON pp.product_id = p.id
+					WHERE 1 = 1
+					{? and pp.status = $status$}
+					{? and pp.shop_id = $shopId$}
+					{? and pp.shop_name like $shopName$}
+					{? and pp.scheme_name like $schemeName$}
+					{? and p.party_code like $prodCode$}
+					{$timeLimit$}
+					{$isExpires$}
+					ORDER BY pp.create_time DESC
+				]]>
+			</Method>
+			<Method name="queryPreSellProductCount">
+				<![CDATA[
+					SELECT COUNT(1)
+					FROM
+					  ls_pre_sell_product pp
+					  LEFT JOIN ls_product p
+					    ON pp.product_id = p.id
+					WHERE 1 = 1
+					{? and pp.status = $status$}
+					{? and pp.shop_id = $shopId$}
+					{? and pp.shop_name like $shopName$}
+					{? and pp.scheme_name like $schemeName$}
+					{? and p.party_code like $prodCode$}
+					{$timeLimit$}
+					{$isExpires$}
+				]]>
+			</Method>
+
+			<Method name="queryPreSellProductDto">
+				SELECT pp.id AS id, pp.shop_id AS shopId, pp.product_id AS productId, pp.sku_id AS
+				skuId,pp.pre_sale_start AS
+				preSaleStart,
+				pp.pre_sale_end AS preSaleEnd, pp.pre_price AS prePrice, pp.pay_pct_type AS payPctType, pp.pay_pct AS
+				payPct,
+				pp.pre_deposit_price AS preDepositPrice, pp.final_m_start AS finalMStart, pp.scheme_name AS schemeName,
+				pp.final_m_end AS finalMEnd, pp.pre_delivery_time AS preDeliveryTime, pp.status AS STATUS,
+				pp.audit_opinion AS auditOpinion,
+				pp.audit_time AS auditTime, p.name AS productName, p.price AS prodPrice, p.pic AS prodPic,p.status AS
+				prodStatus
+				FROM ls_pre_sell_product pp,ls_product p
+				WHERE pp.product_id = p.id
+				AND pp.id = ?
+			</Method>
+
+			<Method name="queryPreSellProductDetailBO">
+				<![CDATA[
+					SELECT pp.id AS id, pp.product_id AS productId, pp.sku_id AS skuId, pp.pre_price AS prePrice,
+					pp.pre_deposit_price AS preDepositPrice, (pp.pre_price - pp.pre_deposit_price) AS finalPayment,
+					pp.pre_sale_start AS preSaleStart, pp.pre_sale_end AS preSaleEnd, pp.pay_pct_type AS payPctType,
+					pp.pay_pct AS payPct, pp.status AS STATUS,p.name AS productName,p.user_name AS userName,
+					pp.shop_id AS shopId, p.key_word AS keyWord, p.brief AS brief, p.price AS prodPrice, p.cash AS prodCash,
+					p.category_id AS categoryId, p.pic AS prodMainPic, p.stocks AS prodStocks, p.party_code AS partyCode,
+					p.support_transport_free AS supportTransportFree, p.transport_type AS transportType, p.transport_id AS transportId,
+					p.ems_trans_fee AS emsTransFee, p.express_trans_fee AS expressTransFee, p.mail_trans_fee AS mailTransFee,
+					p.meta_title AS metaTitle, p.content AS content, p.content_m AS contentM, p.after_sale_id AS afterSaleId,
+					pp.final_m_start AS finalMStart,pp.final_m_end AS finalMEnd,pp.pre_delivery_time AS preDeliveryTime
+					FROM ls_pre_sell_product pp,ls_product p
+					WHERE pp.product_id = p.id
+					AND pp.id = ?
+				]]>
+			</Method>
+
+			<!--商家前台列表-->
+			<Method name="queryPreSellProductList">
+				<![CDATA[
+					SELECT
+					  pp.id AS id,
+					  pp.shop_id AS shopId,
+					  pp.product_id AS productId,
+					  pp.sku_id AS skuId,
+					  s.name AS productName,
+					  s.pic AS prodPic,
+					  pp.pre_sale_start AS preSaleStart,
+					  pp.pre_sale_end AS preSaleEnd,
+					  pp.scheme_name AS schemeName,
+					  pp.pre_delivery_time AS preDeliveryTime,
+					  pp.status AS STATUS,
+					  pp.create_time AS createTime,
+					  pp.audit_opinion AS auditOpinion,
+					  p.status AS prodStatus
+					FROM
+					  ls_pre_sell_product pp
+					  LEFT JOIN ls_sku s
+					    ON pp.sku_id = s.id
+					  LEFT JOIN ls_product p
+					    ON pp.product_id = p.id
+					WHERE 1 = 1
+					{? and pp.shop_id = $shopId$}
+					{? and pp.scheme_name like $schemeName$}
+					{? and pp.status = $status$}
+					{? and pp.shop_name like $shopName$}
+					{? and s.name like $productName$}
+					{$isStarted$}
+	          		{$unStarted$}
+	          		{$isFinished$}
+	          		{$unFinished$}
+					ORDER BY pp.status ASC,pp.create_time DESC
+				]]>
+			</Method>
+			<Method name="queryPreSellProductListCount">
+				<![CDATA[
+					SELECT COUNT(1)
+					FROM
+					  ls_pre_sell_product pp
+					  LEFT JOIN ls_sku s
+					    ON pp.sku_id = s.id
+					  LEFT JOIN ls_product p
+					    ON pp.product_id = p.id
+					WHERE 1 = 1
+					{? and pp.shop_id = $shopId$}
+					{? and pp.scheme_name like $schemeName$}
+					{? and pp.status = $status$}
+					{? and pp.shop_name like $shopName$}
+					{? and s.name like $productName$}
+					{$isStarted$}
+	          		{$unStarted$}
+	          		{$isFinished$}
+	          		{$unFinished$}
+				]]>
+			</Method>
+
+		</Object>
+
+		<!-- header -->
+		<Object objectName="PreSellProduct.header">
+			<Method name="queryPreSellProduct">
+				<![CDATA[
+					 SELECT pp.id AS id, pp.shop_id AS shopId, pp.product_id AS productId, pp.sku_id AS skuId, pp.pre_sale_start AS preSaleStart, pp.pre_sale_end AS preSaleEnd,
+					  pp.scheme_name AS schemeName, pp.pre_delivery_time AS preDeliveryTime, pp.STATUS AS STATUS, pp.create_time AS createTime, pp.audit_opinion AS auditOpinion,
+					   pp.pre_sale_start AS preSaleStart, pp.pre_price AS prePrice, p.pic AS prodPic
+					   FROM ls_pre_sell_product pp
+					   LEFT JOIN ls_product p ON p.id = pp.product_id
+					WHERE pp.status = 0
+					{? and p.status = $prodStatus$}
+					{? and $readyStartTime$ < pp.pre_sale_start}
+					{? and $startTime$ >= pp.pre_sale_start}
+					{? and $endTime$ < pp.pre_sale_end}
+					{? and $closeEndTime$ >= pp.pre_sale_end}
+					{$orders$}
+				]]>
+			</Method>
+			<Method name="queryPreSellProductCount">
+				<![CDATA[
+					SELECT COUNT(*)
+					FROM
+					 ls_pre_sell_product pp
+					LEFT JOIN ls_product p ON p.id = pp.product_id
+					WHERE pp.status = 0
+					{? and p.status = $prodStatus$}
+					{? and $readyStartTime$ < pp.pre_sale_start}
+					{? and $startTime$ >= pp.pre_sale_start}
+					{? and $endTime$ < pp.pre_sale_end}
+					{? and $closeEndTime$ >= pp.pre_sale_end}
+				]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

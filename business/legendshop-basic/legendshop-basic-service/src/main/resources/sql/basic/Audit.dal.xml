@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="Audit">
+			<Method name="getAuditedShopCount">
+				<![CDATA[
+				   select count(*)  from ls_shop_detail  where op_status=0
+				]]>
+			</Method>
+			<Method name="getAuditedBrandCount">
+				<![CDATA[
+				   SELECT COUNT(1) FROM ls_brand b LEFT JOIN ls_shop_detail d ON b.shop_id=d.id WHERE delete_flag=0  AND b.op_status = 0
+				]]>
+			</Method>
+			<Method name="getAuditedProductCount">
+				<![CDATA[
+					SELECT
+					  COUNT(DISTINCT p.id)
+					FROM
+					  ls_product p
+					  LEFT JOIN ls_shop_detail sd
+						ON p.shop_id = sd.id
+					  LEFT JOIN ls_brand brand
+						ON brand.id = p.brand_id
+					  LEFT JOIN ls_sku ls
+						ON ls.product_id = p.id
+					  LEFT JOIN ls_draft_product ldp
+						ON ldp.product_id = p.id
+					WHERE 1 = 1
+					  AND p.del_status = 1
+					  AND (
+						(p.op_status = 0
+						  AND p.status > - 10)
+						OR ldp.status = 0
+					  )
+				]]>
+			</Method>
+			<Method name="getAuditedReportProductCount">
+				<![CDATA[
+                   SELECT COUNT(*) FROM ls_accusation  WHERE user_del_status = 0
+				]]>
+			</Method>
+			<Method name="getAuditedProductCommentCount">
+				<![CDATA[
+				   select count(*)  from ls_product_comment  where status=0
+				]]>
+			</Method>
+			<Method name="getAuditedAfterSaleCount">
+				<![CDATA[
+				   select count(*)  from ls_order_refund_return  where apply_status=2
+				]]>
+			</Method>
+
+			<Method name="getAuditedBillingCount">
+				<![CDATA[
+                   SELECT COUNT(*) FROM ls_shop_order_bill  WHERE STATUS = 2
+				]]>
+			</Method>
+			<Method name="getAuditedBalanceWithdrawCount">
+				<![CDATA[
+				   select count(*)  from ls_user_wallet_details  where business_type='CASH_WITHDRAWAL'
+				]]>
+			</Method>
+			<Method name="getAuditedFeedbackCount">
+				<![CDATA[
+				   select count(*)  from ls_user_feedback  where status=0
+				]]>
+			</Method>
+
+			<Method name="queryNewByAuditTypeAndCommonId">
+				<![CDATA[
+				   	SELECT
+					  	id,common_id,op_status,audit_type,audit_opinion,audit_username,audit_time
+					FROM
+						(SELECT
+							id,common_id,op_status,audit_type,audit_opinion,audit_username,audit_time
+						FROM
+							ls_audit
+						WHERE 1=1
+						{? and audit_type = $auditType$}
+						{@ and common_id in $commonId$}
+						ORDER BY audit_time DESC
+						LIMIT 10000) a
+					GROUP BY common_id
+				]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

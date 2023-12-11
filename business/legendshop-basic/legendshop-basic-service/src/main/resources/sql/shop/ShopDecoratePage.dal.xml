@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataAccessLayer>
+	<BusinessObjects>
+		<!-- 移动端店铺首页装修管理 -->
+		<Object objectName="ShopDecoratePage">
+			<Method name="queryShopDecoratePage">
+				SELECT
+				ls.*,ld.shop_name AS siteName
+				FROM
+				ls_shop_app_decorate ls
+				LEFT JOIN ls_shop_detail ld
+				ON ld.shop_id = ls .shop_id
+				WHERE 1 = 1
+				{? AND ls.shop_id = $shopId$}
+			</Method>
+
+			<Method name="queryShopDecoratePageCount">
+				SELECT
+				COUNT(*)
+				FROM
+				ls_shop_app_decorate ls
+				LEFT JOIN ls_shop_detail ld
+				ON ld.shop_id = ls .shop_id
+				WHERE 1 = 1
+				{? AND ls.shop_id = $shopId$}
+
+			</Method>
+
+			<Method name="queryPageListDesc">
+				select * from ls_shop_decorate_page
+				where 1 = 1
+				{? and shop_id = $shopId$}
+				{? and category = $category$}
+				{? and status = $status$}
+				{? and source = $source$}
+				{? and use_flag = $useFlag$}
+				{? and name like $name$}
+				{? and type = $type$}
+				{? and default_flag = $defaultFlag$}
+				order by use_flag desc, rec_date desc
+				{$limit$}
+			</Method>
+
+			<Method name="queryPageListDescCount">
+				select count(*) from ls_shop_decorate_page
+				where 1 = 1
+				{? and shop_id = $shopId$}
+				{? and category = $category$}
+				{? and status = $status$}
+				{? and source = $source$}
+				{? and use_flag = $useFlag$}
+				{? and name like $name$}
+				{? and type = $type$}
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

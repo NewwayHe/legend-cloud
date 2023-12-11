@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 易宝支付分账信息 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="PaySettlement">
+			<Method name="getPaidByOrderNumberList">
+				<![CDATA[
+		     		SELECT lp.* FROM ls_order lo
+		     		LEFT JOIN ls_pay_settlement_order lpo ON lo.order_number = lpo.order_number
+		     		LEFT JOIN ls_pay_settlement lp ON lpo.pay_settlement_sn = lp.pay_settlement_sn
+		     		WHERE lp.state = 1 and lo.order_type != 'P'
+		     		{@ and lo.order_number in $orderNumbers$}
+	            ]]>
+			</Method>
+
+			<Method name="exceptionPage">
+				<![CDATA[
+		     		SELECT psi.pay_settlement_sn,psi.transaction_sn,psi.pay_type_id,psi.amount,ps.state,ps.update_time FROM ls_pay_settlement_item psi
+		     		LEFT JOIN ls_pay_settlement ps ON psi.pay_settlement_sn = ps.pay_settlement_sn
+		     		WHERE ps.state = 3
+					{? AND ps.update_time >= $startTime$}
+					{? AND ps.update_time <= $endTime$}
+					order by ps.update_time
+	            ]]>
+			</Method>
+
+			<Method name="exceptionPageCount">
+				<![CDATA[
+		     		SELECT count(*) FROM ls_pay_settlement_item psi
+		     		LEFT JOIN ls_pay_settlement ps ON psi.pay_settlement_sn = ps.pay_settlement_sn
+		     		WHERE ps.state = 3
+					{? AND ps.update_time >= $startTime$}
+					{? AND ps.update_time <= $endTime$}
+	            ]]>
+			</Method>
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

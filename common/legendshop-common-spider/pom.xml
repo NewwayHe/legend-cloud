@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<artifactId>common</artifactId>
+		<groupId>com.legendshop</groupId>
+		<version>LS.7.0.0</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+	<properties>
+		<jsoup.version>1.13.1</jsoup.version>
+	</properties>
+
+	<artifactId>legendshop-common-spider</artifactId>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.legendshop</groupId>
+			<artifactId>legendshop-common-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>${jsoup.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+		</dependency>
+	</dependencies>
+</project>

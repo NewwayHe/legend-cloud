@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 投诉表的SQL -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="ShopCat">
+
+			<Method name="queryByShopId">
+				<![CDATA[
+					SELECT c.id,c.shop_id,c.seq,c.status ,c.parent_id,parent.name AS parentName ,c.grade,c.name,
+						(CASE WHEN
+							(SELECT COUNT(1) FROM ls_shop_cat f WHERE f.parent_id=c.id) = 0
+							THEN FALSE
+						 ELSE TRUE
+						  END)
+						AS hasChildren
+					FROM ls_shop_cat c LEFT JOIN ls_shop_cat parent ON c.parent_id= parent.id
+					WHERE c.shop_id= ?
+					AND (c.status= ? OR 3=?)
+				]]>
+			</Method>
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

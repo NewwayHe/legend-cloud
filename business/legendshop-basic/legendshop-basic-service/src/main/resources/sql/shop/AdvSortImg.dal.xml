@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="AdvSortImg">
+
+			<!-- 查询分页 -->
+			<Method name="page">
+				<![CDATA[
+		     		select * from ls_adv_sort_img lasi
+		     		where 1=1
+		     		{? and lasi.status = $status$}
+		     		{? and lasi.category_id = $categoryId$}
+		     		{? and lasi.adv_img_name like $name$}
+		     		order by lasi.category_id asc,lasi.create_time desc
+	            ]]>
+			</Method>
+			<Method name="pageCount">
+				<![CDATA[
+		     		select count(*) from ls_adv_sort_img lasi
+		     		where 1=1
+		     		{? and lasi.status = $status$}
+		     		{? and lasi.category_id = $categoryId$}
+		     		{? and lasi.adv_img_name like $name$}
+		     		order by lasi.category_id asc,lasi.create_time desc
+	            ]]>
+			</Method>
+
+			<!-- 查询顶层分类 -->
+			<Method name="getTopCategory">
+				<![CDATA[
+		     		select * from ls_category lc
+		     		where lc.parent_id = -1
+	            ]]>
+			</Method>
+
+			<!-- 查询顶层分类 -->
+			<Method name="queryByCategoryId">
+				<![CDATA[
+		     		select * from ls_adv_sort_img lasi
+					where 1=1
+					and lasi.status = 1
+					{? and lasi.category_id = $categoryId$}
+	            ]]>
+			</Method>
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>
+

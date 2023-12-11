@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 商品回复 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="Product">
+
+			<!-- 查询所有在线的商品 -->
+			<Method name="queryProductOnline">
+				<![CDATA[
+                SELECT p.* FROM ls_product p,ls_shop_detail s WHERE s.id=p.shop_id
+                {? and p.pre_sell_flag=$preSellFlag$ }
+                {? and p.status=$status$ }
+                {? and p.shop_id=$shopId$ }
+                {? and p.name like $productName$ }
+                {? and p.op_status=$opStatus$ }
+                {? and p.del_status=$delStatus$ }
+                {? and s.status=$shopStatus$ }
+                {? order by p.id = $integralProductId$ desc}
+             	]]>
+			</Method>
+			<!-- 查询所有在线的商品 -->
+			<Method name="queryProductOnlineCount">
+				<![CDATA[
+                SELECT count(p.id) FROM ls_product p,ls_shop_detail s WHERE s.id=p.shop_id
+                {? and p.pre_sell_flag=$preSellFlag$ }
+                {? and p.status=$status$ }
+                {? and p.shop_id=$shopId$ }
+				{? and p.name like $productName$ }
+                {? and p.op_status=$opStatus$ }
+                {? and p.del_status=$delStatus$ }
+                {? and s.status=$shopStatus$ }
+                {? order by p.id = $integralProductId$ desc}
+             	]]>
+			</Method>
+
+			<!-- 查询所有在线的商品 -->
+			<Method name="queryProductOnlineEs">
+				<![CDATA[
+                SELECT p.*,ldp.ratio as commissionRatio, s.status as shopStatus
+                FROM ls_product p left JOIN ls_shop_detail s ON s.id=p.shop_id LEFT JOIN ls_distribution_prod ldp ON p.id=ldp.product_id
+                WHERE p.del_status > -2 and s.status=1
+                {? and p.pre_sell_flag=$preSellFlag$ }
+                {? and p.status=$status$ }
+                {? and p.shop_id=$shopId$ }
+                {? and p.name like $productName$ }
+                {? and p.op_status=$opStatus$ }
+                {? and p.del_status=$delStatus$ }
+                {? and s.status=$shopStatus$ }
+                {@ and p.id in $productIds$ }
+                {? and p.id = $productId$ }
+                {? order by p.id = $integralProductId$ desc}
+             	]]>
+			</Method>
+			<!-- 查询所有在线的商品 -->
+			<Method name="queryProductOnlineEsCount">
+				<![CDATA[
+                  SELECT COUNT(p.id) FROM ls_product p left JOIN ls_shop_detail s ON s.id=p.shop_id LEFT JOIN ls_distribution_prod ldp ON p.id=ldp.product_id
+                  WHERE p.del_status > -2 and s.status=1
+                {? and p.pre_sell_flag=$preSellFlag$ }
+                {? and p.status=$status$ }
+                {? and p.shop_id=$shopId$ }
+				{? and p.name like $productName$ }
+                {? and p.op_status=$opStatus$ }
+                {? and p.del_status=$delStatus$ }
+                {? and s.status=$shopStatus$ }
+                {@ and p.id in $productIds$ }
+                {? order by p.id = $integralProductId$ desc}
+             	]]>
+			</Method>
+
+			<Method name="getProductOnline">
+				<![CDATA[
+                   SELECT * FROM ls_product p
+                   RIGHT JOIN ls_shop_detail s ON p.shop_id=s.id
+                  WHERE p.del_status > -2 and s.status=1
+                 {? and p.status=$status$ }
+
+             ]]>
+			</Method>
+			<!-- 查找在线的商品数量 -->
+			<Method name="getProductOnlineCount">
+				<![CDATA[
+		            SELECT
+					COUNT(p.id)
+					FROM
+					ls_product p
+					LEFT JOIN ls_shop_detail sd ON p.shop_id = sd.id
+					WHERE 1 = 1
+					and sd.status=1
+					AND p.status = 1
+				    AND p.del_status = 1
+              ]]>
+			</Method>
+
+			<Method name="getProdList"><![CDATA[
+				select p.*, ldp.status as draftStatus,
+				 (select count(1) from ls_sku sku where sku.product_id=p.id)
+				 as skuCount,p.price,p.buys,sd.shop_name as site_name,
+				 brand.brand_name
+				 from ls_product p left join ls_shop_detail sd
+				 on p.shop_id=sd.id left join ls_brand brand on brand.id=p.brand_id
+				 left join ls_sku ls on ls.product_id = p.id
+				 left join ls_draft_product ldp on ldp.product_id = p.id
+				 where 1=1
+				    {? and p.create_time >= $startDate$}
+				     {? and p.create_time <= $endDate$}
+					 {? and p.id = $productId$}
+					 {? and (p.global_first_cat_id = $categoryId1$}
+					 {? or p.global_second_cat_id = $categoryId2$}
+					 {? or p.global_third_cat_id = $categoryId3$ )}
+					 {? and p.shop_first_cat_id = $firstCategoryId$}
+					 {? and p.shop_second_cat_id = $secondCategoryId$}
+					 {? and p.shop_third_cat_id = $thirdCategoryId$}
+					 {? and p.brand_id = $brandId$}
+					 {? and p.status = $status$}
+					 {? and p.status <> $illegalStatus1$}
+					 {? and p.status <> $illegalStatus2$}
+					 {? and p.op_status = $opStatus$}
+					 {? and p.del_status = $delStatus$}
+					 {? and p.del_status <> $illegalDelStatus$}
+					 {? and p.name like $name$}
+					 {? and sd.shop_name like $siteName$}
+					 {? and p.shop_id = $shopId$}
+					 {? and p.pre_sell_flag = $preSellFlag$}
+					 {@ and p.id IN $productIdList$}
+					 {@ and ls.id IN $skuIdList$}
+					 {$opStatusExpand$}
+				 	 group by p.id
+					 {! ORDER BY p.update_time DESC,p.create_time DESC || $orderIndicator$}
+					 {$integralOrderBy$}
+
+            ]]></Method>
+
+			<Method name="getProdListCount"><![CDATA[
+				select count(distinct p.id) from ls_product p left join
+				ls_shop_detail sd on p.shop_id=sd.id left join ls_brand brand on brand.id=p.brand_id
+				 left join ls_sku ls on ls.product_id = p.id
+				 left join ls_draft_product ldp on ldp.product_id = p.id
+				 where 1=1
+				     {? and p.create_time >= $startDate$}
+				     {? and p.create_time <= $endDate$}
+					 {? and p.id = $productId$}
+					 {? and (p.global_first_cat_id = $categoryId1$}
+					 {? or p.global_second_cat_id = $categoryId2$}
+					 {? or p.global_third_cat_id = $categoryId3$ )}
+					 {? and p.shop_first_cat_id = $firstCategoryId$}
+					 {? and p.shop_second_cat_id = $secondCategoryId$}
+					 {? and p.shop_third_cat_id = $thirdCategoryId$}
+					 {? and p.brand_id = $brandId$}
+					 {? and p.status = $status$}
+					 {? and p.status <> $illegalStatus1$}
+					 {? and p.status <> $illegalStatus2$}
+					 {? and p.op_status = $opStatus$}
+					 {? and p.del_status = $delStatus$}
+					 {? and p.del_status <> $illegalDelStatus$}
+					 {? and p.name like $name$}
+					 {? and sd.shop_name like $siteName$}
+					 {? and p.shop_id = $shopId$}
+					 {? and p.pre_sell_flag = $preSellFlag$}
+					 {@ and p.id IN $productIdList$}
+					 {@ and ls.id IN $skuIdList$}
+					 {$opStatusExpand$}
+            ]]></Method>
+
+			<!-- 增加appoint相关字段 newway 2021-01-08 -->
+			<Method name="getProductBO">
+				SELECT p.id, p.shop_id, p.brand_id,p.appoint_id AS appointId, p.on_sale_way AS onSaleWay,p.shop_user_id
+				as shopUserId,
+				p.global_first_cat_id,p.global_second_cat_id,p.global_third_cat_id,p.name,p.price,p.brief,p.specification,
+				p.content, p.content_m,p.stocks,p.prod_type,p.parameter, p.user_parameter, p.param_group,
+				p.user_param_group, p.wx_a_code,p.shop_wx_code,p.img_path,p.video,p.pic,
+				p.main_specification_id,p.max_price,
+				p.trans_id, b.brand_name, b.brand_pic, c1.name AS globalFirstCatName, c2.name AS globalSecondCatName,
+				c3.name AS globalThirdCatName,a.on_sell_date AS appointTime, a.on_sell_flag AS
+				onSellFlag,p.comments,p.status,p.op_status,p.del_status, p.specification_style,p.pre_sell_flag AS
+				preSellFlag,p.stocks_arm AS stocksArm,p.actual_stocks AS actualStocks,p.stocks,
+				p.quota_type, p.quota_count, p.quota_time, s.status as shopStatus
+				FROM ls_product p
+				LEFT JOIN ls_category c1 ON c1.id = p.global_first_cat_id
+				LEFT JOIN ls_category c2 ON c2.id = p.global_second_cat_id
+				LEFT JOIN ls_category c3 ON c3.id = p.global_third_cat_id
+				LEFT JOIN ls_brand b ON p.brand_id = b.id
+				LEFT JOIN ls_appoint a ON a.product_id = p.id
+				LEFT JOIN ls_shop_detail s on p.shop_id = s.id
+				WHERE p.id = ?
+			</Method>
+
+			<Method name="queryProductListPage">
+				<![CDATA[
+				select
+				p.*,sd.shop_name as siteName
+				from ls_product p left join ls_shop_detail sd
+				on p.shop_id = sd.id
+				where 1=1
+				 {? and p.shop_first_cat_id = $shopFirstCatId$}
+				 {? and p.shop_second_cat_id = $shopSecondCatId$}
+				 {? and p.shop_third_cat_id = $shopThirdCatId$}
+				 {? and p.name LIKE $name$}
+				 {? and p.shop_id = $shopId$}
+				 {? and p.status = $status$}
+				 {? and p.op_status = $opStatus$}
+				 {? and p.del_status = $delStatus$}
+				 {? and p.group_flag = $groupFlag$}
+				 {? and p.prod_type = $prodType$}
+				 {? and p.category_id = $categoryId$}
+				 {? and p.brand_id = $brandId$}
+				 {? and p.support_dist = $supportDist$}
+				 {! order by p.comments desc,p.buys desc,p.views desc || $sortBy$ }
+				]]>
+			</Method>
+			<Method name="queryProductListPageCount">
+				<![CDATA[
+				select
+				count(*)
+				from ls_product p left join ls_shop_detail sd
+				on p.shop_id = sd.id
+				where 1=1
+				 {? and p.shop_first_cat_id = $shopFirstCatId$}
+				 {? and p.shop_second_cat_id = $shopSecondCatId$}
+				 {? and p.shop_third_cat_id = $shopThirdCatId$}
+				 {? and p.name LIKE $name$}
+				 {? and p.shop_id = $shopId$}
+				 {? and p.status = $status$}
+				 {? and p.op_status = $opStatus$}
+				 {? and p.del_status = $delStatus$}
+				 {? and p.group_flag = $groupFlag$}
+				 {? and p.prod_type = $prodType$}
+				 {? and p.category_id = $categoryId$}
+				 {? and p.brand_id = $brandId$}
+				 {? and p.support_dist = $supportDist$}
+				 {! order by p.comments desc,p.buys desc,p.views desc || $sortBy$ }
+				]]>
+			</Method>
+
+			<!-- 查询新增发布商品数量 -->
+			<Method name="queryNewProduct">
+				<![CDATA[
+				SELECT COUNT(1) FROM ls_product p
+				LEFT JOIN ls_sku s ON p.id = s.product_id
+				WHERE 1=1
+				AND del_status = 1
+				{? and s.create_time >= $startDate$}
+				{? and s.create_time <= $endDate$}
+				 ]]>
+			</Method>
+			<!-- 新增商品订单数量 -->
+			<Method name="queryNewOrder">
+				<![CDATA[
+				SELECT COUNT(1) FROM ls_order
+				WHERE 1=1
+				{? and create_time >= $startDate$}
+				{? and create_time <= $endDate$}
+				]]>
+			</Method>
+			<!-- 新增售后订单数量 -->
+			<Method name="queryNewRefundOrder">
+				<![CDATA[
+				SELECT COUNT(DISTINCT i.order_id)
+				FROM ls_order o
+				LEFT JOIN ls_order_item i ON o.id = i.order_id
+				WHERE 1 = 1
+				AND o.payed_flag =1
+				AND o.refund_status <> 0
+				{? and i.create_time >= $startDate$}
+				{? and i.create_time <= $endDate$}
+				]]>
+			</Method>
+
+			<!-- 当天新增举报商品数量 -->
+			<Method name="queryNewAccusationProduct">
+				<![CDATA[
+				SELECT COUNT(DISTINCT a.product_id)
+				FROM ls_accusation a
+				LEFT JOIN ls_product p ON a.product_id = p.id
+				WHERE 1=1
+				AND a.result = 1
+				{? and a.create_time >= $startDate$}
+				{? and a.create_time <= $endDate$}
+				]]>
+			</Method>
+			<!-- 当天新增商品咨詢数量 -->
+			<Method name="queryNewReferProduct">
+				<![CDATA[
+				SELECT COUNT(*)
+				FROM ls_product_consult a
+				WHERE 1=1
+				{? and a.rec_date >= $startDate$}
+				{? and a.rec_date <= $endDate$}
+				]]>
+			</Method>
+
+			<Method name="getProductList">
+				<![CDATA[
+				select p.id, p.shop_id, p.brand_id,p.appoint_id AS appointId, p.on_sale_way AS onSaleWay,p.shop_user_id
+				as shopUserId,p.stock_counting,
+				p.global_first_cat_id,p.global_second_cat_id,p.global_third_cat_id,p.name,p.price,p.brief,p.specification,
+				p.content, p.content_m,p.stocks,p.prod_type,p.parameter, p.user_parameter, p.param_group,
+				p.user_param_group, p.wx_a_code,p.shop_wx_code,p.img_path,p.video,p.pic,
+				p.main_specification_id,p.max_price,
+				p.trans_id, p.status, p.buys,p.delivery_type,
+				p.op_status, ldp.status as draftStatus,
+				p.del_status, p.specification_style,p.pre_sell_flag AS preSellFlag,p.stocks_arm AS stocksArm,p.actual_stocks AS actualStocks,p.stocks,
+				p.quota_type, p.quota_count, p.quota_time, p.audit_opinion  as auditOpinion,p.multiple_specification_flag,
+				 (select count(1) from ls_sku sku where sku.product_id=p.id) as skuCount,
+				 sd.shop_name as site_name,
+				 brand.brand_name as brandName
+				 from ls_product p left join ls_shop_detail sd
+				 on p.shop_id=sd.id left join ls_brand brand on brand.id=p.brand_id
+				 left join ls_sku ls on ls.product_id = p.id
+				 left join ls_draft_product ldp on ldp.product_id = p.id
+				 LEFT JOIN ls_shop_detail s ON p.shop_id=s.id
+				 WHERE 1=1 AND s.status=1
+					 {? and p.id = $productId$}
+					 {? and (p.global_first_cat_id = $categoryId1$}
+					 {? or p.global_second_cat_id = $categoryId2$}
+					 {? or p.global_third_cat_id = $categoryId3$ )}
+					 {? and p.shop_first_cat_id = $firstCategoryId$}
+					 {? and p.shop_second_cat_id = $secondCategoryId$}
+					 {? and p.shop_third_cat_id = $thirdCategoryId$}
+					 {? and p.brand_id = $brandId$}
+					 {? and p.status = $status$}
+					 {? and p.status <> $illegalStatus1$}
+					 {? and p.status <> $illegalStatus2$}
+					 {? and p.op_status = $opStatus$}
+					 {? and p.del_status = $delStatus$}
+					 {? and p.del_status <> $illegalDelStatus$}
+					 {? and p.name like $name$}
+					 {? and sd.shop_name like $siteName$}
+					 {? and p.shop_id = $shopId$}
+					 {? and p.pre_sell_flag = $preSellFlag$}
+					 {@ and p.id IN $productIdList$}
+					 {@ and ls.id IN $skuIdList$}
+					 {$opStatusExpand$}
+				 	 group by p.id
+					 {! ORDER BY p.update_time DESC,p.create_time DESC || $orderIndicator$}
+					 {$integralOrderBy$}
+
+				]]>
+			</Method>
+
+			<Method name="getProductListCount"><![CDATA[
+				select count(distinct p.id) from ls_product p left join
+				ls_shop_detail sd on p.shop_id=sd.id left join ls_brand brand on brand.id=p.brand_id
+				 left join ls_sku ls on ls.product_id = p.id
+				 left join ls_draft_product ldp on ldp.product_id = p.id
+				  LEFT JOIN ls_shop_detail s ON p.shop_id=s.id
+				 WHERE 1=1 AND s.status=1
+					 {? and p.id = $productId$}
+					 {? and (p.global_first_cat_id = $categoryId1$}
+					 {? or p.global_second_cat_id = $categoryId2$}
+					 {? or p.global_third_cat_id = $categoryId3$ )}
+					 {? and p.shop_first_cat_id = $firstCategoryId$}
+					 {? and p.shop_second_cat_id = $secondCategoryId$}
+					 {? and p.shop_third_cat_id = $thirdCategoryId$}
+					 {? and p.brand_id = $brandId$}
+					 {? and p.status = $status$}
+					 {? and p.status <> $illegalStatus1$}
+					 {? and p.status <> $illegalStatus2$}
+					 {? and p.op_status = $opStatus$}
+					 {? and p.del_status = $delStatus$}
+					 {? and p.del_status <> $illegalDelStatus$}
+					 {? and p.name like $name$}
+					 {? and sd.shop_name like $siteName$}
+					 {? and p.shop_id = $shopId$}
+					 {? and p.pre_sell_flag = $preSellFlag$}
+					 {@ and p.id IN $productIdList$}
+					 {@ and ls.id IN $skuIdList$}
+					 {$opStatusExpand$}
+            ]]></Method>
+
+			<Method name="queryProductBySkuIdList">
+				<![CDATA[
+					SELECT
+					   lp.*
+					FROM
+					   ls_product lp
+					INNER JOIN
+					   ls_sku ls
+					ON lp.id = ls.product_id
+					WHERE 1 = 1
+					AND lp.quota_type IS NOT NULL
+					{@ and ls.sku_id = $skuIdList$}
+				]]>
+			</Method>
+
+
+			<Method name="auditPage">
+				<![CDATA[
+					select p.id, p.shop_id, p.brand_id,p.appoint_id AS appointId, p.on_sale_way AS onSaleWay,p.shop_user_id
+				as shopUserId,
+				p.global_first_cat_id,p.global_second_cat_id,p.global_third_cat_id,
+				IFNULL(ldp.name, p.name) as name,
+				IFNULL(ldp.price, p.price) as price,
+				p.update_time,
+				p.brief,p.specification,
+				p.content, p.content_m,p.stocks,p.prod_type,p.parameter, p.user_parameter, p.param_group,
+				p.user_param_group, p.wx_a_code,p.shop_wx_code,p.img_path,p.video,
+				IFNULL(ldp.pic, p.pic) as pic,
+				p.main_specification_id,p.max_price,
+				p.trans_id, p.status, p.buys,
+				p.op_status, ldp.status as draftStatus,
+				p.del_status, p.specification_style,p.pre_sell_flag AS preSellFlag,p.stocks_arm AS stocksArm,p.actual_stocks AS actualStocks,p.stocks,
+				p.quota_type, p.quota_count, p.quota_time, p.audit_opinion  as auditOpinion,
+				 (select count(1) from ls_sku sku where sku.product_id=p.id) as skuCount,
+				 sd.shop_name as site_name,
+				 brand.brand_name as brandName
+				 from ls_product p left join ls_shop_detail sd
+				 on p.shop_id=sd.id left join ls_brand brand on brand.id=p.brand_id
+				 left join ls_sku ls on ls.product_id = p.id
+				 left join ls_draft_product ldp on ldp.product_id = p.id
+				 where 1=1
+					 {? and p.id = $productId$}
+					 {? and (p.global_first_cat_id = $categoryId1$}
+					 {? or p.global_second_cat_id = $categoryId2$}
+					 {? or p.global_third_cat_id = $categoryId3$ )}
+					 {? and p.shop_first_cat_id = $firstCategoryId$}
+					 {? and p.shop_second_cat_id = $secondCategoryId$}
+					 {? and p.shop_third_cat_id = $thirdCategoryId$}
+					 {? and p.brand_id = $brandId$}
+					 {? and p.status = $status$}
+					 {? and p.status <> $illegalStatus1$}
+					 {? and p.status <> $illegalStatus2$}
+					 {? and p.op_status = $opStatus$}
+					 {? and p.del_status = $delStatus$}
+					 {? and p.del_status <> $illegalDelStatus$}
+					 {? and p.name like $name$}
+					 {? and sd.shop_name like $siteName$}
+					 {? and p.shop_id = $shopId$}
+					 {? and p.pre_sell_flag = $preSellFlag$}
+					 {@ and p.id IN $productIdList$}
+					 {@ and ls.id IN $skuIdList$}
+					 {$opStatusExpand$}
+				 	 group by p.id
+					 {! ORDER BY p.update_time DESC,p.create_time DESC || $orderIndicator$}
+					 {$integralOrderBy$}
+
+				]]>
+			</Method>
+
+			<Method name="auditPageCount"><![CDATA[
+				select count(distinct p.id) from ls_product p left join
+				ls_shop_detail sd on p.shop_id=sd.id left join ls_brand brand on brand.id=p.brand_id
+				 left join ls_sku ls on ls.product_id = p.id
+				 left join ls_draft_product ldp on ldp.product_id = p.id
+				 where 1=1
+					 {? and p.id = $productId$}
+					 {? and (p.global_first_cat_id = $categoryId1$}
+					 {? or p.global_second_cat_id = $categoryId2$}
+					 {? or p.global_third_cat_id = $categoryId3$ )}
+					 {? and p.shop_first_cat_id = $firstCategoryId$}
+					 {? and p.shop_second_cat_id = $secondCategoryId$}
+					 {? and p.shop_third_cat_id = $thirdCategoryId$}
+					 {? and p.brand_id = $brandId$}
+					 {? and p.status = $status$}
+					 {? and p.status <> $illegalStatus1$}
+					 {? and p.status <> $illegalStatus2$}
+					 {? and p.op_status = $opStatus$}
+					 {? and p.del_status = $delStatus$}
+					 {? and p.del_status <> $illegalDelStatus$}
+					 {? and p.name like $name$}
+					 {? and sd.shop_name like $siteName$}
+					 {? and p.shop_id = $shopId$}
+					 {? and p.pre_sell_flag = $preSellFlag$}
+					 {@ and p.id IN $productIdList$}
+					 {@ and ls.id IN $skuIdList$}
+					 {$opStatusExpand$}
+            ]]></Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

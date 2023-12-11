@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="DecoratePage">
+
+			<Method name="queryPageListDesc">
+				select * from ls_decorate_page
+				where 1 = 1
+				{? and category = $category$}
+				{? and status = $status$}
+				{? and source = $source$}
+				{? and use_flag = $useFlag$}
+				{? and name like $name$}
+				{? and type = $type$}
+				order by use_flag desc, rec_date desc
+				{$limit$}
+			</Method>
+
+			<Method name="queryPageListDescCount">
+				select count(*) from ls_decorate_page
+				where 1 = 1
+				{? and category = $category$}
+				{? and status = $status$}
+				{? and source = $source$}
+				{? and use_flag = $useFlag$}
+				{? and name like $name$}
+				{? and type = $type$}
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

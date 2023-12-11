@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 品牌 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="Brand">
+
+			<Method name="queryBrandListByProdTypeId">
+				<![CDATA[
+					SELECT
+					  b.*
+					FROM
+					  ls_brand b
+					WHERE 1 = 1
+					{ ?AND b.brand_name LIKE $ brandName $ }
+					AND b.status = 1
+					and b.delete_flag=0
+					AND NOT EXISTS
+					(SELECT
+						1
+				     FROM
+						ls_product_property_agg_brand pt
+					 WHERE pt.brand_id = b.brand_id
+					 AND pt.type_id = ?)
+			   ]]>
+			</Method>
+			<Method name="queryAllOnlineBrandPageList">
+				<![CDATA[
+					SELECT
+					  b.brand_id AS brandId,
+					  b.brand_name AS brandName,
+					  b.brand_pic AS brandPic,
+					  b.brief AS brief,
+					  b.content AS content,
+					  b.big_image AS bigImage,
+					  COUNT(p.id) AS prodCounts
+					FROM
+					  ls_brand b
+					  LEFT JOIN ls_product p
+						ON p.brand_id = b.brand_id
+					WHERE 1 = 1
+					and delete_flag=0
+					{ ?AND b.status = $status$ }
+					GROUP BY b.brand_id
+			   ]]>
+			</Method>
+			<Method name="queryBrandList">
+				<![CDATA[
+				SELECT b.*,d.shop_name,b.status
+				FROM ls_brand b LEFT JOIN ls_shop_detail d ON b.shop_id=d.id  where delete_flag=0
+				{? and b.brand_name like $brandName$}
+				{? and b.status = $status$}
+				{? and b.op_status = $opStatus$}
+				{? and b.user_name = $userName$}
+				{? and b.commend_flag = $commend$}
+				{? and d.id = $shopId$}
+				{? and d.shop_name like $shopName$}
+				ORDER BY b.create_time DESC,b.update_time DESC
+			   ]]>
+			</Method>
+			<Method name="queryBrandListCount">
+				<![CDATA[
+				SELECT count(1)
+				FROM ls_brand b LEFT JOIN ls_shop_detail d ON b.shop_id=d.id  where delete_flag=0
+				{? and b.brand_name like $brandName$}
+				{? and b.status = $status$}
+				{? and b.op_status = $opStatus$}
+				{? and b.user_name = $userName$}
+				{? and b.commend_flag = $commend$}
+				{? and d.id = $shopId$}
+				{? and d.shop_name like $shopName$}
+			   ]]>
+			</Method>
+			<Method name="getBrand">
+				<![CDATA[
+				SELECT *
+				FROM ls_brand b LEFT JOIN ls_shop_detail d ON b.shop_id=d.id  where delete_flag=0
+
+			   ]]>
+			</Method>
+		</Object>
+
+	</BusinessObjects>
+</DataAccessLayer>

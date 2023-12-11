@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 后台用户的SQL -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="AdminUser">
+			<Method name="queryPage">
+				<![CDATA[
+				SELECT * from
+				(
+				SELECT a.id AS userId,a.username,a.password,a.avatar,a.del_flag AS delFlag,a.lock_flag AS lockFlag,a.create_time AS createTime,a.update_time AS updateTime,
+				GROUP_CONCAT(r.id) AS roleId,GROUP_CONCAT(r.role_name ) AS roleName,GROUP_CONCAT(r.role_code) AS roleCode,GROUP_CONCAT(r.role_desc) AS roleDesc,
+				dept.id AS deptId,dept.name AS deptName
+				FROM ls_admin_user a
+					LEFT JOIN ls_admin_user_role ur ON a.id=ur.user_id
+					LEFT JOIN ls_admin_role r ON r.id=ur.role_id
+					LEFT JOIN ls_dept dept ON a.dept_id=dept.id
+					WHERE 1=1
+					{? and a.username like $username$}
+				    {? and a.lock_flag = $lockFlag$}
+				    {? and dept.name like $deptName$}
+					GROUP BY a.username
+					ORDER BY a.update_time DESC
+				) T
+				WHERE 1=1
+				{? and roleName like $roleName$}
+			]]>
+			</Method>
+			<Method name="queryPageCount">
+				<![CDATA[
+				SELECT count(*) from
+				(
+				SELECT a.id AS userId,a.username,GROUP_CONCAT(r.role_name ) AS roleName
+				FROM ls_admin_user a
+					LEFT JOIN ls_admin_user_role ur ON a.id=ur.user_id
+					LEFT JOIN ls_admin_role r ON r.id=ur.role_id
+					LEFT JOIN ls_dept dept ON a.dept_id=dept.id
+					WHERE 1=1
+					{? and a.username like $username$}
+				    {? and a.lock_flag = $lockFlag$}
+				    {? and dept.name like $deptName$}
+					GROUP BY a.username
+				) T
+				WHERE 1=1
+				{? and roleName like $roleName$}
+			]]>
+			</Method>
+
+			<Method name="queryUserByMenuId">
+				<![CDATA[
+			SELECT DISTINCT user_id FROM ls_admin_user_role WHERE role_id IN(SELECT role_id FROM ls_admin_role_menu
+			WHERE 1=1
+			  {? and menu_id= $menuId$}
+			)
+			]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

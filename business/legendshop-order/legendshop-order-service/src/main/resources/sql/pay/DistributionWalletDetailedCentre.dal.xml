@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 分销员钱包详情中间表 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="DistributionWalletDetailedCentre">
+			<Method name="methodName">
+				<![CDATA[
+		     		querySql
+	            ]]>
+			</Method>
+
+			<Method name="getByBusinessId">
+				<![CDATA[
+					select * from ls_distribution_wallet_detailed_centre
+					where
+				]]>
+			</Method>
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>
+

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 分销员钱包详情中间表 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="DistributionWalletDetail">
+			<Method name="detailPage">
+				<![CDATA[
+		     		SELECT
+					  	lwd.*, lou.mobile, lou.nick_name
+					FROM
+						ls_distribution_wallet_detail lwd
+						LEFT JOIN ls_ordinary_user lou
+							ON lwd.user_id = lou.id
+					WHERE lwd.commission_type = 'SETTLED_COMMISSION'
+						{? AND lou.id LIKE $userId$}
+						{? AND lou.mobile LIKE $mobile$}
+						{? and (lou.mobile like $keyword$ }
+					 	{? or lou.id like $keyword$)}
+						{? AND lwd.operation_type = $operationType$}
+						{? AND lwd.transaction_type = $transactionType$}
+						{? AND lwd.create_time >= $startTime$}
+						{? AND lwd.create_time <= $endTime$}
+				    order by lwd.create_time desc
+
+	            ]]>
+			</Method>
+
+			<Method name="detailPageCount">
+				<![CDATA[
+					SELECT
+					  	count(lwd.id)
+					FROM
+						ls_distribution_wallet_detail lwd
+						LEFT JOIN ls_ordinary_user lou
+							ON lwd.user_id = lou.id
+					WHERE lwd.commission_type = 'SETTLED_COMMISSION'
+						{? AND lou.id LIKE $userId$}
+						{? AND lou.mobile LIKE $mobile$}
+						{? and (lou.mobile like $keyword$ }
+					 	{? or lou.id like $keyword$)}
+						{? AND lwd.operation_type = $operationType$}
+						{? AND lwd.transaction_type = $transactionType$}
+						{? AND lwd.create_time >= $startTime$}
+						{? AND lwd.create_time <= $endTime$}
+				]]>
+			</Method>
+
+			<Method name="getTotalAmount">
+				<![CDATA[
+					SELECT
+					  	sum(lwd.commission)
+					FROM
+						ls_distribution_wallet_detail lwd
+						LEFT JOIN ls_ordinary_user lou
+							ON lwd.user_id = lou.id
+					WHERE lwd.commission_type = 'SETTLED_COMMISSION'
+						{? AND lou.id LIKE $userId$}
+						{? AND lou.nick_name LIKE $nickName$}
+						{? AND lwd.operation_type = $operationType$}
+						{? AND lwd.transaction_type = $transactionType$}
+						{? AND lwd.create_time >= $startTime$}
+						{? AND lwd.create_time <= $endTime$}
+				]]>
+			</Method>
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>
+

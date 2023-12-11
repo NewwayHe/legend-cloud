@@ -1,0 +1,610 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 投诉表的SQL -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="Order">
+
+			<!-- 平台系统后台admin start -->
+			<Method name="getAdminOrder">
+				<![CDATA[
+            	SELECT o.order_id AS id,o.order_number AS orderNumber,o.order_date AS orderDate,o.status AS status ,o.actual_total AS actualTotal,o.shop_name AS shopName,o.freight_amount AS freightAmount,o.pay_manner AS payManner,o.pay_type_id AS payTypeId,o.pay_type_name AS payTypeName,o.order_date AS orderDate ,o.dvy_type_id AS dvyTypeId,
+                addr.receiver  AS receiver,addr.order_adds AS orderAdds,addr.order_post AS orderPost,addr.province AS province,addr.city AS city, addr.area AS area,addr.mobile AS mobile,
+                addr.telphone AS telphone,addr.email AS email ,o.user_name AS userName,o.user_id AS userId,o.order_type AS orderType
+                 FROM ls_order o
+				INNER JOIN ls_user u ON u.id =o.user_id
+				INNER JOIN ls_shop_detail  s ON s.shop_id=o.shop_id
+				INNER JOIN ls_user_address_order addr ON addr.addr_order_id=o.addr_order_id
+				where 1=1
+					{? and o.user_name = $userName$}
+					{? and o.shop_id = $shopId$}
+					{? and o.order_number = $orderNumber$ }
+					{? and o.status =$status$}
+					{? and o.order_date >= $startDate$}
+					{? and o.order_date <= $endDate$}
+					{? and o.status != $removeStatus$}
+					group by o.order_id order by o.order_date desc,o.status asc
+					]]>
+			</Method>
+
+			<!-- 未确认收货订单 -->
+			<Method name="unReceiptOrder">
+				<![CDATA[
+		            SELECT
+						o.*
+					FROM
+						ls_order o
+
+					WHERE
+						o.status <20
+						AND o.status >9
+						AND o.delivery_time IS NOT NULL
+				]]>
+			</Method>
+
+			<Method name="getAdminCountOrder">
+				<![CDATA[
+                SELECT count(*) FROM ls_order o
+				INNER JOIN ls_user u ON u.id =o.user_id
+				INNER JOIN ls_shop_detail  s ON s.shop_id=o.shop_id
+				INNER JOIN ls_user_address_order addr ON addr.addr_order_id=o.addr_order_id
+				where 1=1
+					{? and o.user_name = $userName$}
+					{? and o.shop_id = $shopId$}
+					{? and o.order_number = $orderNumber$ }
+					{? and o.status =$status$}
+					{? and o.order_date >= $startDate$}
+					{? and o.order_date <= $endDate$}
+					{? and o.status != $removeStatus$}
+				]]>
+			</Method>
+
+
+			<!-- 平台系统后台admin  start -->
+			<Method name="queryOrderWithItem">
+				<![CDATA[
+        	         SELECT DISTINCT o.id, o.shop_name,o.order_number,o.status,o.actual_total_price,o.create_time ,o.pay_type_name,o.product_name,o.payed_flag,
+					o.order_type,o.freight_price,o.refund_status,addr.receiver,addr.mobile,o.user_id,o.shop_id,o.remark,o.remark_date,o.total_integral,o.cancel_unpay_minutes,
+					ud.nick_name,o.product_quantity AS productQuantity,o.total_deduction_amount, IF(ld.level_id IS NULL, 0, 1) AS isMember,o.complete_time,o.comment_valid_day
+					,o.group_number, o.final_return_deadline,o.total_price,o.discount_total_amount,o.pay_time, o.activity_id as activeId,
+					o.delivery_type as deliveryType,ol.id AS orderLogisticsId,o.changed_price
+					FROM ls_order o
+					    left join ls_order_item loi on o.id = loi.order_id
+                        LEFT JOIN ls_order_user_address addr ON addr.id = o.address_order_id
+                        LEFT JOIN ls_user_detail ud ON ud.user_id = o.user_id
+                        LEFT JOIN ls_ordinary_user ou ON ou.id = o.user_id
+                        LEFT JOIN ls_order_logistics ol ON ol.order_id = o.id
+                        LEFT JOIN ls_distribution ld ON ud.user_id = ld.user_id
+					WHERE 1 = 1
+                        {? AND o.user_id = $userId$}
+                        {? AND o.shop_id = $shopId$}
+                        {? AND o.status = $status$}
+                        {? AND o.order_type = $orderType$}
+                        {? AND loi.refund_status = $refundStatus$}
+                        {? AND o.create_time >= $startSubTime$}
+                        {? AND o.create_time <= $endSubTime$}
+                        {? AND o.pay_time >= $payStartSubTime$}
+                        {? AND o.pay_time <= $payEndSubTime$}
+                        {? AND o.product_name LIKE $productName$}
+                        {? AND o.shop_name LIKE $shopName$}
+                        {? AND ud.nick_name LIKE $nickName$}
+                        {? AND ou.mobile LIKE $userMobile$}
+                        {? AND o.order_number LIKE $orderNumber$}
+                        {? AND addr.mobile LIKE $receiverMobile$}
+                        {? AND addr.receiver LIKE $receiverName$}
+                        {? AND o.payed_flag = $payedFlag$}
+                        {? and o.delete_status = $deleteStatus$}
+                        {? AND ol.shipment_number LIKE $shipmentNumber$}
+                        {@ AND o.order_number IN $orderNumberList$}
+                        {$isMember$}
+                    GROUP BY o.id
+				    ORDER BY o.create_time DESC,o.status ASC
+			  ]]>
+			</Method>
+			<Method name="queryOrderWithItemCount">
+				<![CDATA[
+        	        SELECT COUNT(*) FROM (
+					SELECT DISTINCT o.id, o.shop_name,o.order_number,o.status,o.actual_total_price,o.create_time ,o.pay_type_name,o.product_name,o.payed_flag,
+					o.order_type,o.freight_price,o.refund_status,addr.receiver,addr.mobile,o.user_id,o.shop_id,o.remark,o.remark_date,o.total_integral,
+					ud.nick_name,o.product_quantity AS productQuantity,IF(ld.level_id IS NULL, 0, 1) AS isMember,o.complete_time,o.comment_valid_day
+					FROM ls_order o
+						left join ls_order_item loi on o.id = loi.order_id
+                        LEFT JOIN ls_order_user_address addr ON addr.id = o.address_order_id
+                        LEFT JOIN ls_user_detail ud ON ud.user_id = o.user_id
+                        LEFT JOIN ls_ordinary_user ou ON ou.id = o.user_id
+                        LEFT JOIN ls_order_logistics ol ON ol.order_id = o.id
+                        LEFT JOIN ls_distribution ld ON ud.user_id = ld.user_id
+					WHERE 1 = 1
+					{? AND o.user_id = $userId$}
+				    {? AND o.shop_id = $shopId$}
+				    {? AND o.status = $status$}
+				    {? AND o.order_type = $orderType$}
+				    {? AND loi.refund_status = $refundStatus$}
+				    {? AND o.create_time >= $startSubTime$}
+				    {? AND o.create_time <= $endSubTime$}
+				    {? AND o.pay_time >= $payStartSubTime$}
+                    {? AND o.pay_time <= $payEndSubTime$}
+				    {? AND o.product_name LIKE $productName$}
+				    {? AND o.shop_name LIKE $shopName$}
+				    {? AND ud.nick_name LIKE $nickName$}
+				    {? AND ou.mobile LIKE $userMobile$}
+				    {? AND o.order_number LIKE $orderNumber$}
+				    {? AND addr.mobile LIKE $receiverMobile$}
+				    {? AND addr.receiver LIKE $receiverName$}
+				    {? AND o.payed_flag = $payedFlag$}
+				    {? and o.delete_status = $deleteStatus$}
+				    {? AND ol.shipment_number LIKE $shipmentNumber$}
+				    {@ AND o.order_number IN $orderNumberList$}
+				    {$isMember$}
+				    GROUP BY o.id
+				    ) tmp
+			  ]]>
+			</Method>
+
+			<Method name="getAdminOrderDetail">
+				SELECT DISTINCT o.id, o.shop_name,o.order_number,o.status,o.actual_total_price,o.create_time
+				,o.pay_type_name,o.product_name,o.total_integral,o.total_deduction_amount,o.settlement_price,o.cancel_unpay_minutes,
+				o.order_type,o.freight_price,o.refund_status,o.user_id,o.shop_id,o.pay_time,o.remark_date,o.platform_coupon_amount,
+				o.payed_flag,o.delivery_time,o.complete_time,o.logistics_receiving_time,o.remark,o.message,o.total_price,o.coupon_amount,
+				addr.receiver,addr.mobile,concat(lp.name,lc.name,la.name,ls.name,addr.detail_address) as
+				detail_address, ud.nick_name,o.order_logistics_id AS
+				orderLogisticsId,o.order_invoice_id,o.discount_total_amount,
+				o.need_invoice_flag,inv.type AS invoiceType,inv.title_type AS invoiceTitleType,inv.company as
+				invoiceCompany,
+				inv.invoice_hum_number AS invoiceHumNumber,inv.deposit_bank AS invoiceDepositBank,inv.bank_account_num
+				AS invoiceBankAccountNum,
+				inv.register_addr AS invoiceRegisterAddr,inv.register_phone AS invoiceRegisterPhone,o.has_invoice_flag
+				AS invoiceFlag,
+				o.activity_id as activeId,o.group_number
+				,o.self_purchase_amount,o.delivery_type,r.apply_type,o.changed_price
+				FROM ls_order o
+				INNER JOIN ls_user_detail ud ON ud.user_id = o.user_id
+				LEFT JOIN ls_order_user_address addr ON addr.id = o.address_order_id
+				LEFT JOIN ls_order_invoice inv ON inv.id = o.order_invoice_id
+				LEFT JOIN ls_distribution lh ON ud.user_id = lh.user_id
+				LEFT JOIN ls_location lp
+				ON addr.province_id = lp.id
+				LEFT JOIN ls_location lc
+				ON addr.city_id = lc.id
+				LEFT JOIN ls_location la
+				ON addr.area_id = la.id
+				LEFT JOIN ls_location ls
+				ON addr.street_id = ls.id
+				LEFT JOIN ls_order_refund_return r
+				ON r.order_id=o.id
+				WHERE 1=1
+				AND o.id = ?
+			</Method>
+
+			<Method name="getUserOrderDetail">
+				SELECT o.id, o.shop_name,o.order_number,o.status,o.actual_total_price,o.create_time
+				,o.pay_type_name,o.product_name,o.total_integral,o.total_deduction_amount,
+				o.final_return_deadline,o.cancel_unpay_minutes,o.complete_time,o.comment_valid_day,
+				o.order_type,o.freight_price,o.refund_status,o.user_id,o.shop_id,o.pay_time,o.remark_date,o.platform_coupon_amount,
+				o.payed_flag,o.delivery_time,o.complete_time,o.logistics_receiving_time,o.remark,o.message,o.total_price,o.coupon_amount,
+				addr.receiver,addr.mobile,addr.detail_address,o.order_logistics_id AS
+				orderLogisticsId,o.order_invoice_id,
+				o.need_invoice_flag,inv.type AS invoiceType,inv.title_type AS invoiceTitleType,inv.company as
+				invoiceCompany,
+				inv.invoice_hum_number AS invoiceHumNumber,inv.deposit_bank AS invoiceDepositBank,inv.bank_account_num
+				AS invoiceBankAccountNum,
+				inv.register_addr AS invoiceRegisterAddr,inv.register_phone AS invoiceRegisterPhone,o.has_invoice_flag
+				AS invoiceFlag,
+				o.activity_id as activeId,o.group_number,o.self_purchase_amount,o.discount_total_amount,o.receiving_day
+				as receivingDay,
+				o.pay_type_name AS payTypeName,
+				CONCAT(lp.name,lc.name,IFNULL(la.name, ''),IFNULL(ls.name, ''),addr.detail_address) as receiverAddress,
+				o.delivery_type,o.changed_price
+				FROM ls_order o
+				LEFT JOIN ls_order_user_address addr ON addr.id = o.address_order_id
+				LEFT JOIN ls_location lp ON addr.province_id = lp.id
+				LEFT JOIN ls_location lc ON addr.city_id = lc.id
+				LEFT JOIN ls_location la ON addr.area_id = la.id
+				LEFT JOIN ls_location ls ON addr.street_id = ls.id
+				LEFT JOIN ls_order_invoice inv ON inv.id = o.order_invoice_id
+				WHERE 1=1
+				AND o.id = ?
+				AND o.user_id = ?
+			</Method>
+
+			<Method name="getShopOrderDetail">
+				SELECT DISTINCT o.id, o.shop_name,o.order_number,o.status,o.actual_total_price,o.create_time
+				,o.pay_type_name,o.product_name,o.total_integral,o.total_deduction_amount,o.cancel_unpay_minutes,
+				o.order_type,o.freight_price,o.refund_status,o.user_id,o.shop_id,o.pay_time,o.remark_date,o.platform_coupon_amount,
+				o.payed_flag,o.delivery_time,o.complete_time,o.logistics_receiving_time,o.remark,o.message,o.total_price,o.coupon_amount,
+				addr.receiver,addr.mobile,addr.detail_address,
+				concat(lp.name,lc.name,la.name,ls.name,' ',addr.detail_address) as receiverAddress,
+				o.order_logistics_id AS orderLogisticsId,
+				o.order_invoice_id,
+				o.need_invoice_flag,inv.type AS invoiceType,inv.title_type AS invoiceTitleType,inv.company as
+				invoiceCompany,
+				inv.invoice_hum_number AS invoiceHumNumber,inv.deposit_bank AS invoiceDepositBank,inv.bank_account_num
+				AS invoiceBankAccountNum,
+				inv.register_addr AS invoiceRegisterAddr,inv.register_phone AS invoiceRegisterPhone,o.has_invoice_flag
+				AS invoiceFlag,o.discount_total_amount,
+				o.activity_id as activeId,o.group_number,o.settlement_price,
+				ud.nick_name, o.self_purchase_amount,o.delivery_type,o.shop_user_id,o.shop_user_name,o.changed_price
+				FROM ls_order o
+				LEFT JOIN ls_order_user_address addr ON addr.id = o.address_order_id
+				LEFT JOIN ls_order_invoice inv ON inv.id = o.order_invoice_id
+				LEFT JOIN ls_location lp
+				ON addr.province_id = lp.id
+				LEFT JOIN ls_location lc
+				ON addr.city_id = lc.id
+				LEFT JOIN ls_location la
+				ON addr.area_id = la.id
+				LEFT JOIN ls_location ls
+				ON addr.street_id = ls.id
+				LEFT JOIN ls_user_detail ud ON o.user_id = ud.user_id
+				LEFT JOIN ls_distribution lh ON ud.user_id = lh.user_id
+				WHERE 1=1
+				AND o.id = ?
+				AND o.shop_id = ?
+			</Method>
+
+
+			<Method name="getExportOrder">
+				SELECT
+				o.id,
+				o.shop_name,
+				o.order_number,
+				o.status,
+				o.total_price,
+				o.actual_total_price,
+				o.create_time,
+				o.pay_type_name,
+				o.product_name,
+				o.payed_flag,
+				o.order_type,
+				o.freight_price,
+				o.refund_status,
+				o.product_quantity AS productQuantity,
+				o.user_id,
+				o.shop_id,
+				o.message,
+				o.discount_total_amount,
+				o.coupon_amount,
+				o.platform_coupon_amount,
+				o.pay_time,
+				o.pay_settlement_sn,
+				addr.receiver,
+				addr.mobile as receiverMobile,
+				concat(lp.name,lc.name,la.name,ls.name,' ',addr.detail_address) as receiverAddress,
+				ud.nick_name,
+				ou.mobile as userMobile
+				FROM
+				ls_order o
+				LEFT JOIN ls_order_user_address addr
+				ON addr.id = o.address_order_id
+				LEFT JOIN ls_location lp
+				ON addr.province_id = lp.id
+				LEFT JOIN ls_location lc
+				ON addr.city_id = lc.id
+				LEFT JOIN ls_location la
+				ON addr.area_id = la.id
+				LEFT JOIN ls_location ls
+				ON addr.street_id = ls.id
+				LEFT JOIN ls_user_detail ud
+				ON ud.user_id = o.user_id
+				LEFT JOIN ls_ordinary_user ou
+				ON ou.id = o.user_id
+				WHERE 1 = 1
+			</Method>
+
+			<Method name="getShopBillOrderPage">
+				<![CDATA[
+					SELECT
+						IFNULL(r.refund_amount, '0.00') AS refundAmount,
+						o.id AS orderId,
+						o.order_number AS orderNumber,
+						o.create_time AS orderTime,
+						o.pay_time AS payTime,
+						o.total_deduction_amount,
+						o.total_integral,
+						o.settlement_price,
+						o.proportion,
+						IFNULL(o.actual_total_price, '0.00') AS orderAmount,
+						IFNULL(o.freight_price, '0.00') AS freightAmount,
+						IFNULL(o.platform_coupon_amount, '0.00') AS redpackAmount
+					FROM
+						ls_order o
+						LEFT JOIN ls_order_refund_return r
+						ON o.order_number = r.order_number
+					WHERE
+						o.bill_flag = '1'
+						{? AND o.bill_sn = $orderBillSn$}
+						{? AND o.shop_id = $shopId$}
+						{? AND o.order_type = $orderType$}
+						{? AND o.create_time <= $createEndTime$}
+						{? AND o.create_time >= $createStartTime$}
+						{? AND o.pay_time <= $payEndTime$}
+						{? AND o.pay_time >= $payStartTime$}
+						{? AND o.order_number like $orderNumber$}
+					ORDER BY o.create_time DESC
+				]]>
+			</Method>
+
+			<Method name="getShopBillOrderPageCount">
+				<![CDATA[
+					SELECT
+						COUNT(*)
+					FROM
+						ls_order o
+						LEFT JOIN ls_order_refund_return r
+						ON o.order_number = r.order_number
+					WHERE
+						o.bill_flag = '1'
+						{? AND o.bill_sn = $orderBillSn$}
+						{? AND o.shop_id = $shopId$}
+						{? AND o.order_type = $orderType$}
+						{? AND o.create_time <= $createEndTime$}
+						{? AND o.create_time >= $createStartTime$}
+						{? AND o.pay_time <= $payEndTime$}
+						{? AND o.pay_time >= $payStartTime$}
+						{? AND o.order_number like $orderNumber$}
+				]]>
+			</Method>
+
+			<Method name="getShopOrderCountExceptRefundSuccess">
+				<![CDATA[
+					SELECT
+					  	COUNT(id) AS count,
+					  	shop_id AS shopId
+					FROM
+					 	 ls_order
+					WHERE
+						refund_status <> 2
+						{? AND user_id = $userId$}
+						{@ AND shop_id IN $shopId$}
+					GROUP BY shop_id
+				]]>
+			</Method>
+
+			<Method name="queryDistributionOrder">
+				<![CDATA[
+                    SELECT
+                        	o.id AS orderId, o.order_number AS orderNumber, o.product_name AS productName,
+                        	o.`status` AS orderStatus, o.refund_status AS refundStatus
+                    FROM
+                        ls_order o
+                        left JOIN ls_distribution_commission_record dcr ON o.order_number = dcr.order_number
+                        WHERE dcr.id IS NOT NULL
+                        {? AND o.status = $status$}
+                        {? AND o.refund_status = $refundStatus$}
+                        {@ AND dcr.status in $commissionSettleStatus$}
+                        {? AND o.create_time >= $startSubTime$}
+                        {? AND o.create_time <= $endSubTime$}
+                        {? AND o.product_name LIKE $productName$}
+                        {? AND o.order_number LIKE $orderNumber$}
+                        {? AND dcr.user_id LIKE $distributorUserId$}
+                        {? AND o.shop_id = $shopId$}
+                    GROUP BY o.id
+                    ORDER BY o.create_time desc
+			  ]]>
+			</Method>
+			<Method name="queryDistributionOrderCount">
+				<![CDATA[
+                SELECT COUNT(o.id)
+                FROM (
+                    SELECT
+                        o.id
+                    FROM
+                        ls_order o
+                        left JOIN ls_distribution_commission_record dcr ON o.order_number = dcr.order_number
+                        WHERE dcr.id IS NOT NULL
+                        {? AND o.status = $status$}
+                        {? AND o.refund_status = $refundStatus$}
+                        {@ AND dcr.status in $commissionSettleStatus$}
+                        {? AND o.create_time >= $startSubTime$}
+                        {? AND o.create_time <= $endSubTime$}
+                        {? AND o.product_name LIKE $productName$}
+                        {? AND o.order_number LIKE $orderNumber$}
+                        {? AND dcr.user_id LIKE $distributorUserId$}
+                        {? AND o.shop_id = $shopId$}
+                    GROUP BY o.id
+                ) o
+			  ]]>
+			</Method>
+
+			<Method name="queryUserDistributionOrder">
+				<![CDATA[
+        	        SELECT item.actual_amount AS orderAmount,item.pic,item.attribute,item.product_name,item.product_id,item.order_number,item.id,item.create_time,
+        	        item.refund_status,item.dist_flag,item.commission_settle_status,item.order_id,item.product_id,r.commission as commission, r.actual_commission
+					FROM ls_distribution_commission_record r
+					INNER JOIN ls_order_item item on item.order_item_number = r.order_item_number
+					WHERE item.dist_flag = 1
+					and item.commission_settle_status != -20
+				    {? AND r.user_id = $userId$}
+				    {? AND item.product_name like $productName$}
+				    {? AND item.commission_settle_status = $commissionSettleStatus$}
+				    ORDER BY item.create_time DESC, item.commission_settle_status ASC
+			  ]]>
+			</Method>
+
+			<Method name="queryUserDistributionOrderCount">
+				<![CDATA[
+        	        SELECT count(*)
+					FROM ls_distribution_commission_record r
+					INNER JOIN ls_order_item item on item.order_item_number = r.order_item_number
+					WHERE item.dist_flag = 1
+					and item.commission_settle_status != -20
+				    {? AND r.user_id = $userId$}
+				    {? AND item.product_name like $productName$}
+				    {? AND item.commission_settle_status = $commissionSettleStatus$}
+				    ORDER BY item.create_time DESC, item.commission_settle_status ASC
+			  ]]>
+			</Method>
+
+			<Method name="distributionOrderExport">
+				<![CDATA[
+        	        SELECT item.pic,item.attribute,item.product_name,item.product_id,item.order_number,item.id,item.create_time,item.refund_status,item.dist_flag,item.commission_settle_status,item.order_id,o.`status`,
+        	        item.actual_amount,item.basket_count, item.dist_commission_cash as commissionAmount
+					FROM ls_order_item item
+					LEFT JOIN ls_order o on o.order_number = item.order_number
+					WHERE 1 = 1 and item.dist_flag = 1
+					and item.commission_settle_status <> -20
+					and item.refund_status <> 2
+			  ]]>
+			</Method>
+
+
+			<Method name="getShopOrderCount">
+				SELECT COUNT(1)
+				FROM ls_order o
+				WHERE 1 = 1
+				AND o.shop_id = ?
+				AND o.status = ?
+			</Method>
+
+			<Method name="getShopOrderCommCount">
+				SELECT COUNT(DISTINCT i.order_id)
+				FROM ls_order o
+				LEFT JOIN ls_order_item i ON o.id = i.order_id
+				WHERE 1 = 1
+				AND o.shop_id = ?
+				AND o.status = ?
+				AND i.comm_flag = ?
+			</Method>
+
+			<Method name="getShopOrderRefundCount">
+				SELECT COUNT(DISTINCT i.order_id)
+				FROM ls_order o
+				LEFT JOIN ls_order_item i ON o.id = i.order_id
+				LEFT JOIN ls_order_refund_return oi ON o.id = oi.order_id
+				WHERE 1 = 1
+				AND o.payed_flag =1
+				AND oi.seller_status=0
+				AND oi.apply_status= ?
+				AND o.shop_id = ?
+				AND o.refund_status = ?
+			</Method>
+
+			<Method name="getShopPaidOrderCount">
+				<![CDATA[
+					SELECT COUNT(o.id) AS subCounts, IFNULL(SUM(o.actual_total_price), 0) AS paidAmount
+					FROM ls_order o
+					WHERE 1 = 1
+					AND o.payed_flag = 1
+					{? AND o.shop_id = $shopId$}
+					{? AND o.pay_time >= $startDate$}
+					{? AND o.pay_time <= $endDate$}
+				]]>
+			</Method>
+
+			<Method name="getShopAccusationProduct">
+				SELECT COUNT(DISTINCT a.product_id) AS subCounts
+				FROM ls_accusation a
+				LEFT JOIN ls_product p ON a.product_id = p.id
+				WHERE 1=1
+				AND a.user_del_status = 0
+				AND a.result = 1
+				AND a.status = 0
+				AND p.shop_id = ?
+			</Method>
+
+			<Method name="getShopOrderInvoiceCount">
+				SELECT COUNT(*) FROM ls_order ls
+				LEFT JOIN ls_order_invoice li ON ls.order_invoice_id = li.id LEFT JOIN
+				ls_user_detail lud ON ls.user_id = lud.user_id
+				LEFT JOIN ls_order_item loi ON ls.id=loi.order_id
+				WHERE ls.order_invoice_id IS NOT NULL AND ls.need_invoice_flag = 1
+				AND ls.shop_id = ? AND ls.has_invoice_flag =0
+
+			</Method>
+
+			<Method name="getShopSales">
+				<![CDATA[
+				SELECT COUNT(o.id) AS subCounts, IFNULL(SUM(o.actual_total_price), 0) AS paidAmount, DATE_FORMAT( pay_time, "%Y-%m-%d" ) AS DATE
+				FROM ls_order o
+				WHERE 1 = 1
+				{? AND o.shop_id = $shopId$}
+				AND o.payed_flag = 1
+				{? AND  pay_time >= $startDate$}
+				{? AND pay_time <= $endData$}
+				GROUP BY DATE_FORMAT( pay_time, "%Y-%m-%d" )
+				ORDER BY DATE_FORMAT( pay_time, "%Y-%m-%d" )
+				]]>
+			</Method>
+
+
+			<Method name="getDistCommIsAmountById">
+				SELECT SUM(dist_commission_cash) FROM ls_order_item WHERE order_id=? AND dist_flag=1
+			</Method>
+
+			<Method name="queryAllShopOrderNotice">
+				SELECT ordercount.* FROM (SELECT a.shop_id AS shopId,IFNULL(a.waitDelivery,0) AS waitDelivery
+				,IFNULL(b.refundCount,0) AS refundCount
+				FROM
+				(SELECT shop_id,COUNT(*) AS waitDelivery FROM ls_order WHERE STATUS=5 AND payed_flag=1 AND
+				delete_status=0 GROUP BY shop_id )a
+				LEFT JOIN
+				(SELECT shop_id,COUNT(*) AS refundCount FROM ls_order_refund_return WHERE seller_status=0 AND
+				apply_status=1 GROUP BY shop_id ) b
+				ON a.shop_id=b.shop_id
+				UNION
+				SELECT b.shop_id,IFNULL(a.waitDelivery,0),IFNULL(b.refundCount,0)
+				FROM (SELECT shop_id,COUNT(*) AS refundCount FROM ls_order_refund_return WHERE seller_status=0 AND
+				apply_status=1 GROUP BY shop_id ) b
+				LEFT JOIN
+				(SELECT shop_id,COUNT(*) AS waitDelivery FROM ls_order WHERE STATUS=5 AND payed_flag=1 AND
+				delete_status=0 GROUP BY shop_id )a
+				ON b.shop_id=a.shop_id) AS ordercount
+				INNER JOIN ls_shop_detail lsd ON ordercount.shopId=lsd.id
+			</Method>
+
+
+			<Method name="getAddressByOrderId">
+				<![CDATA[
+					SELECT lo.status, loua.mobile, loua.receiver
+					FROM
+					 ls_order lo
+					INNER JOIN
+					 ls_order_user_address loua
+					ON
+					 lo.address_order_id = loua.id
+					WHERE 1 = 1
+					AND lo.id = ?
+
+				]]>
+			</Method>
+
+			<Method name="getUserOrderInvoiceCount">
+				<![CDATA[
+					SELECT
+					  (SELECT
+					    COUNT(id) AS subCounts
+					  FROM
+					    ls_order
+					  WHERE 1 = 1
+					    AND need_invoice_flag = 1
+					    AND has_invoice_flag = 0
+					    AND user_id = ?) AS toBeInvoicedOrderCount,
+					  (SELECT
+					    COUNT(id) AS subCounts
+					  FROM
+					    ls_order
+					  WHERE 1 = 1
+					    AND need_invoice_flag = 1
+					    AND has_invoice_flag = 1
+					    AND user_id = ?) AS invoicedOrderCount
+				]]>
+			</Method>
+
+			<Method name="queryByStatusAddress">
+				<![CDATA[
+				SELECT DISTINCT
+					o.order_number orderNumber,
+					oa.receiver ,
+					oa.mobile
+				FROM
+					ls_order o
+					LEFT JOIN ls_order_user_address oa ON oa.id = o.address_order_id
+				WHERE
+				o.`status` = 5
+				AND o.refund_status in (0,3)
+				AND o.shop_id = ?
+				]]>
+			</Method>
+		</Object>
+
+	</BusinessObjects>
+</DataAccessLayer>

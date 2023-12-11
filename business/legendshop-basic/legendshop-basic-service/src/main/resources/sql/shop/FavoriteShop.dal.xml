@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 收藏的店铺SQL -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="FavouriteShop">
+
+			<Method name="uc.queryFavouriteShop">
+				select lsf.fs_id as fsId,lsf.shop_id as shopId,lsf.rec_date as recDate,lsd.user_name as
+				shopName,lsd.shop_name as siteName,lsd.shop_pic as shopPic,lsg.name as gradeName
+				from ls_favorite_shop lsf,ls_shop_detail lsd,ls_shop_grad lsg
+				where lsf.shop_id = lsd.shop_id
+				and lsd.grade_id = lsg.grade_id
+				{? and lsf.user_id = $userId$}
+				order by lsf.rec_date desc
+			</Method>
+			<Method name="uc.queryFavouriteShopCount">
+				select count(*) from ls_favorite_shop lsf,ls_shop_detail lsd,ls_shop_grad lsg
+				where lsf.shop_id = lsd.shop_id and lsd.grade_id = lsg.grade_id
+				{? and lsf.user_id = $userId$}
+			</Method>
+
+			<Method name="queryFavouriteShop">
+				<![CDATA[
+				SELECT lsf.id AS id,lsf.shop_id AS shopId,lsf.rec_date AS recDate,lsd.shop_name AS shopName,lsd.shop_avatar AS shopPic,lsd.status,
+				(SELECT COUNT(*) FROM ls_favorite_shop lf WHERE lf.shop_id = lsd.id) favoriteCount
+				FROM ls_favorite_shop lsf,ls_shop_detail lsd
+				WHERE lsf.shop_id = lsd.id
+				{? AND lsf.user_id = $userId$}
+				{? and lsf.rec_date >= $startDate$}
+				{? and lsf.rec_date <= $endDate$}
+				{? and lsd.shop_name like  $shopName$}
+				ORDER BY lsf.rec_date DESC
+				]]>
+			</Method>
+			<Method name="queryFavouriteShopCount">
+				<![CDATA[
+				select  count(*)  from ls_favorite_shop lsf,ls_shop_detail lsd
+				where lsf.shop_id = lsd.id
+				{? and lsf.user_id = $userId$}
+				{? and lsf.rec_date >= $startDate$}
+				{? and lsf.rec_date <= $endDate$}
+				{? and lsd.shop_name like  $shopName$}
+				]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

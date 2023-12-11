@@ -1,0 +1,110 @@
+{
+  "name": "dev_sr1_product",
+  "type": "standard",
+  "schema": {
+    "indexes": {
+      "search_fields": {
+        "productId": {
+          "fields": [
+            "productId"
+          ]
+        },
+        "keyword": {
+          "fields": [
+            "keyword"
+          ],
+          "analyzer": "chn_standard"
+        },
+        "phone": {
+          "fields": [
+            "phone"
+          ],
+          "analyzer": "fuzzy"
+        },
+        "int_arr": {
+          "fields": [
+            "int_arr"
+          ]
+        },
+        "literal_arr": {
+          "fields": [
+            "literal_arr"
+          ]
+        },
+        "cate_id": {
+          "fields": [
+            "cate_id"
+          ]
+        }
+      },
+      "filter_fields": [
+        "id",
+        "int_arr",
+        "literal_arr",
+        "float_arr",
+        "cate_id"
+      ]
+    },
+    "tables": {
+      "tab": {
+        "name": "tab",
+        "fields": {
+          "id": {
+            "name": "id",
+            "type": "INT",
+            "primary_key": true
+          },
+          "name": {
+            "name": "name",
+            "type": "TEXT",
+            "primary_key": false
+          },
+          "phone": {
+            "name": "phone",
+            "type": "SHORT_TEXT",
+            "primary_key": false
+          },
+          "int_arr": {
+            "name": "int_arr",
+            "type": "INT_ARRAY",
+            "primary_key": false
+          },
+          "literal_arr": {
+            "name": "literal_arr",
+            "type": "LITERAL_ARRAY",
+            "primary_key": false
+          },
+          "float_arr": {
+            "name": "float_arr",
+            "type": "FLOAT_ARRAY",
+            "primary_key": false
+          },
+          "cate_id": {
+            "name": "cate_id",
+            "type": "INT",
+            "primary_key": false
+          }
+        },
+        "primary_table": true
+      }
+    },
+    "route_field": null
+  },
+  "data_sources": [],
+  "first_ranks": {},
+  "second_ranks": {},
+  "summary": [],
+  "fetch_fields": [
+    "id",
+    "name",
+    "phone",
+    "int_arr",
+    "literal_arr",
+    "float_arr",
+    "cate_id"
+  ],
+  "quota": {
+    "qps": 6,
+    "doc_size": 0.3
+  }
+}

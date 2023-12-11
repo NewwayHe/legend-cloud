@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="IntegralSku">
+			<Method name="queryPage">
+				<![CDATA[
+		     		SELECT p.pic,p.`name`,p.`status`as productStatus,p.op_status as productOpstatus,p.del_status,i.*,c.name as categoryName FROM ls_integral_sku i INNER JOIN ls_product p ON i.product_id = p.id INNER JOIN ls_category c on p.global_first_cat_id = c.id  where 1=1
+						{? AND i.shop_id = $shopId$ }
+						{? AND i.status=$status$ }
+						{? AND i.op_status=$opStatus$ }
+						{? AND i.recommend_flag=$recommendFlag$ }
+						{? AND i.delete_flag=$deleteFlag$ }
+						{? AND p.global_first_cat_id=$categoryId$ }
+						{? AND p.name LIKE $productName$ }
+						{? AND c.name LIKE $categoryName$ }
+						{! ORDER BY i.create_time DESC,p.create_time DESC || $orderIndicator$}
+	            ]]>
+			</Method>
+			<Method name="queryPageCount">
+				<![CDATA[
+		     		SELECT count(*) FROM ls_integral_sku i INNER JOIN ls_product p ON i.product_id = p.id INNER JOIN ls_category c on p.global_first_cat_id = c.id  where 1=1
+						{? AND i.shop_id = $shopId$ }
+						{? AND i.status=$status$ }
+						{? AND i.op_status=$opStatus$ }
+						{? AND i.recommend_flag=$recommendFlag$ }
+						{? AND i.delete_flag=$deleteFlag$ }
+						{? AND p.global_first_cat_id=$categoryId$ }
+						{? AND p.name LIKE $productName$ }
+						{? AND c.name LIKE $categoryName$ }
+	            ]]>
+			</Method>
+
+
+			<Method name="queryPageFromUser">
+				<![CDATA[
+		     		SELECT p.`name`,p.pic,p.max_price,s.price,s.recommend_flag,s.product_id,s.sku_id,s.integral_stocks,s.cost_integral,s.sale_num
+		     		 FROM ls_product p INNER JOIN ls_integral_sku s on p.id = s.product_id  where 1=1
+						{? AND s.status=$status$ }
+						{? AND s.op_status=$opStatus$ }
+						{? AND s.recommend_flag=$recommendFlag$ }
+						{? AND p.global_first_cat_id=$categoryId$ }
+						{? AND s.delete_flag=$deleteFlag$ }
+						{? AND p.name LIKE $productName$ }
+						and s.new_integral_stocks > 0
+						and s.integral_stocks is not NULL
+						ORDER BY s.recommend_flag desc, s.seq desc, s.create_time desc
+	            ]]>
+			</Method>
+			<Method name="queryPageFromUserCount">
+				<![CDATA[
+		     		SELECT count(*) FROM ls_product p INNER JOIN ls_integral_sku s on p.id = s.product_id  where 1=1
+						{? AND s.status=$status$ }
+						{? AND s.op_status=$opStatus$ }
+						{? AND s.recommend_flag=$recommendFlag$ }
+						{? AND p.global_first_cat_id=$categoryId$ }
+						{? AND s.delete_flag=$deleteFlag$ }
+						{? AND p.name LIKE $productName$ }
+						and s.new_integral_stocks > 0
+						and s.integral_stocks is not NULL
+	            ]]>
+			</Method>
+
+			<Method name="integralDeductionValidators">
+				<![CDATA[
+		     		select s.id,s.cn_properties as cnProperties,p.name as productName,s.name
+		     		from ls_sku s ,ls_product p ,ls_integral_deduction_sku gp
+					WHERE s.id=gp.sku_id
+					and p.id=s.product_id
+					and gp.delete_flag=0
+					{@ and gp.sku_id in $ids$}
+	            ]]>
+			</Method>
+			<Method name="integralValidators">
+				<![CDATA[
+		     		select s.id,s.cn_properties as cnProperties,p.name as productName,s.name
+		     		from ls_sku s ,ls_product p ,ls_integral_sku gp
+						WHERE s.id=gp.sku_id and p.id=s.product_id and gp.delete_flag=0
+						and gp.sku_id in(&&&)
+	            ]]>
+			</Method>
+
+			<Method name="getDetailById">
+				<![CDATA[
+		     	SELECT intSku.id,cate.`name` as categoryName,p.`name`,intSku.settlement_price,intSku.cost_integral,s.shop_name,sku.cn_properties,intSku.seq,
+		     		 intSku.sale_num,intSku.integral_stocks,intSku.new_settlement_price,intSku.new_integral_stocks,intSku.op_status,
+		     		 IF(sku.pic is null or sku.pic = '', p.pic, sku.pic) as pic,p.content,intSku.op_status,intSku.`status`,p.del_status,intSku.delete_flag,
+		     		 g.audit_time,g.audit_opinion from ls_integral_sku intSku left join
+		     		  (SELECT  audit_time,audit_opinion,audit_type,common_id from ls_audit audit where audit_type=? )g
+		     		  on g.common_id = intSku.id  , ls_product p,ls_category cate, ls_sku sku,ls_shop_detail s where p.id=intSku.product_id
+		     		  and cate.id=p.global_first_cat_id and sku.id=intSku.sku_id and s.id	=p.shop_id and intSku.id=?
+	            ]]>
+			</Method>
+
+			<Method name="queryListByProductIdList">
+				<![CDATA[
+		     	SELECT
+		     	    s.pic,
+		     	    s.price,
+		     	    s.properties,
+                    s.cn_properties,
+                    s.stocks,
+					i.delete_flag,
+					i.product_id,
+					i.proportion,
+					i.create_time,
+					i.id,
+					i.shop_id,
+					i.sku_id
+				FROM
+					ls_integral_deduction_sku i
+					LEFT JOIN ls_sku s
+					on i.sku_id=s.id
+				WHERE
+				s.price is NOT NULL
+				{@ AND i.product_id IN $productIds$}
+				{? AND i.delete_flag=$deleteFlag$}
+	            ]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

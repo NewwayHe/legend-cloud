@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 收货地址SQL -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="Address">
+			<Method name="queryPage">
+				<![CDATA[
+        		SELECT lua.id AS id, lua.user_id AS userId,detail_address AS detailAddress,lua.receiver AS receiver,
+				lua.province_id AS provinceId,lua.city_id AS cityId ,lua.area_id AS areaId , lua.street_id AS streetId,
+				lua.mobile AS mobile,  lua.common_flag AS commonFlag, la.name AS areaName, lp.name AS provinceName,
+				lua.create_time,lua.update_time,lc.name AS cityName, ls.name AS streetName
+				FROM ls_user_address lua
+				LEFT JOIN ls_location lp ON lua.province_id = lp.id
+				LEFT JOIN ls_location lc ON lua.city_id = lc.id
+				LEFT JOIN ls_location la ON lua.area_id = la.id
+				LEFT JOIN ls_location ls ON lua.street_id = ls.id
+				WHERE 1=1
+				{? and lua.user_id = $userId$}
+				ORDER BY lua.common_flag DESC ,lua.create_time DESC
+			]]>
+			</Method>
+
+			<Method name="queryPageCount">
+				<![CDATA[
+        		SELECT count(1)
+        		FROM ls_user_address lua
+        		LEFT JOIN ls_location lp ON lua.province_id = lp.id
+				LEFT JOIN ls_location lc ON lua.city_id = lc.id
+				LEFT JOIN ls_location la ON lua.area_id = la.id
+				LEFT JOIN ls_location ls ON lua.street_id = ls.id
+				WHERE 1=1
+				{?  and lua.user_id = $userId$}
+			]]>
+			</Method>
+
+			<Method name="getDefaultAddress">
+				<![CDATA[
+        		SELECT lua.id AS id, lua.user_id AS userId,detail_address AS detailAddress,lua.receiver AS receiver,
+				lua.mobile AS mobile,  lua.common_flag AS commonFlag, la.name AS areaName, lp.name AS provinceName,
+				lc.name AS cityName, la.name AS areaName, ls.name AS streetName ,lp.id AS provinceId , lc.id AS cityId,
+				la.id AS areaId,ls.id AS streetId
+				FROM ls_user_address lua
+				LEFT JOIN ls_location lp ON lua.province_id = lp.id
+				LEFT JOIN ls_location lc ON lua.city_id = lc.id
+				LEFT JOIN ls_location la ON lua.area_id = la.id
+				LEFT JOIN ls_location ls ON lua.street_id = ls.id
+				WHERE lua.common_flag = 1 AND lua.user_id = ?
+			]]>
+			</Method>
+			<Method name="getAddressInfo">
+				<![CDATA[
+        		SELECT lua.id AS id, lua.user_id AS userId,detail_address AS detailAddress,lua.receiver AS receiver,
+				lua.mobile AS mobile,  lua.common_flag AS commonFlag, la.name AS areaName, lp.name AS provinceName,
+				lc.name AS cityName, la.name AS areaName, ls.name AS streetName ,lp.id AS provinceId , lc.id AS cityId,
+				la.id AS areaId,ls.id AS streetId,lua.create_time,lua.update_time
+				FROM ls_user_address lua
+				LEFT JOIN ls_location lp ON lua.province_id = lp.id
+				LEFT JOIN ls_location lc ON lua.city_id = lc.id
+				LEFT JOIN ls_location la ON lua.area_id = la.id
+				LEFT JOIN ls_location ls ON lua.street_id = ls.id
+				WHERE 1=1
+				AND lua.id = ?
+			]]>
+			</Method>
+			<Method name="getUserAddressForOrder">
+				<![CDATA[
+        		SELECT lua.id AS id, lua.user_id AS userId,detail_address AS detailAddress,lua.receiver AS receiver,
+				lua.mobile AS mobile,  lua.common_flag AS commonFlag, la.name AS areaName, lp.name AS provinceName,
+				lc.name AS cityName, la.name AS areaName, ls.name AS streetName ,lp.id AS provinceId , lc.id AS cityId,
+				la.id AS areaId,ls.id AS streetId
+				FROM ls_user_address lua
+				LEFT JOIN ls_location lp ON lua.province_id = lp.id
+				LEFT JOIN ls_location lc ON lua.city_id = lc.id
+				LEFT JOIN ls_location la ON lua.area_id = la.id
+				LEFT JOIN ls_location ls ON lua.street_id = ls.id
+				WHERE 1=1
+				AND lua.user_id = ?
+				ORDER BY lua.update_time,lua.create_time DESC
+			]]>
+			</Method>
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

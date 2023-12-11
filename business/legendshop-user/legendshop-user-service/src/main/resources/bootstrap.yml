@@ -1,0 +1,65 @@
+server:
+  port: 8090
+
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  application:
+    name: @artifactId@
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_HOST:http://192.168.0.16}:${NACOS_PORT:8868}
+        namespace: ${NACOS_NAMESPACE:bbc700-code}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nacos}
+      config:
+        namespace: ${NACOS_NAMESPACE:bbc700-code}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nacos}
+        server-addr: ${spring.cloud.nacos.discovery.server-addr}
+        file-extension: yml
+        shared-configs:
+          - data-id: application-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}
+            refresh: true
+  profiles:
+    active: @profiles.active@
+  config:
+    import:
+      - optional:nacos:${spring.application.name}.${spring.cloud.nacos.config.file-extension}
+
+# spring security 配置
+security:
+  oauth2:
+    client:
+      ignore-urls:
+        # Spring Boot Actuator 监控系统数据的框架，
+        - /actuator/**
+        # swagger UI
+        - /v3/api-docs
+        - /doc.html
+        - /swagger-resources
+        - /webjars/**
+        # 阿里巴巴Druid数据源监控
+        - /druid/**
+
+        # 用户注册
+        - /ordinary/user
+        - /shop/register/**
+        #【公共】修改：支付、登录、换绑、验证码获取临时凭证
+        - /basic/user/verifyCodeExchangeCertificate
+        #【用户】修改密码 通过凭证验签
+        - /ordinary/user/reset/password
+        # 【用户】用户是否登录
+        - /ordinary/user/login/flag
+        # 【商家】判断手机号是否存在 TODO 之后可以加上验签
+        - /register/isMobileExist
+        - /userSend/smsVerifyCode
+        - /p/user/center/info
+
+        - /ordinary/user/queryAllUser #手机端搜索查询所有未被删除的用户
+        - /ordinary/user/getUserInfo #登录获取用户信息
+        - /s/user/getUserInfo #商家登录获取信息
+        - /admin/user/getUserInfo
+

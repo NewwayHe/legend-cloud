@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 品牌 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="ProductPropertyAggParamGroup">
+
+			<Method name="queryByAggId">
+				<![CDATA[
+					select gr.*,agg.id as aggGroupId from ls_product_property_agg_param_group agg,ls_param_group gr
+					where gr.id=agg.group_id
+					{? AND  agg.agg_id=$aggId$  }
+					 ORDER BY agg.seq
+			   ]]>
+			</Method>
+			<Method name="queryByAggIdCount">
+				<![CDATA[
+					select count(1) from ls_product_property_agg_param_group agg,ls_param_group gr
+					where gr.id=agg.group_id
+					{? AND  agg.agg_id=$aggId$  }
+					 ORDER BY agg.seq
+			   ]]>
+			</Method>
+
+			<Method name="queryByCategoryId">
+				<![CDATA[
+					SELECT pg.id,pg.name,pg.source from ls_product_property_agg_category cat,ls_product_property_agg_param_group g,ls_param_group pg
+					WHERE cat.agg_id=g.agg_id and pg.id=g.group_id and source=? and cat.category_id=?
+			   ]]>
+			</Method>
+		</Object>
+
+	</BusinessObjects>
+</DataAccessLayer>

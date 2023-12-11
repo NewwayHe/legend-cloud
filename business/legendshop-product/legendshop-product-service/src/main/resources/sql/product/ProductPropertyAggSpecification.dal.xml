@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 品牌 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="ProductPropertyAggSpecification">
+
+			<Method name="queryByPage">
+				<![CDATA[
+					select pro.*,sp.id as aggPropId from ls_product_property_agg_specification sp ,ls_product_property pro
+						where sp.prop_id=pro.id and delete_flag=0
+						{? and sp.agg_id = $aggId$ }
+						ORDER BY sp.prop_id,sp.seq
+			   ]]>
+			</Method>
+			<Method name="queryByPageCount">
+				<![CDATA[
+					select count(1) from ls_product_property_agg_specification sp ,ls_product_property pro
+						where sp.prop_id=pro.id and delete_flag=0
+						{? and sp.agg_id = $aggId$ }
+			   ]]>
+			</Method>
+		</Object>
+
+	</BusinessObjects>
+</DataAccessLayer>

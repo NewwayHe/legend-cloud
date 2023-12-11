@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 商品优惠券 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="CouponUser">
+			<Method name="queryPage">
+				<![CDATA[
+		     		SELECT cu.id,user_id,coupon_code,usr.mobile,cu.get_time,cu.use_time,cu.password,cu.order_number,cu.status
+						from ls_coupon_user cu left join ls_ordinary_user usr on usr.id=cu.user_id
+						{? where cu.coupon_id = $couponId$}
+	            ]]>
+			</Method>
+			<Method name="queryPageCount">
+				<![CDATA[
+		     		SELECT count(cu.id)	from ls_coupon_user cu  left join ls_ordinary_user usr on usr.id=cu.user_id
+						{? where cu.coupon_id = $couponId$}
+	            ]]>
+			</Method>
+
+			<Method name="queryMyCouponPage">
+				<![CDATA[
+		     		SELECT cu.id,c.id as couponId,sd.id as shopId,sd.shop_name as shopName,c.title,c.amount,c.min_point,cu.use_start_time,cu.use_end_time,c.use_type,coupon_code,cu.get_time,
+		     		cu.use_time,cu.order_number,cu.status,c.pic,c.description,c.receive_type
+						from
+							ls_coupon c
+							left join ls_coupon_user cu
+								on c.id = cu.coupon_id
+							left join ls_shop_detail sd
+								on sd.id = c.shop_id
+						where 1=1
+						{? AND cu.user_id = $userId$ }
+						{? AND cu.status = $status$ }
+						{? AND c.shop_id = $shopId$ }
+						{? AND c.shop_provider_flag = $shopProviderFlag$ }
+						{? AND c.title like $name$ }
+						{? AND sd.shop_name like $shopName$ }
+						{$statusFlag$}
+						{$receiveType$}
+						order by field (cu.status,1,0,2,-1),
+						cu.use_time DESC,
+						cu.get_time DESC
+	            ]]>
+			</Method>
+			<Method name="queryMyCouponPageCount">
+				<![CDATA[
+		     		SELECT count(cu.id)
+						from
+							ls_coupon c
+							left join ls_coupon_user cu
+								on c.id = cu.coupon_id
+							left join ls_shop_detail sd
+								on sd.id = c.shop_id
+						where 1=1
+						{? AND cu.user_id = $userId$ }
+						{? AND cu.status = $status$ }
+						{? AND c.shop_id = $shopId$ }
+						{? AND c.shop_provider_flag = $shopProviderFlag$ }
+						{? AND c.title like $name$ }
+						{? AND sd.shop_name like $shopName$ }
+						{$statusFlag$}
+						{$receiveType$}
+						order by field (cu.status,1,0,2,-1)
+	            ]]>
+			</Method>
+
+			<Method name="querySkuPageById">
+				<![CDATA[
+		     		select distinct sku.product_id ,sku.id,p.name as productName,sku.pic,sku.price,sku.original_price,IFNULL(fp.id,0) as favouriteFlag from ls_coupon c,ls_coupon_user cu,ls_coupon_product cp,
+		     		ls_sku sku,ls_product p  LEFT JOIN ls_favorite_product fp on fp.product_id=p.id
+		     		 where c.id=cu.coupon_id and cp.coupon_id=c.id and cp.sku_id=sku.id and sku.product_id=p.id and cu.status=1
+		     		{? AND cu.id =$id$}
+	            ]]>
+			</Method>
+			<Method name="querySkuPageByIdCount">
+				<![CDATA[
+		     		select count(cu.id) from ls_coupon c,ls_coupon_user cu,ls_coupon_product cp,
+		     		ls_sku sku,ls_product p  LEFT JOIN ls_favorite_product fp on fp.product_id=p.id
+		     		where c.id=cu.coupon_id and cp.coupon_id=c.id and cp.sku_id=sku.id and sku.product_id=p.id and cu.status=1
+		     		{? AND cu.id =$id$}
+	            ]]>
+			</Method>
+
+			<Method name="queryUnusedCouponIdByUserId">
+				<![CDATA[
+		     		SELECT * from ls_coupon_user where user_id=? and status in(?,?)
+	            ]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

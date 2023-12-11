@@ -1,0 +1,187 @@
+server:
+  port: 8083
+
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  application:
+    name: legendshop-basic-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_HOST:http://192.168.0.16}:${NACOS_PORT:8868}
+        namespace: ${NACOS_NAMESPACE:bbc700-code}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nacos}
+      config:
+        namespace: ${NACOS_NAMESPACE:bbc700-code}
+        username: ${NACOS_USERNAME:nacos}
+        password: ${NACOS_PASSWORD:nacos}
+        server-addr: ${spring.cloud.nacos.discovery.server-addr}
+        file-extension: yml
+        shared-configs:
+          - data-id: application-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}
+            refresh: true
+  profiles:
+    active: @profiles.active@
+  config:
+    import:
+      - optional:nacos:${spring.application.name}-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}
+# 自定义配置
+legendshop:
+  basic:
+    allowed-file-types:
+      - JPEG
+      - JPG
+      - GIF
+      - PNG
+      - TIFF
+      - WEBP
+      - BMP
+      - WAV
+      - WMA
+      - RA
+      - MKA
+      - APE
+      - AC3
+      - AAC
+      - OGG
+      - FLAC
+      - LPCM
+      - PCM
+      - M4A
+      - RAM
+      - DTS
+      - AMR
+      - MID
+      - MIDI
+      - AIF
+      - AIFF
+      - AU
+      - VQF
+      - SND
+      - MP3
+      - AVI
+      - MPG
+      - MPEG
+      - DAT
+      - VOB
+      - MP4
+      - 3GP
+      - 3G2
+      - 3GPP
+      - WMV
+      - ASF
+      - RM
+      - RMVB
+      - M2TS
+      - MOV
+      - MKV
+      - TS
+      - TP
+      - TRP
+      - M2T
+      - M2P
+      - M4V
+      - MTS
+      - MOD
+      - WEBM
+      - FLV
+      - F4V
+      - SWF
+      - ISO
+      - ASX
+      - DIVX
+      - PS
+      - OGM
+      - QT
+      - MQV
+      - P12
+      - ZIP
+## spring security 配置
+security:
+  oauth2:
+    client:
+      ignore-urls:
+        - /actuator/**
+        - /v3/api-docs
+        - /doc.html
+        - /swagger-resources
+        - /webjars/**
+        - /druid/**
+        - /protocol/get #获取协议
+        - /wx/getMiniQrCode
+        - /wx/getWechatScene
+        - /customer/server    # 微信客服图片
+        - /location/children/**
+        - /a/map/** # 高德获取地址
+        # shop模块
+        - /discover/article/page
+        - /discover/article/comment/page  #发现文章分页
+        - /discover/article/detail/{\\d+} #发现文章id查询
+        - /feedback  #用户反馈
+        - /mobile/index  #首页
+        - /mobile/theme/color  #模板颜色
+        - /groupProduct   #分组商品
+        - /groupProduct/page  #分组商品列表
+        - /categoryProduct  #分类商品
+        - /shopCategoryProduct  #商家分类商品
+        - /productList   #装修商品列表
+        - /serverNowDate  #获取服务器当前时间
+        - /grass/article/page  #种草文章列表
+        - /grass/article/related/page  #种草文章查看更多
+        - /grass/article/detail/{\\d+} #种草文章id查询
+        - /grass/article/comment/comm/page  #种草评论列表
+        - /show/shop/mobile/indexPage   #店铺首页分页
+        - /mobile/shop/index  #店铺首页
+        - /p/grass/concern/person/{\\d+}  #个人主页
+        - /shopDetail/searchShop #店铺搜索
+        - /shopDetail/get/parent/distribution/shop #获取用户上级分销店铺
+        - /industry/directory/queryAll #获取行业目录
+        - /found/ads/list #获取种草广告图
+        - /p/grass/label/page #用户种草标签的分页查询
+        - /p/app/setting/category # 分类设置
+        - /p/grass/label/**   # 种草标签
+        - /mobile/enable/user/center  # 是否开启个人中心装修
+        - /p/catAdvert  #分类广告
+        - /p/grass/label/getList # 文章标签列表
+        - /app/start/adv    # app启动广告
+        - /showMobilePosterPage # 获取MOBILE海报页内容
+        - /show/shop/mobile/posterPage # 获取mobile店铺装修海报页内容
+        - /pc/index
+        - /pc/theme/color
+        - /p/query/user/pub/list
+        - /mobile/user/center
+        - /showPcPosterPage
+        - /shopDetail/getShopList
+        - /p/pub/info # 获取公告详情
+        - /all/userNewsCategory # 获取所有的用户端帮助栏目
+        - /all/userNews # 通过栏目Id获取该栏目下所有文章
+        - /all/userNewsCategoryTree # 获取用户端帮助栏目树结构数据
+        - /get/userNews # 查看文章详情
+        - /word # 通过关键字搜索帮助文章
+        - /query/with/Items # 查询栏目及其文章
+        - /found/ads/enabled # 是否开启种草广告图
+        - /systemConfig  # 系统配置
+        - /setting # 系统配置
+        - /show/shop/pc/indexPage  # 获取PC店铺装修首页内容
+        - /show/shop/pc/posterPage # 获取PC店铺装修海报页内容
+        - /contactInformation/info #  获取客服联系方式
+        - /admin/decoratePage/show
+        - /s/decoratePage/show
+        - /pop/query/queryPop #查询广告弹窗
+        - /advertise/advertise/clock #点击广告弹窗
+        - /advertise/advertise/put #弹出广告弹窗
+        - /shop/detail #营业执照接口
+        - /shop/getshopDetailDocuments  #营业执照接口
+
+#swagger文档分组
+springdoc:
+  group-configs:
+    - group: "基础服务"
+      paths-to-match: '/**'
+      packages-to-scan:
+        - com.legendshop.basic
+        - com.legendshop.shop
+        - com.legendshop.data

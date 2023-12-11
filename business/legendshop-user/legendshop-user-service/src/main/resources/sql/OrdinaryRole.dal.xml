@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 收藏的店铺SQL -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="OrdinaryRole">
+			<Method name="getByUserId">
+				<![CDATA[
+					SELECT
+					r.*
+					FROM
+					ls_ordinary_role r, ls_ordinary_user_role ur WHERE r.id = ur.role_id AND r.del_flag = 1
+					and ur.user_id = ?
+				]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>
+
+
+

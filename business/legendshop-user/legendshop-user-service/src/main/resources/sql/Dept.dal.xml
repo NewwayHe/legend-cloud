@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 部门的SQL -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="Dept">
+			<Method name="querySubDept">
+				<![CDATA[
+					SELECT dept.*,
+					(case when (SELECT count(1) FROM ls_dept t where t.parent_id=dept.id) = 0
+						then false else true end) as hasChildren,
+					p.name as parentName
+					FROM ls_dept dept left join ls_dept p on dept.parent_id = p.id
+					WHERE 1=1
+					and dept.parent_id = ?
+				]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

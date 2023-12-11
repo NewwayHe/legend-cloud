@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 百度（移动）统计记录 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="BaiduView">
+			<Method name="getAllByArchiveTime">
+				<![CDATA[
+		     		SELECT
+					  IFNULL(SUM(h5_uv), 0) AS h5_uv,
+					  IFNULL(SUM(h5_pv), 0) AS h5_pv,
+					  IFNULL(SUM(mini_uv), 0) AS mini_uv,
+					  IFNULL(SUM(mini_pv), 0) AS mini_pv,
+					  IFNULL(SUM(total_uv), 0) AS total_uv,
+					  IFNULL(SUM(total_pv), 0) AS total_pv
+					FROM
+					  ls_baidu_view
+					WHERE 1=1
+					{? AND archive_time >= $startTime$}
+					{? AND archive_time <= $endTime$}
+	            ]]>
+			</Method>
+			<Method name="getFlowPic">
+				<![CDATA[
+		     		SELECT
+					  *
+					FROM
+					  ls_baidu_view
+					WHERE 1=1
+					{? AND archive_time >= $startTime$}
+					{? AND archive_time <= $endTime$}
+					{! order by archive_time desc || $orderBy$}
+	            ]]>
+			</Method>
+			<Method name="getFlowPicCount">
+				<![CDATA[
+		     		SELECT
+					  count(*)
+					FROM
+					  ls_baidu_view
+					WHERE 1=1
+					{? AND archive_time >= $startTime$}
+					{? AND archive_time <= $endTime$}
+	            ]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<artifactId>common-private</artifactId>
+	<packaging>pom</packaging>
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.legendshop</groupId>
+		<artifactId>dev</artifactId>
+		<version>LS.7.0.0</version>
+	</parent>
+
+	<modules>
+		<module>legendshop-common-security</module>
+		<module>legendshop-common-util</module>
+		<module>legendshop-common-oss</module>
+		<module>legendshop-common-captcha</module>
+		<module>legendshop-common-gateway</module>
+	</modules>
+</project>

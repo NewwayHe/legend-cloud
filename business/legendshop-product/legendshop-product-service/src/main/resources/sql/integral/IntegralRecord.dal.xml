@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="IntegralRecord">
+			<Method name="queryExchangeProductPage">
+				<![CDATA[
+		     		SELECT r.*,item.product_name,item.pic,item.order_number FROM ls_user_integral_record r
+		     		left JOIN ls_order_item item ON r.detail_id = item.order_id
+                      WHERE 1 = 1
+						{? AND r.operation_type=$operationType$ }
+						{? AND r.create_time >= $startDate$ }
+						{? AND r.create_time <= $endDate$ }
+						{? AND item.product_name LIKE $productName$ }
+						{? AND item.order_number LIKE $orderNumber$ }
+						ORDER BY r.create_time desc
+	            ]]>
+			</Method>
+			<Method name="queryExchangeProductPageCount">
+				<![CDATA[
+		     		SELECT count(*) FROM ls_user_integral_record r left JOIN ls_order_item item ON r.detail_id = item.order_id
+                      WHERE 1 = 1
+						{? AND r.operation_type=$operationType$ }
+						{? AND r.create_time >= $startDate$ }
+						{? AND r.create_time <= $endDate$ }
+						{? AND item.product_name LIKE $productName$ }
+						{? AND item.order_number LIKE $orderNumber$ }
+	            ]]>
+			</Method>
+			<Method name="queryIntegralOrderPage">
+				<![CDATA[
+					SELECT
+						r.id,r.user_id,r.total_integral AS dealIntegral,r.create_time,item.pic,item.product_name,item.sku_id,item.product_id,item.order_number
+					FROM
+						ls_order r
+		     		LEFT JOIN
+		     			ls_order_item item ON r.id = item.order_id
+                    WHERE
+                    	1 = 1
+						AND r.order_type = 'I'
+						{? AND r.user_id = $userId$ }
+						{? AND r.create_time >= $startDate$ }
+						{? AND r.create_time <= $endDate$ }
+						{? AND item.product_name LIKE $productName$ }
+						{? AND item.order_number LIKE $orderNumber$ }
+					ORDER BY r.create_time DESC
+	            ]]>
+			</Method>
+			<Method name="queryIntegralOrderPageCount">
+				<![CDATA[
+					SELECT
+						COUNT(*)
+					FROM
+						ls_order r
+		     		LEFT JOIN
+		     			ls_order_item item ON r.id = item.order_id
+		     		WHERE
+                    	1 = 1
+						AND r.order_type = 'I'
+		     		 	{? AND r.user_id = $userId$ }
+						{? AND r.create_time >= $startDate$ }
+						{? AND r.create_time <= $endDate$ }
+						{? AND item.product_name LIKE $productName$ }
+						{? AND item.order_number LIKE $orderNumber$ }
+	            ]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

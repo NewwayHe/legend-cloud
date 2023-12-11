@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<artifactId>legendshop-user</artifactId>
+		<groupId>com.legendshop</groupId>
+		<version>LS.7.0.0</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>legendshop-user-service</artifactId>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-undertow</artifactId>
+		</dependency>
+
+		<!--注册中心客户端-->
+		<dependency>
+			<groupId>com.alibaba.cloud</groupId>
+			<artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+		</dependency>
+
+		<!--配置中心客户端-->
+		<dependency>
+			<groupId>com.alibaba.cloud</groupId>
+			<artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+		</dependency>
+
+		<!--服务相关-->
+		<dependency>
+			<groupId>com.legendshop</groupId>
+			<artifactId>legendshop-user-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.legendshop</groupId>
+			<artifactId>legendshop-common-datasource</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.legendshop</groupId>
+			<artifactId>legendshop-common-region</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.powermock</groupId>
+			<artifactId>powermock-module-junit4</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.powermock</groupId>
+			<artifactId>powermock-api-mockito2</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.legendshop</groupId>
+			<artifactId>legendshop-common-log</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.legendshop</groupId>
+			<artifactId>legendshop-common-util</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.legendshop</groupId>
+			<artifactId>legendshop-common-data</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.legendshop</groupId>
+			<artifactId>legendshop-common-sentinel</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.legendshop</groupId>
+			<artifactId>legendshop-order-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>cn.legendshop</groupId>
+			<artifactId>jpaplus</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.legendshop</groupId>
+			<artifactId>legendshop-common-service</artifactId>
+		</dependency>
+
+	</dependencies>
+
+	<!-- 构建相关配置 -->
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>io.fabric8</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<configuration>
+					<skip>false</skip>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

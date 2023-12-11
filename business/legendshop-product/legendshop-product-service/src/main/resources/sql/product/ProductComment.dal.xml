@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 商品评论 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="ProductComment">
+			<Method name="queryProductComments">
+				<![CDATA[
+					SELECT * FROM (
+						SELECT c.id AS id, d.avatar AS portrait, ud.nick_name AS nickName,
+						c.content , c.create_time AS addTime, (c.score+c.shop_score+c.logistics_score)/3 AS averageScore, c.anonymous_flag AS anonymousFlag,
+						orderItem.attribute AS attribute, orderItem.create_time AS buyTime,  c.add_comm_flag AS addCommFlag,
+						c.photos AS photos, c.reply_flag AS replyFlag, c.shop_reply_content AS shopReplyContent,
+						c.shop_reply_time AS shopReplyTime, ac.content AS addContent, ac.photos AS addPhotos,
+						ac.status AS addStatus, ac.create_time AS addAddTime, ac.reply_flag AS addReplyFlag,
+						ac.shop_reply_content AS addShopReplyContent, ac.shop_reply_time AS addShopReplyTime,c.score
+						FROM ls_product_comment c
+						INNER JOIN ls_ordinary_user d ON c.user_id = d.id
+						INNER JOIN ls_user_detail ud ON c.user_id = ud.user_id
+						INNER JOIN ls_order_item orderItem ON orderItem.id = c.order_item_id
+						LEFT JOIN (SELECT * FROM  ls_product_add_comment WHERE status =1 ) ac ON ac.product_comment_id = c.id
+
+						WHERE
+						c.status = 1
+						and c.delete_type = 0
+						{? and c.product_id = $productId$}
+						{? and c.add_comm_flag = $addCommFlag$}
+						{$isHasPhoto$}
+					) p
+					WHERE 1 = 1
+					{$scoreCondition$}
+					{$orderByAverageScore$}
+					{$orderByAddtime$}
+				 ]]>
+			</Method>
+
+			<Method name="queryProductCommentsCount">
+				SELECT COUNT(*) FROM (
+				SELECT c.id AS id, d.avatar AS portrait, ud.nick_name AS nickName,
+				c.content AS content, c.create_time AS addTime, (c.score+c.shop_score+c.logistics_score)/3 AS
+				averageScore, c.anonymous_flag AS anonymousFlag,
+				orderItem.attribute AS attribute, orderItem.create_time AS buyTime, c.add_comm_flag AS addCommFlag,
+				c.photos AS photos, c.reply_flag AS replyFlag, c.shop_reply_content AS shopReplyContent,
+				c.shop_reply_time AS shopReplyTime, ac.content AS addContent, ac.photos AS addPhotos,
+				ac.status AS addStatus, ac.create_time AS addAddTime, ac.reply_flag AS addReplyFlag,
+				ac.shop_reply_content AS addShopReplyContent, ac.shop_reply_time AS addShopReplyTime
+				FROM ls_product_comment c
+				INNER JOIN ls_ordinary_user d ON c.user_id = d.id
+				INNER JOIN ls_user_detail ud ON c.user_id = ud.user_id
+				INNER JOIN ls_order_item orderItem ON orderItem.id = c.order_item_id
+				LEFT JOIN (SELECT * FROM ls_product_add_comment WHERE status =1 ) ac ON ac.product_comment_id = c.id
+				WHERE
+				c.status = 1
+				and c.delete_type = 0
+				{? and c.product_id = $productId$}
+				{? and c.add_comm_flag = $addCommFlag$}
+				{$isHasPhoto$}
+				) p
+				WHERE 1 = 1
+				{$scoreCondition$}
+			</Method>
+
+
+			<Method name="queryMyProductComment">
+				<![CDATA[
+					SELECT oi.order_number, oi.product_name, oi.product_id, oi.pic as prodPic, oi.comm_flag,IFNULL(pc.add_comm_flag,0) AS addCommFlag, pc.id,pc.status,
+					pc.create_time AS addTime, pac.create_time AS addAddTime, pac.id as addId, oi.attribute,oi.id AS orderItemId,o.shop_name AS shopName,o.shop_id AS shopId, pc.delete_type,
+					pc.photos, o.user_id, pc.score, pc.anonymous_flag, pc.id as id, pac.content as addContent,pc.content,pac.photos AS addPhotos
+					FROM ls_order_item oi
+					LEFT JOIN ls_product_comment pc ON pc.order_item_id = oi.id
+					LEFT JOIN ls_order o ON o.order_number = oi.order_number
+					LEFT JOIN ls_product_add_comment pac ON pac.product_comment_id = pc.id
+					WHERE 1 = 1
+					{? and date_add( o.complete_time, INTERVAL o.comment_valid_day DAY )> $now$}
+					{? and o.status = $status$}
+					{? and oi.user_id = $userId$}
+					{? and oi.product_name like $productName$}
+					{? and oi.order_number = $orderNumber$}
+					{? and pc.create_time >= $startTime$}
+					{? and pc.create_time < $endTime$}
+					{? and pac.create_time >= $addStartTime$}
+					{? and pac.create_time < $addEndTime$}
+					{$waitComment$}
+					order by oi.create_time desc
+				]]>
+			</Method>
+
+			<Method name="queryMyProductCommentCount">
+				<![CDATA[
+					SELECT count(1)
+					FROM ls_order_item oi
+					LEFT JOIN ls_product_comment pc ON pc.order_item_id = oi.id
+					LEFT JOIN ls_order o ON o.order_number = oi.order_number
+					LEFT JOIN ls_product_add_comment pac ON pac.product_comment_id = pc.id
+					WHERE 1 = 1
+					{? and date_add( o.complete_time, INTERVAL o.comment_valid_day DAY )> $now$}
+					{? and o.status = $status$}
+					{? and oi.user_id = $userId$}
+					{? and oi.product_name like $productName$}
+					{? and oi.order_number = $orderNumber$}
+					{? and pc.create_time >= $startTime$}
+					{? and pc.create_time < $endTime$}
+					{? and pac.create_time >= $addStartTime$}
+					{? and pac.create_time < $addEndTime$}
+					{$waitComment$}
+				]]>
+			</Method>
+
+
+			<!-- 后台查询评论-->
+			<Method name="queryAdminProductComments">
+				<![CDATA[
+				SELECT pc.id,pc.shop_id,pc.score,pc.shop_score,pc.logistics_score,pc.add_comm_flag,pc.status,pc.create_time AS addTime,
+				pc.product_id,item.product_name,item.pic AS prodPic,item.order_number,o.shop_name,
+				ac.create_time AS addAddTime,ac.status AS addStatus,ac.id AS addId
+				FROM ls_product_comment pc
+				INNER JOIN ls_order_item item ON item.id = pc.order_item_id
+				LEFT JOIN ls_order o ON o.order_number = item.order_number
+				LEFT JOIN ls_product_add_comment ac ON ac.product_comment_id = pc.id
+				WHERE
+		     	pc.delete_type=0
+				{? AND pc.user_id = $userId$}
+				{? AND o.shop_name LIKE $shopName$}
+				{? AND item.product_name LIKE $productName$}
+				{? AND (pc.score+pc.shop_score+pc.logistics_score)/3 > $minScore$}
+				{? AND (pc.score+pc.shop_score+pc.logistics_score)/3 <= $maxScore$}
+				{? AND item.order_number = $orderNumber$}
+				{? and pc.create_time >= $startTime$}
+				{? and pc.create_time < $endTime$}
+				{? and ac.create_time >= $addStartTime$}
+				{? and ac.create_time < $addEndTime$}
+				{$auditStatus$}
+				ORDER BY COALESCE(ac.create_time, pc.create_time) DESC
+				]]>
+			</Method>
+
+			<Method name="queryAdminProductCommentsCount">
+				<![CDATA[
+				SELECT count(*)
+				FROM ls_product_comment pc
+				INNER JOIN ls_order_item item ON item.id = pc.order_item_id
+				LEFT JOIN ls_order o ON o.order_number = item.order_number
+				LEFT JOIN ls_product_add_comment ac ON ac.product_comment_id = pc.id
+				WHERE
+				pc.delete_type=0
+				{? AND pc.user_id = $userId$}
+				{? AND o.shop_name LIKE $shopName$}
+				{? AND item.product_name LIKE $productName$}
+				{? AND (pc.score+pc.shop_score+pc.logistics_score)/3 > $minScore$}
+				{? AND (pc.score+pc.shop_score+pc.logistics_score)/3 <= $maxScore$}
+				{? AND item.order_number = $orderNumber$}
+				{? and pc.create_time >= $startTime$}
+				{? and pc.create_time < $endTime$}
+				{? and ac.create_time >= $addStartTime$}
+				{? and ac.create_time < $addEndTime$}
+				{$auditStatus$}
+				]]>
+			</Method>
+
+			<Method name="querySkuComment">
+				<![CDATA[
+				SELECT pc.id,pc.shop_id,pc.score,pc.shop_score,pc.logistics_score,pc.add_comm_flag,pc.status,pc.create_time AS addTime,
+				pc.product_id, (pc.score+pc.shop_score+pc.logistics_score)/3 AS averageScore ,pc.reply_flag,
+				item.product_name,item.pic AS prodPic,item.order_number,pc.audit_time AS auditTime,
+				sd.shop_name,lu.avatar AS portrait,ld.nick_name,pc.shop_reply_content,pc.content,pc.shop_reply_time,pc.photos,ac.content AS addContent,
+				ac.create_time AS addAddTime,ac.status AS addStatus,ac.id AS addId,ac.reply_flag AS  addReplyFlag,ac.audit_time AS addAuditTime
+				FROM ls_product_comment pc
+				INNER JOIN ls_order_item item ON item.id = pc.order_item_id
+				INNER JOIN ls_shop_detail sd ON sd.id = pc.shop_id
+				LEFT JOIN ls_product_add_comment ac ON ac.product_comment_id = pc.id
+	            left JOIN ls_ordinary_user  lu on  lu.id=item.user_id
+				left join ls_user_detail ld on ld.user_id=lu.id
+				WHERE
+				pc.delete_type=0
+				{? AND pc.shop_id = $shopId$}
+				{? AND pc.product_id = $productId$}
+				{? AND sd.shop_name LIKE $shopName$}
+				{? AND item.product_name LIKE $productName$}
+				{? AND (pc.score+pc.shop_score+pc.logistics_score)/3 > $minScore$}
+				{? AND (pc.score+pc.shop_score+pc.logistics_score)/3 <= $minScore$}
+				{? AND item.orderNumber = $orderNumber$}
+				{? and pc.create_time >= $startTime$}
+				{? and pc.create_time < $endTime$}
+				{? and ac.create_time >= addStartTime}
+				{? and ac.create_time < addEndTime}
+				{$replyStatus$}
+				ORDER BY COALESCE(ac.create_time, pc.create_time) DESC
+				]]>
+			</Method>
+			<Method name="querySkuCommentCount">
+				<![CDATA[
+				SELECT count(*)
+				FROM ls_product_comment pc
+				INNER JOIN ls_order_item item ON item.id = pc.order_item_id
+				INNER JOIN ls_shop_detail sd ON sd.id = pc.shop_id
+				LEFT JOIN ls_product_add_comment ac ON ac.product_comment_id = pc.id
+				WHERE
+				pc.delete_type=0
+				{? AND pc.shop_id = $shopId$}
+				{? AND pc.product_id = $productId$}
+				{? AND sd.shop_name LIKE $shopName$}
+				{? AND item.product_name LIKE $productName$}
+				{? AND (pc.score+pc.shop_score+pc.logistics_score)/3 > $minScore$}
+				{? AND (pc.score+pc.shop_score+pc.logistics_score)/3 <= $minScore$}
+				{? AND item.orderNumber = $orderNumber$}
+				{? and pc.create_time >= $startTime$}
+				{? and pc.create_time < $endTime$}
+				{? and ac.create_time >= addStartTime}
+				{? and ac.create_time < addEndTime}
+				{$replyStatus$}
+				ORDER BY COALESCE(ac.create_time, pc.create_time) DESC
+				]]>
+			</Method>
+
+			<Method name="getProductCommentDetail">
+				<![CDATA[
+				SELECT item.user_id,item.product_name,item.product_id,item.order_number,item.attribute,item.pic AS prodPic,item.create_time as buyTime,
+				o.shop_name,ud.nick_name,uu.avatar AS portrait,
+				pc.score,pc.shop_score,pc.logistics_score,pc.add_comm_flag,pc.status,pc.create_time AS addTime, pc.shop_id,
+				pc.content,pc.photos,pc.add_comm_flag,pc.audit_time,pc.reply_flag,pc.shop_reply_content,pc.shop_reply_time,
+				ac.content AS addContent,ac.audit_time AS addAuditTime,ac.reply_flag AS addReplyFlag,ac.photos AS addPhotos,ac.id AS addId,
+				ac.status AS addStatus, ac.create_time AS addAddTime, ac.shop_reply_content AS addShopReplyContent, ac.shop_reply_time AS addShopReplyTime
+				FROM ls_product_comment pc
+				LEFT JOIN ls_order_item item ON item.id = pc.order_item_id
+				LEFT JOIN ls_order o ON o.order_number = item.order_number
+				LEFT JOIN ls_user_detail ud ON ud.user_id = pc.user_id
+				LEFT JOIN ls_product_add_comment ac ON ac.product_comment_id = pc.id
+				LEFT JOIN ls_ordinary_user uu ON uu.id=ud.user_id
+				WHERE pc.id = ?
+				]]>
+			</Method>
+
+			<Method name="querySpuComment">
+				<![CDATA[
+			    SELECT p.pic AS productPic,p.name AS productName,p.id AS productId, pc.score AS score,MAX( pc.create_time) AS timedesc,min( pc.create_time) AS timeasc,
+				pc.shop_score AS shopScore, pc.logistics_score AS logisticsScore,COUNT(pc.id) AS COUNT,
+				ROUND((pc.shop_score+ pc.logistics_score+pc.score)/3,1) AS composite,pc.create_time AS addtime
+				FROM ls_product p INNER JOIN ls_product_comment pc ON p.id = pc.product_id
+				WHERE pc.delete_type=0
+				{? AND pc.shop_id = $shopId$}
+				{? AND p.name like $productName$}
+				GROUP BY pc.product_id
+                {$orderBy$}
+				]]>
+			</Method>
+			<Method name="querySpuCommentCount">
+				<![CDATA[
+				SELECT COUNT(*) FROM (
+					SELECT count(*)
+					FROM ls_product p INNER JOIN ls_product_comment pc ON p.id = pc.product_id
+					WHERE pc.delete_type=0
+					{? AND pc.shop_id = $shopId$}
+					{? AND p.name like $productName$}
+					GROUP BY pc.product_id
+				) p
+				]]>
+			</Method>
+			<Method name="querySpuCommentDesc">
+				<![CDATA[
+			    SELECT p.pic AS productPic,p.name AS productName,p.id AS productId, pc.score AS score,MAX( pc.create_time) AS s,
+				pc.shop_score AS shopScore, pc.logistics_score AS logisticsScore,COUNT(pc.id) AS COUNT,
+				ROUND((pc.shop_score+ pc.logistics_score+pc.score)/3,1) AS composite,pc.create_time AS addtime
+				FROM ls_product p INNER JOIN ls_product_comment pc ON p.id = pc.product_id
+				WHERE pc.delete_type=0
+				{? AND pc.shop_id = $shopId$}
+				{? AND p.name like $productName$}
+				GROUP BY pc.product_id
+                ORDER BY s DESC
+				]]>
+			</Method>
+			<Method name="querySpuCommentCountDesc">
+				<![CDATA[
+				SELECT COUNT(*) FROM (
+					SELECT count(*)
+					FROM ls_product p INNER JOIN ls_product_comment pc ON p.id = pc.product_id
+					WHERE pc.delete_type=0
+					{? AND pc.shop_id = $shopId$}
+					{? AND p.name like $productName$}
+					GROUP BY pc.product_id
+				) p
+				]]>
+			</Method>
+			<Method name="querySpuCommentAsc">
+				<![CDATA[
+			    SELECT p.pic AS productPic,p.name AS productName,p.id AS productId, pc.score AS score,
+				pc.shop_score AS shopScore, pc.logistics_score AS logisticsScore,COUNT(pc.id) AS COUNT,min( pc.create_time) AS s,
+				ROUND((pc.shop_score+ pc.logistics_score+pc.score)/3,1) AS composite,pc.create_time AS addtime
+				FROM ls_product p INNER JOIN ls_product_comment pc ON p.id = pc.product_id
+				WHERE pc.delete_type=0
+				{? AND pc.shop_id = $shopId$}
+				{? AND p.name like $productName$}
+				GROUP BY pc.product_id
+                ORDER BY s DESC
+				]]>
+			</Method>
+			<Method name="querySpuCommentCountAsc">
+				<![CDATA[
+				SELECT COUNT(*) FROM (
+					SELECT count(*)
+					FROM ls_product p INNER JOIN ls_product_comment pc ON p.id = pc.product_id
+					WHERE pc.delete_type=0
+					{? AND pc.shop_id = $shopId$}
+					{? AND p.name like $productName$}
+					GROUP BY pc.product_id
+				) p
+				]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

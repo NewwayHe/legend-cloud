@@ -1,0 +1,39 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>common-private</artifactId>
+		<groupId>com.legendshop</groupId>
+		<version>LS.7.0.0</version>
+	</parent>
+
+	<artifactId>legendshop-common-oss</artifactId>
+	<name>${project.artifactId}</name>
+	<description>aws通用图片存储服务</description>
+	<packaging>jar</packaging>
+
+	<properties>
+		<aws.version>1.11.837</aws.version>
+	</properties>
+
+	<dependencies>
+		<!--亚马逊统一oss实现存储 SDK-->
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk-s3</artifactId>
+			<version>${aws.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.legendshop</groupId>
+			<artifactId>legendshop-common-core</artifactId>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+</project>

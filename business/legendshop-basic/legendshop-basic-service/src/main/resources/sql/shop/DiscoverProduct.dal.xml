@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 新闻图片 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="DiscoverProduct">
+
+			<Method name="queryProductById"><![CDATA[
+				SELECT p.name,p.id,p.pic,p.price FROM ls_discover_product AS a
+				INNER JOIN ls_product AS p
+				ON  a.product_id=p.id
+				WHERE dis_id=?
+            ]]></Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

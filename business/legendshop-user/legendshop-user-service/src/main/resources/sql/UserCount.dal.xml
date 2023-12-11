@@ -1,0 +1,841 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 用户统计报表 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="UserCount">
+
+			<!-- 查询新增用户数据 -->
+			<Method name="queryNewUser">
+				<![CDATA[
+				select count(*) from ls_user_detail lud
+				where 1 = 1
+				{? and lud.create_time >= $startDate$}
+				{? and lud.create_time <= $endDate$}
+				{? and lud.reg_source = $source$}
+				 ]]>
+			</Method>
+
+			<!-- 查询累计用户数据 -->
+			<Method name="queryAllUser">
+				<![CDATA[
+				select count(*) from ls_user_detail lud
+				where 1 = 1
+				{? and lud.create_time >= $startDate$}
+				{? and lud.create_time <= $endDate$}
+				{? and lud.reg_source = $source$}
+				 ]]>
+			</Method>
+
+			<!-- 查询用户浏览数据 -->
+			<Method name="queryAllView">
+				<![CDATA[
+				select count(*) from ls_user_detail lud
+				where 1 = 1
+				{? and lud.create_time >= $startDate$}
+				{? and lud.create_time <= $endDate$}
+				{? and lud.reg_source = $source$}
+				 ]]>
+			</Method>
+
+			<!-- 查询消费用户数据 -->
+			<Method name="queryConsumptionUser">
+				<![CDATA[
+				SELECT
+				  	IFNULL(SUM(a.num), 0)
+				FROM
+					(SELECT
+						COUNT(DISTINCT user_id) AS num,
+						DATE_FORMAT(create_time, '%Y-%m-%d')
+					FROM
+						ls_data_user_purchasing
+					WHERE pay_amount IS NOT NULL
+					{? and create_time >= $startDate$}
+					{? and create_time <= $endDate$}
+					{? and source = $source$}
+					GROUP BY DATE_FORMAT(create_time, '%Y-%m-%d')) a
+				 ]]>
+			</Method>
+			<!-- 查询地区分布统计数据 -->
+			<Method name="queryDistributedAreaUser">
+				<![CDATA[
+				select count(*) as people, ll.name as city ,
+				(select ll2.name from ls_location ll2 where ll2.id = ll.parent_id ) as province
+				from ls_user_detail lud ,ls_location ll
+				where 1 = 1
+				and lud.city_id = ll.id
+				and lud.province_id = ll.parent_id
+				and lud.create_time <= ?
+				group by ll.id
+				order by people desc
+				limit 5
+				 ]]>
+			</Method>
+			<Method name="queryDistributedAreaUserPage">
+				<![CDATA[
+				SELECT
+					COUNT(*) AS people,
+					ll.name AS city,
+					(SELECT
+						ll2.name
+					FROM
+						ls_location ll2
+					WHERE ll2.id = ll.parent_id) AS province
+				FROM
+				  	ls_order lo Inner JOIN ls_order_user_address la ON lo.address_order_id = la.id,
+				  	ls_location ll
+				WHERE la.city_id = ll.id
+				 	AND la.province_id = ll.parent_id
+				 	AND lo.payed_flag = 1
+				 	{? and lo.create_time <= $endDate$}
+				 	{? and lo.create_time >= $startDate$}
+				GROUP BY ll.id
+				ORDER BY people DESC
+				 ]]>
+			</Method>
+			<Method name="queryDistributedAreaUserPageCount">
+				<![CDATA[
+				SELECT
+				  	COUNT(DISTINCT lo.id)
+				FROM
+				  	ls_order lo Inner JOIN ls_order_user_address la ON lo.address_order_id = la.id,
+				  	ls_location ll
+				WHERE la.city_id = ll.id
+				 	AND la.province_id = ll.parent_id
+				 	AND lo.payed_flag = 1
+				 	{? and lo.create_time <= $endDate$}
+				 	{? and lo.create_time >= $startDate$}
+				 ]]>
+			</Method>
+
+			<!-- 查询等级分布统计数据 -->
+			<Method name="queryDistributedGradeUser">
+				<![CDATA[
+				select lud.grade_id as grade,count(*) as userNum from ls_user_detail lud
+				where lud.create_time <= ?
+				group by lud.grade_id
+				 ]]>
+			</Method>
+			<!-- 查询用户数量总数 -->
+			<Method name="queryUserCount">
+				<![CDATA[
+				select count(*) from ls_user_detail lud
+				where lud.create_time <= ?
+				 ]]>
+			</Method>
+
+			<!-- 查询用户购买力数据 -->
+			<Method name="queryPurchasingPower">
+				<![CDATA[
+				SELECT lud.user_id,lou.mobile,SUM(loi.actual_amount) AS money FROM
+				ls_user_detail lud LEFT JOIN ls_ordinary_user lou on lud.user_id = lou.id
+				LEFT JOIN ls_order lo ON lo.user_id = lud.user_id
+				left join ls_order_item loi on lo.id = loi.order_id
+				where lo.create_time <= ?
+				and lo.status = 20
+				GROUP BY lud.user_id
+				ORDER BY money DESC
+				LIMIT 5
+				 ]]>
+			</Method>
+
+			<!-- 查询店铺销售数据 -->
+			<Method name="queryShopSale">
+				<![CDATA[
+				select lsd.id as shop_id,lsd.shop_name,sum(loi.actual_amount) as money
+				from ls_shop_detail lsd left join ls_order lo on lsd.id = lo.shop_id
+				left join ls_order_item loi on lo.id = loi.order_id
+				where
+				lo.status = 20
+				and loi.refund_status <> 2
+				and lo.create_time <= ?
+				group by lsd.id
+				order by money desc
+				limit 5
+				 ]]>
+			</Method>
+
+			<!-- 查询用戶数量折线图 -->
+			<Method name="queryUserAmountLine">
+				<![CDATA[
+				select
+				ldua.people_amount as people_amount,
+				sum(people_new) as people_new,
+				sum(app_new) as app_new,
+				sum(h5_new) as h5_new,
+				sum(mp_new) as mp_new,
+				sum(mini_new) as mini_new,
+				sum(`unknown`) as `unknown`
+				from ls_data_user_amount ldua
+				where 1=1
+				{? and ldua.create_time >= $startDate$}
+				{? and ldua.create_time < $endDate$}
+				 ]]>
+			</Method>
+
+			<!-- 查询用戶数量统计 -->
+			<Method name="queryUserAmountData">
+				<![CDATA[
+				select * from ls_data_user_amount ldua
+				where 1=1
+				{? and ldua.create_time >= $startDate$}
+				{? and ldua.create_time <= $endDate$}
+				{! order by ldua.create_time desc || $orderBy$}
+				 ]]>
+			</Method>
+			<Method name="queryUserAmountDataCount">
+				<![CDATA[
+				select count(*) from ls_data_user_amount ldua
+				where 1=1
+				{? and ldua.create_time >= $startDate$}
+				{? and ldua.create_time <= $endDate$}
+				 ]]>
+			</Method>
+
+			<!-- 查询用戶数量统计Excel -->
+			<Method name="queryUserAmountDataExcel">
+				<![CDATA[
+				select * from ls_data_user_amount ldua
+				where 1=1
+				{? and ldua.create_time >= $startDate$}
+				{? and ldua.create_time <= $endDate$}
+				{! order by ldua.create_time desc || $orderBy$}
+				 ]]>
+			</Method>
+
+			<!-- 查询用戶购买力排行柱状图统计 -->
+			<Method name="queryPurchasingPic">
+				<![CDATA[
+				select
+				t2.user_id,t2.nick_name,t2.mobile,
+				IFNULL(t1.total_amount, 0) as total_amount,
+				IFNULL(t1.total_quantity, 0) as total_quantity,
+				IFNULL(t1.pay_amount, 0) as pay_amount,
+				IFNULL(t1.pay_quantity, 0) as pay_quantity,
+				IFNULL(t1.deal_amount, 0) as deal_amount,
+				IFNULL(t1.deal_quantity, 0) as deal_quantity,
+				IFNULL(t2.cumulation_total_amount, 0) as cumulation_total_amount,
+				IFNULL(t2.cumulation_total_quantity, 0) as cumulation_total_quantity,
+				IFNULL(t2.cumulation_pay_amount, 0) as cumulation_pay_amount,
+				IFNULL(t2.cumulation_pay_quantity, 0) as cumulation_pay_quantity,
+				IFNULL(t2.cumulation_deal_amount, 0) as cumulation_deal_amount,
+				IFNULL(t2.cumulation_deal_quantity, 0) as cumulation_deal_quantity,
+				IFNULL(t2.cumulation_deal_amount/t2.cumulation_deal_quantity, 0) as customer_price
+				from
+				(
+				select
+				lu.user_id,
+				lu.nick_name,
+				lo.mobile,
+				sum(case when ldup2.total_amount is not null then ldup2.total_amount - ldup2.freight_price else 0 end) as cumulation_total_amount,
+				count(if(ldup2.total_amount is not null,1,null)) as cumulation_total_quantity,
+				sum(case when ldup2.pay_amount is not null then ldup2.pay_amount - ldup2.freight_price else 0 end) as cumulation_pay_amount,
+				count(if(ldup2.pay_amount is not null,1,null)) as cumulation_pay_quantity,
+				sum(case when lorr.id IS NULL AND ldup2.deal_amount is not null then ldup2.deal_amount - ldup2.freight_price else 0 end) as cumulation_deal_amount,
+				count(if(lorr.id IS NULL AND ldup2.deal_amount is not null,1,null)) as cumulation_deal_quantity
+				from ls_user_detail lu
+				LEFT JOIN ls_data_user_purchasing ldup2
+				ON ldup2.user_id = lu.user_id
+				{? and ldup2.mobile = $mobile$}
+				{? and ldup2.create_time <= $endDate$}
+				LEFT JOIN ls_ordinary_user lo
+				ON lu.user_id = lo.id
+				left join ls_order_refund_return lorr on ldup2.order_id = lorr.order_id and lorr.handle_success_status = 1
+				where 1=1
+				{? and lu.user_id = $userId$}
+				{? and lo.mobile = $mobile$}
+				group by lu.user_id
+				) t2
+				left join
+				(select
+				ldup.user_id ,ldup.nick_name, ldup.mobile ,
+				sum(case when ldup.total_amount is not null then ldup.total_amount - ldup.freight_price else 0 end) as total_amount,
+				count(if(ldup.total_amount is not null,1,null)) as total_quantity,
+				sum(case when ldup.pay_amount is not null then ldup.pay_amount - ldup.freight_price else 0 end) as pay_amount,
+				count(if(ldup.pay_amount is not null,1,null)) as pay_quantity,
+				sum(case when lorr.id IS NULL AND ldup.deal_amount is not null then ldup.deal_amount - ldup.freight_price else 0 end) as deal_amount,
+				count(if(lorr.id IS NULL AND ldup.deal_amount is not null,1,null)) as deal_quantity
+				from ls_data_user_purchasing ldup
+				left join ls_order_refund_return lorr on ldup.order_id = lorr.order_id and lorr.handle_success_status = 1
+				where 1 = 1
+				{? and ldup.user_id = $userId$}
+				{? and ldup.mobile = $mobile$}
+				{? and ldup.create_time >= $startDate$}
+				{? and ldup.create_time <= $endDate$}
+				group by ldup.user_id) t1
+				on t1.user_id = t2.user_id
+				{! order by t1.total_amount desc || $orderBy$}
+				 ]]>
+			</Method>
+
+			<!-- 查询用戶购买力排行统计 -->
+			<Method name="queryPurchasingPage">
+				<![CDATA[
+				select
+				t2.user_id,t2.nick_name,t2.mobile,
+				IFNULL(t1.total_amount, 0) as total_amount,
+				IFNULL(t1.total_quantity, 0) as total_quantity,
+				IFNULL(t1.pay_amount, 0) as pay_amount,
+				IFNULL(t1.pay_quantity, 0) as pay_quantity,
+				IFNULL(t1.deal_amount, 0) as deal_amount,
+				IFNULL(t1.deal_quantity, 0) as deal_quantity,
+				IFNULL(t2.cumulation_total_amount, 0) as cumulation_total_amount,
+				IFNULL(t2.cumulation_total_quantity, 0) as cumulation_total_quantity,
+				IFNULL(t2.cumulation_pay_amount, 0) as cumulation_pay_amount,
+				IFNULL(t2.cumulation_pay_quantity, 0) as cumulation_pay_quantity,
+				IFNULL(t2.cumulation_deal_amount, 0) as cumulation_deal_amount,
+				IFNULL(t2.cumulation_deal_quantity, 0) as cumulation_deal_quantity,
+				IFNULL(t2.cumulation_deal_amount/t2.cumulation_deal_quantity, 0) as customer_price
+				from
+				(
+				select
+				lu.user_id,
+				lu.nick_name,
+				lo.mobile,
+				sum(case when ldup2.total_amount is not null then ldup2.total_amount - ldup2.freight_price else 0 end) as cumulation_total_amount,
+				count(if(ldup2.total_amount IS NOT NULL,1,null)) as cumulation_total_quantity,
+				sum(case when ldup2.pay_amount is not null then ldup2.pay_amount - ldup2.freight_price else 0 end) as cumulation_pay_amount,
+				count(if(ldup2.pay_amount IS NOT NULL,1,null)) as cumulation_pay_quantity,
+				sum(case when lorr.id IS NULL AND ldup2.deal_amount is not null then ldup2.deal_amount - ldup2.freight_price else 0 end) as cumulation_deal_amount,
+				count(if(lorr.id IS NULL AND ldup2.deal_amount is not null,1,null)) as cumulation_deal_quantity
+				from ls_user_detail lu
+				LEFT JOIN ls_data_user_purchasing ldup2
+				ON ldup2.user_id = lu.user_id
+				{? and ldup2.mobile = $mobile$}
+				{? and ldup2.create_time <= $endDate$}
+				LEFT JOIN ls_ordinary_user lo
+				ON lu.user_id = lo.id
+				left join ls_order_refund_return lorr on ldup2.order_id = lorr.order_id and lorr.handle_success_status = 1
+				where 1=1
+				{? and lu.user_id = $userId$}
+				{? and lo.mobile = $mobile$}
+				group by lu.user_id
+				) t2
+				left join
+				(select
+				ldup.user_id ,ldup.nick_name, ldup.mobile ,
+				sum(case when ldup.total_amount is not null then ldup.total_amount - ldup.freight_price else 0 end) as total_amount,
+				count(if(ldup.total_amount IS NOT NULL,1,null)) as total_quantity,
+				sum(case when ldup.pay_amount is not null then ldup.pay_amount - ldup.freight_price else 0 end) as pay_amount,
+				count(if(ldup.pay_amount IS NOT NULL,1,null)) as pay_quantity,
+				sum(case when lorr.id IS NULL AND ldup.deal_amount is not null then ldup.deal_amount - ldup.freight_price else 0 end) as deal_amount,
+				count(if(lorr.id IS NULL AND ldup.deal_amount is not null,1,null)) as deal_quantity
+				from ls_data_user_purchasing ldup
+				left join ls_order_refund_return lorr on ldup.order_id = lorr.order_id and lorr.handle_success_status = 1
+				where 1 = 1
+				{? and ldup.user_id = $userId$}
+				{? and ldup.mobile = $mobile$}
+				{? and ldup.create_time >= $startDate$}
+				{? and ldup.create_time <= $endDate$}
+				group by ldup.user_id) t1
+				on t1.user_id = t2.user_id
+				{! order by t1.total_amount desc || $orderBy$}
+				 ]]>
+			</Method>
+			<Method name="queryPurchasingPageCount">
+				<![CDATA[
+				select count(*) from
+				(
+				select
+				t2.user_id,t2.nick_name,t2.mobile,
+				IFNULL(t1.total_amount, 0) as total_amount,
+				IFNULL(t1.total_quantity, 0) as total_quantity,
+				IFNULL(t1.pay_amount, 0) as pay_amount,
+				IFNULL(t1.pay_quantity, 0) as pay_quantity,
+				IFNULL(t1.deal_amount, 0) as deal_amount,
+				IFNULL(t1.deal_quantity, 0) as deal_quantity,
+				IFNULL(t2.cumulation_total_amount, 0) as cumulation_total_amount,
+				IFNULL(t2.cumulation_total_quantity, 0) as cumulation_total_quantity,
+				IFNULL(t2.cumulation_pay_amount, 0) as cumulation_pay_amount,
+				IFNULL(t2.cumulation_pay_quantity, 0) as cumulation_pay_quantity,
+				IFNULL(t2.cumulation_deal_amount, 0) as cumulation_deal_amount,
+				IFNULL(t2.cumulation_deal_quantity, 0) as cumulation_deal_quantity,
+				IFNULL(t2.cumulation_deal_amount/t2.cumulation_deal_quantity, 0) as customer_price
+				from
+				(
+				select
+				lu.user_id,
+				lu.nick_name,
+				lo.mobile,
+				sum(case when ldup2.total_amount is not null then ldup2.total_amount - ldup2.freight_price else 0 end) as cumulation_total_amount,
+				count(if(ldup2.total_amount IS NOT NULL,1,null)) as cumulation_total_quantity,
+				sum(case when ldup2.pay_amount is not null then ldup2.pay_amount - ldup2.freight_price else 0 end) as cumulation_pay_amount,
+				count(if(ldup2.pay_amount IS NOT NULL,1,null)) as cumulation_pay_quantity,
+				sum(case when lorr.id IS NULL AND ldup2.deal_amount is not null then ldup2.deal_amount - ldup2.freight_price else 0 end) as cumulation_deal_amount,
+				count(if(lorr.id IS NULL AND ldup2.deal_amount is not null,1,null)) as cumulation_deal_quantity
+				from ls_user_detail lu
+				LEFT JOIN ls_data_user_purchasing ldup2
+				ON ldup2.user_id = lu.user_id
+				{? and ldup2.mobile = $mobile$}
+				{? and ldup2.create_time <= $endDate$}
+				LEFT JOIN ls_ordinary_user lo
+				ON lu.user_id = lo.id
+				left join ls_order_refund_return lorr on ldup2.order_id = lorr.order_id and lorr.handle_success_status = 1
+				where 1=1
+				{? and lu.user_id = $userId$}
+				{? and lo.mobile = $mobile$}
+				group by lu.user_id
+				) t2
+				left join
+				(select
+				ldup.user_id ,ldup.nick_name, ldup.mobile ,
+				sum(case when ldup.total_amount is not null then ldup.total_amount - ldup.freight_price else 0 end) as total_amount,
+				count(if(ldup.total_amount IS NOT NULL,1,null)) as total_quantity,
+				sum(case when ldup.pay_amount is not null then ldup.pay_amount - ldup.freight_price else 0 end) as pay_amount,
+				count(if(ldup.pay_amount IS NOT NULL,1,null)) as pay_quantity,
+				sum(case when lorr.id IS NULL AND ldup.deal_amount is not null then ldup.deal_amount - ldup.freight_price else 0 end) as deal_amount,
+				count(if(lorr.id IS NULL AND ldup.deal_amount is not null,1,null)) as deal_quantity
+				from ls_data_user_purchasing ldup
+				left join ls_order_refund_return lorr on ldup.order_id = lorr.order_id and lorr.handle_success_status = 1
+				where 1 = 1
+				{? and ldup.user_id = $userId$}
+				{? and ldup.mobile = $mobile$}
+				{? and ldup.create_time >= $startDate$}
+				{? and ldup.create_time <= $endDate$}
+				group by ldup.user_id) t1
+				on t1.user_id = t2.user_id
+				) as t
+				 ]]>
+			</Method>
+
+			<!-- 查询用戶购买力排行统计Excel -->
+			<Method name="queryPurchasingPageExcel">
+				<![CDATA[
+				select
+				t2.user_id,t2.nick_name,t2.mobile,
+				IFNULL(t1.total_amount, 0) as total_amount,
+				IFNULL(t1.total_quantity, 0) as total_quantity,
+				IFNULL(t1.pay_amount, 0) as pay_amount,
+				IFNULL(t1.pay_quantity, 0) as pay_quantity,
+				IFNULL(t1.deal_amount, 0) as deal_amount,
+				IFNULL(t1.deal_quantity, 0) as deal_quantity,
+				IFNULL(t2.cumulation_total_amount, 0) as cumulation_total_amount,
+				IFNULL(t2.cumulation_total_quantity, 0) as cumulation_total_quantity,
+				IFNULL(t2.cumulation_pay_amount, 0) as cumulation_pay_amount,
+				IFNULL(t2.cumulation_pay_quantity, 0) as cumulation_pay_quantity,
+				IFNULL(t2.cumulation_deal_amount, 0) as cumulation_deal_amount,
+				IFNULL(t2.cumulation_deal_quantity, 0) as cumulation_deal_quantity,
+				IFNULL(t2.cumulation_deal_amount/t2.cumulation_deal_quantity, 0) as customer_price
+				from
+				(
+				select
+				lu.user_id,
+				lu.nick_name,
+				lo.mobile,
+				sum(case when ldup2.total_amount>0 then ldup2.total_amount - ldup2.freight_price else 0 end) as cumulation_total_amount,
+				count(if(ldup2.total_amount IS NOT NULL,1,null)) as cumulation_total_quantity,
+				sum(case when ldup2.pay_amount>0 then ldup2.pay_amount - ldup2.freight_price else 0 end) as cumulation_pay_amount,
+				count(if(ldup2.pay_amount IS NOT NULL,1,null)) as cumulation_pay_quantity,
+				sum(case when lorr.id IS NULL AND ldup2.deal_amount is not null then ldup2.deal_amount - ldup2.freight_price else 0 end) as cumulation_deal_amount,
+				count(if(lorr.id IS NULL AND ldup2.deal_amount is not null,1,null)) as cumulation_deal_quantity
+				from ls_user_detail lu
+				LEFT JOIN ls_data_user_purchasing ldup2
+				ON ldup2.user_id = lu.user_id
+				{? and ldup2.mobile = $mobile$}
+				{? and ldup2.create_time <= $endDate$}
+				LEFT JOIN ls_ordinary_user lo
+				ON lu.user_id = lo.id
+				left join ls_order_refund_return lorr on ldup2.order_id = lorr.order_id and lorr.handle_success_status = 1
+				where 1=1
+				{? and lu.user_id = $userId$}
+				{? and lo.mobile = $mobile$}
+				group by lu.user_id
+				) t2
+				left join
+				(select
+				ldup.user_id ,ldup.nick_name, ldup.mobile ,
+				sum(case when ldup.total_amount>0 then ldup.total_amount - ldup.freight_price else 0 end) as total_amount,
+				count(if(ldup.total_amount IS NOT NULL,1,null)) as total_quantity,
+				sum(case when ldup.pay_amount is not null then ldup.pay_amount - ldup.freight_price else 0 end) as pay_amount,
+				count(if(ldup.pay_amount IS NOT NULL,1,null)) as pay_quantity,
+				sum(case when lorr.id IS NULL AND ldup.deal_amount is not null then ldup.deal_amount - ldup.freight_price else 0 end) as deal_amount,
+				count(if(lorr.id IS NULL AND ldup.deal_amount is not null,1,null)) as deal_quantity
+				from ls_data_user_purchasing ldup
+				left join ls_order_refund_return lorr on ldup.order_id = lorr.order_id and lorr.handle_success_status = 1
+				where 1 = 1
+				{? and ldup.user_id = $userId$}
+				{? and ldup.mobile = $mobile$}
+				{? and ldup.create_time >= $startDate$}
+				{? and ldup.create_time <= $endDate$}
+				group by ldup.user_id) t1
+				on t1.user_id = t2.user_id
+				{! order by t1.total_amount desc || $orderBy$}
+				 ]]>
+			</Method>
+
+			<!--			&lt;!&ndash; 查询用戶购买力排行统计 &ndash;&gt;-->
+			<!--			<Method name="queryPurchasingPage">-->
+			<!--				<![CDATA[-->
+			<!--				select-->
+			<!--				ldup.user_id ,ldup.nick_name, ldup.mobile ,-->
+			<!--				sum(ldup.total_amount) as total_amount,-->
+			<!--				count(ldup.total_amount>0) as total_quantity,-->
+			<!--				sum(ldup.pay_amount) as pay_amount,-->
+			<!--				count(ldup.pay_amount>0) as pay_quantity,-->
+			<!--				sum(ldup.deal_amount) as deal_amount,-->
+			<!--				count(ldup.deal_amount>0) as deal_quantity,-->
+			<!--				max(ldup.cumulation_total_amount) as cumulation_total_amount,-->
+			<!--				max(ldup.cumulation_total_quantity) as cumulation_total_quantity,-->
+			<!--				max(ldup.cumulation_pay_amount) as cumulation_pay_amount,-->
+			<!--				max(ldup.cumulation_pay_quantity) as cumulation_pay_quantity,-->
+			<!--				max(ldup.cumulation_deal_amount) as cumulation_deal_amount,-->
+			<!--				max(ldup.cumulation_deal_quantity) as cumulation_deal_quantity-->
+			<!--				from ls_data_user_purchasing ldup-->
+			<!--				where 1 = 1-->
+			<!--				{? and ldup.user_id = $userId$}-->
+			<!--				{? and ldup.mobile = $mobile$}-->
+			<!--				{? and ldup.create_time >= $startDate$}-->
+			<!--				{? and ldup.create_time <= $endDate$}-->
+			<!--				group by ldup.user_id-->
+			<!--				{$orderBy$}-->
+			<!--				 ]]>-->
+			<!--			</Method>-->
+			<!--			<Method name="queryPurchasingPageCount">-->
+			<!--				<![CDATA[-->
+			<!--				select count(*) from-->
+			<!--				(-->
+			<!--				select-->
+			<!--				ldup.id-->
+			<!--				from ls_data_user_purchasing ldup-->
+			<!--				where 1 = 1-->
+			<!--				{? and ldup.user_id = $userId$}-->
+			<!--				{? and ldup.mobile = $mobile$}-->
+			<!--				{? and ldup.create_time >= $startDate$}-->
+			<!--				{? and ldup.create_time <= $endDate$}-->
+			<!--				group by ldup.user_id-->
+			<!--				) as t-->
+			<!--				 ]]>-->
+			<!--			</Method>-->
+
+			<!-- 查询用戶登录历史 -->
+			<Method name="queryLoginHistory">
+				<![CDATA[
+				select llh.user_id ,llh.nick_name ,llh.ip ,llh.country ,llh.time,llh.login_source, llh.login_type from ls_login_history llh
+				where llh.login_type = 'USER'
+				{? and llh.user_id like $userId$}
+				{? and llh.time >= $startDate$}
+				{? and llh.time <= $endDate$}
+				{? and llh.nick_name like $nickName$}
+				order by llh.time desc
+				 ]]>
+			</Method>
+			<Method name="queryLoginHistoryCount">
+				<![CDATA[
+				select count(*) from ls_login_history llh
+				where llh.login_type = 'USER'
+				{? and llh.user_id like $userId$}
+				{? and llh.time >= $startDate$}
+				{? and llh.time <= $endDate$}
+				{? and llh.nick_name like $nickName$}
+				 ]]>
+			</Method>
+
+			<!-- 查询用戶登录历史统计 -->
+			<Method name="queryLoginHistoryData">
+				<![CDATA[
+				select llh.user_id ,llh.nick_name ,count(*) as frequency,max(llh.time) as time from ls_login_history llh
+				where llh.login_type = 'USER'
+				{? and llh.user_id like $userId$}
+				{? and llh.time >= $startDate$}
+				{? and llh.time <= $endDate$}
+				{? and llh.nick_name like $nickName$}
+				group by llh.user_id
+				 ]]>
+			</Method>
+			<Method name="queryLoginHistoryDataCount">
+				<![CDATA[
+				select count(*) from
+				(
+				select llh.id from ls_login_history llh
+				where llh.login_type = 'USER'
+				{? and llh.user_id like $userId$}
+				{? and llh.time >= $startDate$}
+				{? and llh.time <= $endDate$}
+				{? and llh.nick_name like $nickName$}
+				group by llh.user_id
+				) as t
+				 ]]>
+			</Method>
+
+			<!-- 查询短信发送统计 -->
+			<Method name="querySmsHistory">
+				<![CDATA[
+				select lsl.mobile_phone as mobile,lsl.content,lsl.create_time,lud.nick_name,
+				lsl.`type`,lsl.response_status as response,ou.id as userId
+				from ls_sms_log lsl left join ls_ordinary_user ou ON ou.mobile=lsl.mobile_phone left join
+				 ls_user_detail lud on lud.user_id=ou.id
+				where 1=1
+				{? and ou.id like $userId$}
+				{? and lud.nick_name like $nickName$}
+				{? and lsl.mobile_phone like $mobile$}
+				{? and lsl.response_status = $success$}
+				{? and lsl.response_status <> $fail$}
+				{? and lsl.create_time >= $startDate$}
+				{? and lsl.create_time <= $endDate$}
+				order By lsl.create_time desc
+				 ]]>
+			</Method>
+			<Method name="querySmsHistoryCount">
+				<![CDATA[
+				select count(*)
+				from ls_sms_log lsl left join ls_ordinary_user ou ON ou.mobile=lsl.mobile_phone left join
+				 ls_user_detail lud on lud.user_id=ou.id
+				where 1=1
+				{? and ou.id like $userId$}
+				{? and lud.nick_name like $nickName$}
+				{? and lsl.mobile_phone like $mobile$}
+				{? and lsl.response_status = $success$}
+				{? and lsl.response_status <> $fail$}
+				{? and lsl.create_time >= $startDate$}
+				{? and lsl.create_time <= $endDate$}
+				order By lsl.create_time desc
+				 ]]>
+			</Method>
+
+			<!-- 查询店铺销售排行分页 -->
+			<Method name="getShopSalePage">
+				<![CDATA[
+				select * from(
+				select y.shop_name,y.id as shop_id,ifnull(x.deal_amount,0) as deal_amount,ifnull(x.deal_order_num,0) as deal_order_num,ifnull(x.deal_good_num,0) as deal_good_num,ifnull(r.refund_amount,0) as refund_amount,ifnull(r.refund_order_num,0) as refund_order_num, ifnull(s.out_stock_rate,0) as out_stock_rate,ifnull(t.undercarriage_rate,0) as undercarriage_rate, (IFNULL(x.order_time, 0) + IFNULL(r.refund_time, 0)) / 3600 AS order_response_time from(
+				select lsd.id,lsd.shop_name from ls_shop_detail lsd
+				) y
+				left join
+				(
+				select lo.shop_id,sum(loi.actual_amount) as deal_amount,count(DISTINCT lo.id) as deal_order_num,sum(loi.basket_count) as deal_good_num,
+				SUM(lo.delivery_time - lo.pay_time) / COUNT(*) AS order_time
+				from ls_order lo left join ls_order_item loi on lo.id = loi.order_id
+				where 1=1
+				and lo.status = 20
+				and loi.refund_status <> 2
+				{? and lo.create_time >= $startDate$}
+				{? and lo.create_time <= $endDate$}
+				group by lo.shop_id
+				) x on x.shop_id = y.id
+				left join
+				(
+				select lorr.shop_id,sum(refund_amount) as refund_amount,count(*) as refund_order_num,
+				SUM(lorr.seller_time - lorr.create_time) / COUNT(*) AS refund_time
+				from ls_order_refund_return lorr
+				where 1=1
+				and lorr.handle_success_status = 1
+				{? and lorr.create_time >= $startDate$}
+				{? and lorr.create_time <= $endDate$}
+				group by lorr.shop_id
+				) r on r.shop_id = y.id
+				left join
+				(
+				select shop_id, SUM(out_stock_rate) / COUNT(out_stock_rate) AS out_stock_rate
+				from ls_shop_out_stock_rate
+				where 1=1
+				{? and create_time >= $startDate$}
+				{? and create_time <= $endDate$}
+				group by shop_id
+				) s on s.shop_id = y.id
+				left join
+				(
+				SELECT
+					COUNT(la.id) / COUNT(IF(lp.op_status =1 AND lp.status = 1 AND lp.del_status = 1,1,NULL)) AS undercarriage_rate,
+					lp.shop_id
+				FROM
+					ls_product lp
+					LEFT JOIN ls_accusation la
+						ON la.product_id = lp.id
+						AND la.illegal_off <> 0
+						AND la.status = 1
+						{? AND la.handle_time >= $startDate$}
+						{? AND la.handle_time <= $endDate$}
+				GROUP BY lp.shop_id
+				) t on t.shop_id = y.id
+				) c where 1=1
+				{? and c.shop_name like $shopName$}
+				{! order by deal_amount desc || $orderBy$}
+				 ]]>
+			</Method>
+			<Method name="getShopSalePageCount">
+				<![CDATA[
+				select count(*) from(
+				select y.shop_name,y.id as shop_id,ifnull(x.deal_amount,0) as deal_amount,ifnull(x.deal_order_num,0) as deal_order_num,ifnull(x.deal_good_num,0) as deal_good_num,ifnull(r.refund_amount,0) as refund_amount,ifnull(r.refund_order_num,0) as refund_order_num, ifnull(s.out_stock_rate,0) as out_stock_rate,ifnull(t.undercarriage_rate,0) as undercarriage_rate, (IFNULL(x.order_time, 0) + IFNULL(r.refund_time, 0)) / 3600 AS order_response_time from(
+				select lsd.id,lsd.shop_name from ls_shop_detail lsd
+				) y
+				left join
+				(
+				select lo.shop_id,sum(loi.actual_amount) as deal_amount,count(DISTINCT lo.id) as deal_order_num,sum(loi.basket_count) as deal_good_num,
+				SUM(lo.delivery_time - lo.pay_time) / COUNT(*) AS order_time
+				from ls_order lo left join ls_order_item loi on lo.id = loi.order_id
+				where 1=1
+				and lo.status = 20
+				and loi.refund_status <> 2
+				{? and lo.create_time >= $startDate$}
+				{? and lo.create_time <= $endDate$}
+				group by lo.shop_id
+				) x on x.shop_id = y.id
+				left join
+				(
+				select lorr.shop_id,sum(refund_amount) as refund_amount,count(*) as refund_order_num,
+				SUM(lorr.seller_time - lorr.create_time) / COUNT(*) AS refund_time
+				from ls_order_refund_return lorr				where 1=1
+				and lorr.handle_success_status = 1
+				{? and lorr.create_time >= $startDate$}
+				{? and lorr.create_time <= $endDate$}
+				group by lorr.shop_id
+				) r on r.shop_id = y.id
+				left join
+				(
+				select shop_id, SUM(out_stock_rate) / COUNT(out_stock_rate) AS out_stock_rate
+				from ls_shop_out_stock_rate
+				where 1=1
+				{? and create_time >= $startDate$}
+				{? and create_time <= $endDate$}
+				group by shop_id
+				) s on s.shop_id = y.id
+				left join
+				(
+				SELECT
+					COUNT(la.id) / COUNT(IF(lp.op_status =1 AND lp.status = 1 AND lp.del_status = 1,1,NULL)) AS undercarriage_rate,
+					lp.shop_id
+				FROM
+					ls_product lp
+					LEFT JOIN ls_accusation la
+						ON la.product_id = lp.id
+						AND la.illegal_off <> 0
+						AND la.status = 1
+						{? AND la.handle_time >= $startDate$}
+						{? AND la.handle_time <= $endDate$}
+				GROUP BY lp.shop_id
+				) t on t.shop_id = y.id
+				) c where 1=1
+				{? and c.shop_name like $shopName$}
+				 ]]>
+			</Method>
+
+			<!-- 查询店铺销售排行柱状图 -->
+			<Method name="getShopSalePic">
+				<![CDATA[
+				select * from(
+				select y.shop_name,y.id as shop_id,ifnull(x.deal_amount,0) as deal_amount,ifnull(x.deal_order_num,0) as deal_order_num,ifnull(x.deal_good_num,0) as deal_good_num,ifnull(r.refund_amount,0) as refund_amount,ifnull(r.refund_order_num,0) as refund_order_num, ifnull(s.out_stock_rate,0) as out_stock_rate,ifnull(t.undercarriage_rate,0) as undercarriage_rate, (IFNULL(x.order_time, 0) + IFNULL(r.refund_time, 0)) / 3600 AS order_response_time from(
+				select lsd.id,lsd.shop_name from ls_shop_detail lsd
+				) y
+				left join
+				(
+				select lo.shop_id,sum(loi.actual_amount) as deal_amount,count(DISTINCT lo.id) as deal_order_num,sum(loi.basket_count) as deal_good_num,
+				SUM(lo.delivery_time - lo.pay_time) / COUNT(*) AS order_time
+				from ls_order lo left join ls_order_item loi on lo.id = loi.order_id
+				where 1=1
+				and lo.status = 20
+				and loi.refund_status <> 2
+				{? and lo.create_time >= $startDate$}
+				{? and lo.create_time <= $endDate$}
+				group by lo.shop_id
+				) x on x.shop_id = y.id
+				left join
+				(
+				select lorr.shop_id,sum(refund_amount) as refund_amount,count(*) as refund_order_num,
+				SUM(lorr.seller_time - lorr.create_time) / COUNT(*) AS refund_time
+				from ls_order_refund_return lorr
+				where 1=1
+				and lorr.handle_success_status = 1
+				{? and lorr.create_time >= $startDate$}
+				{? and lorr.create_time <= $endDate$}
+				group by lorr.shop_id
+				) r on r.shop_id = y.id
+				left join
+				(
+				select shop_id, SUM(out_stock_rate) / COUNT(out_stock_rate) AS out_stock_rate
+				from ls_shop_out_stock_rate
+				where 1=1
+				{? and create_time >= $startDate$}
+				{? and create_time <= $endDate$}
+				group by shop_id
+				) s on s.shop_id = y.id
+				left join
+				(
+				SELECT
+					COUNT(la.id) / COUNT(IF(lp.op_status =1 AND lp.status = 1 AND lp.del_status = 1,1,NULL)) AS undercarriage_rate,
+					lp.shop_id
+				FROM
+					ls_product lp
+					LEFT JOIN ls_accusation la
+						ON la.product_id = lp.id
+						AND la.illegal_off <> 0
+						AND la.status = 1
+						{? AND la.handle_time >= $startDate$}
+						{? AND la.handle_time <= $endDate$}
+				GROUP BY lp.shop_id
+				) t on t.shop_id = y.id
+				) c where 1=1
+				{? and c.shop_name like $shopName$}
+				 ]]>
+			</Method>
+
+			<!-- 查询店铺销售排行分页Excel -->
+			<Method name="getShopSalePageExcel">
+				<![CDATA[
+				select * from(
+				select y.shop_name,y.id as shop_id,ifnull(x.deal_amount,0) as deal_amount,ifnull(x.deal_order_num,0) as deal_order_num,ifnull(x.deal_good_num,0) as deal_good_num,ifnull(r.refund_amount,0) as refund_amount,ifnull(r.refund_order_num,0) as refund_order_num, ifnull(s.out_stock_rate,0) as out_stock_rate,ifnull(t.undercarriage_rate,0) as undercarriage_rate, (IFNULL(x.order_time, 0) + IFNULL(r.refund_time, 0)) / 3600 AS order_response_time from(
+				select lsd.id,lsd.shop_name from ls_shop_detail lsd
+				) y
+				left join
+				(
+				select lo.shop_id,sum(loi.actual_amount) as deal_amount,count(DISTINCT lo.id) as deal_order_num,sum(loi.basket_count) as deal_good_num,
+				SUM(lo.delivery_time - lo.pay_time) / COUNT(*) AS order_time
+				from ls_order lo left join ls_order_item loi on lo.id = loi.order_id
+				where 1=1
+				and lo.status = 20
+				and loi.refund_status <> 2
+				{? and lo.create_time >= $startDate$}
+				{? and lo.create_time <= $endDate$}
+				group by lo.shop_id
+				) x on x.shop_id = y.id
+				left join
+				(
+				select lorr.shop_id,sum(refund_amount) as refund_amount,count(*) as refund_order_num,
+				SUM(lorr.seller_time - lorr.create_time) / COUNT(*) AS refund_time
+				from ls_order_refund_return lorr
+				where 1=1
+				and lorr.handle_success_status = 1
+				{? and lorr.create_time >= $startDate$}
+				{? and lorr.create_time <= $endDate$}
+				group by lorr.shop_id
+				) r on r.shop_id = y.id
+				left join
+				(
+				select shop_id, SUM(out_stock_rate) / COUNT(out_stock_rate) AS out_stock_rate
+				from ls_shop_out_stock_rate
+				where 1=1
+				{? and create_time >= $startDate$}
+				{? and create_time <= $endDate$}
+				group by shop_id
+				) s on s.shop_id = y.id
+				left join
+				(
+				SELECT
+					COUNT(la.id) / COUNT(IF(lp.op_status =1 AND lp.status = 1 AND lp.del_status = 1,1,NULL)) AS undercarriage_rate,
+					lp.shop_id
+				FROM
+					ls_product lp
+					LEFT JOIN ls_accusation la
+						ON la.product_id = lp.id
+						AND la.illegal_off <> 0
+						AND la.status = 1
+						{? AND la.handle_time >= $startDate$}
+						{? AND la.handle_time <= $endDate$}
+				GROUP BY lp.shop_id
+				) t on t.shop_id = y.id
+				) c where 1=1
+				{? and c.shop_name like $shopName$}
+				{! order by deal_amount desc || $orderBy$}
+				 ]]>
+			</Method>
+
+
+			<!-- 根据用户id查询用户昵称 -->
+			<Method name="queryNickNameById">
+				<![CDATA[
+				select lud.nick_name from ls_user_detail lud
+				where lud.user_id = ?
+				 ]]>
+			</Method>
+
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 商品商品优惠券商品 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="CouponProduct">
+			<!--查询优惠券可使用的商品-->
+			<Method name="queryContains">
+				<![CDATA[
+		     		 SELECT
+		     		 	sku.id,p.id as productId,p.shop_id,If(sku.pic is null or sku.pic = '', p.pic, sku.pic) as pic,
+		     		 	sku.cost_price,sku.name,p.name as productName, p.brief, sku.cn_properties,sku.price,sku.stocks,pc.comments
+		     		 FROM
+		     		 	ls_sku sku,ls_product p
+		     		 LEFT JOIN
+		     			ls_product_comment_statistics pc on p.id = pc.product_id
+		     		 WHERE
+		     		 	p.id=sku.product_id
+		     		 	AND p.status=1
+		     		 	AND p.op_status = 1
+		     		 	AND p.del_status = 1
+		     		 	{? AND shop_id = $shopId$ }
+		     			AND sku.id in ( SELECT cp.sku_id FROM ls_coupon_product cp {? WHERE cp.coupon_id =$couponId$}  )
+	            ]]>
+			</Method>
+			<Method name="queryContainsCount">
+				<![CDATA[
+		     		SELECT
+		     			count(sku.id)
+		     		FROM
+		     			ls_sku sku,ls_product p
+		     		LEFT JOIN
+		     			ls_product_comment_statistics pc on p.id = pc.product_id
+		     		WHERE
+		     			p.id=sku.product_id
+		     			AND p.status=1
+		     			AND p.op_status = 1
+		     			AND p.del_status = 1
+		     		 	{? AND shop_id = $shopId$ }
+		     		 	AND sku.id in ( SELECT cp.sku_id FROM ls_coupon_product cp {? WHERE cp.coupon_id =$couponId$}  )
+	            ]]>
+			</Method>
+
+			<!--查询优惠券除不可用的商品外的所有商品 暂时没有用上-->
+			<Method name="queryExclusion">
+				<![CDATA[
+		     		 SELECT
+		     		 	sku.id,p.id as productId,p.shop_id,If(sku.pic is null or sku.pic = '', p.pic, sku.pic) as pic,sku.name,
+		     		 	sku.cost_price,p.name as productName, p.brief,sku.cn_properties,sku.price,sku.stocks,pc.comments
+		     		 FROM
+		     		 	ls_sku sku,ls_product p
+		     		 LEFT JOIN
+		     			ls_product_comment_statistics pc on p.id = pc.product_id
+		     		 WHERE
+		     		 	p.id=sku.product_id
+		     		 	AND p.status=1
+		     		 	AND p.op_status = 1
+		     		 	AND p.del_status = 1
+		     		 	{? AND shop_id = $shopId$ }
+		     		 	AND sku.id not in ( SELECT cp.sku_id FROM ls_coupon_product cp {? WHERE cp.coupon_id =$couponId$}  )
+	            ]]>
+			</Method>
+			<Method name="queryExclusionCount">
+				<![CDATA[
+		     		SELECT
+		     			COUNT(sku.id)
+		     		FROM
+		     			ls_sku sku,ls_product p
+		     		LEFT JOIN
+		     			ls_product_comment_statistics pc on p.id = pc.product_id
+		     		WHERE
+		     			p.id=sku.product_id
+		     			AND p.status=1
+		     			AND p.op_status = 1
+		     			AND p.del_status = 1
+		     		 	{? AND shop_id = $shopId$ }
+		     		 	AND sku.id not in ( SELECT cp.sku_id FROM ls_coupon_product cp {? WHERE cp.coupon_id =$couponId$}  )
+	            ]]>
+			</Method>
+
+			<!--查询优惠券全店铺通用的商品-->
+			<Method name="queryGeneral">
+				<![CDATA[
+		     		SELECT
+		     			sku.id,p.id as productId,p.shop_id,If(sku.pic is null or sku.pic = '', p.pic, sku.pic) as pic,
+		     			sku.cost_price,sku.name,p.name as productName, p.brief, sku.cn_properties,sku.price,sku.stocks,pc.comments
+		     		FROM
+		     			ls_sku sku,ls_product p
+		     		LEFT JOIN
+		     			ls_product_comment_statistics pc on p.id = pc.product_id
+		     		WHERE
+						p.id=sku.product_id
+						AND p.status=1
+						AND p.op_status = 1
+						AND p.del_status = 1
+						{? AND shop_id = $shopId$}
+	            ]]>
+			</Method>
+			<Method name="queryGeneralCount">
+				<![CDATA[
+		     		SELECT
+		     			count(sku.id)
+		     		FROM
+		     			ls_sku sku,ls_product p
+		     		LEFT JOIN
+		     			ls_product_comment_statistics pc on p.id = pc.product_id
+		     		WHERE
+						p.id=sku.product_id
+						AND p.status=1
+						AND p.op_status = 1
+						AND p.del_status = 1
+						{? AND shop_id = $shopId$}
+	            ]]>
+			</Method>
+
+			<Method name="queryInfoByCouponId">
+				SELECT s.id AS skuId,s.name AS skuName,s.*FROM ls_coupon_product cp
+				LEFT JOIN ls_sku s ON cp.sku_id=s.id
+				WHERE coupon_id=?
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 新闻图片 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="GrassArticle">
+
+			<Method name="queryPage"><![CDATA[
+				SELECT a.id,a.title,a.intro,a.content,a.thumb_num,a.comments_num,a.image,a.writer_name,a.status,a.create_time,a.publish_time,a.audit, a.page_view,a.type as type,a.user_id as userId,lsd.shop_name as shopName
+				FROM ls_grass_article AS a
+				left join ls_shop_detail lsd on lsd.shop_user_id=a.user_id
+				WHERE 1=1
+				{? and a.title like $title$}
+				{? and a.create_time >= $beginTime$}
+				{? and a.create_time <= $endTime$}
+				{? and a.status = $status$}
+				{? and a.audit = $audit$}
+				{? and a.type = $type$}
+				{? and lsd.shop_name like $shopName$}
+				GROUP BY a.id
+				ORDER BY create_time DESC
+            ]]></Method>
+
+			<Method name="queryPageCount"><![CDATA[
+				SELECT COUNT(1) FROM  ls_grass_article AS a
+				left join ls_shop_detail lsd on lsd.shop_user_id=a.user_id
+				where 1=1
+				{? and a.title like $title$}
+				{? and a.create_time >= $beginTime$}
+				{? and a.create_time <= $endTime$}
+				{? and a.status = $status$}
+				{? and a.audit = $audit$}
+				{? and a.type = $type$}
+				{? and lsd.shop_name like $shopName$}
+            ]]></Method>
+
+			<Method name="queryGrassArticlePage"><![CDATA[
+				SELECT
+				  	lg.*,
+				  	ll.grlabel_id
+				FROM
+				  	ls_grass_article lg
+				  	LEFT JOIN ls_grass_article_lable ll
+				  	ON lg.id = ll.grarticle_id
+				WHERE 1=1
+				  	{? AND lg.user_id = $userId$}
+				  	{? AND lg.title like $title$}
+				  	{? AND lg.create_time >= $beginTime$}
+				  	{? AND lg.create_time <= $endTime$}
+				  	{? AND lg.status = $status$}
+				  	{? AND lg.audit = $audit$}
+				  	{? AND lg.type = $type$}
+				  	{$writerName$}
+				  	{@ AND ll.grlabel_id in $grlabelId$}
+				GROUP BY lg.id
+				{! ORDER BY lg.publish_time DESC || $orderIndicator$}
+            ]]></Method>
+
+			<Method name="queryGrassArticlePageCount"><![CDATA[
+				SELECT
+				  	count(distinct lg.id)
+				FROM
+				  	ls_grass_article lg
+				  	LEFT JOIN ls_grass_article_lable ll
+				  	ON lg.id = ll.grarticle_id
+				WHERE 1=1
+				  	{? AND lg.user_id = $userId$}
+				  	{? AND lg.title like $title$}
+				  	{? AND lg.create_time >= $beginTime$}
+				  	{? AND lg.create_time <= $endTime$}
+				  	{? AND lg.status = $status$}
+				  	{? AND lg.audit = $audit$}
+				  	{? AND lg.type = $type$}
+				  	{$writerName$}
+				  	{@ AND ll.grlabel_id in $grlabelId$}
+            ]]></Method>
+
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

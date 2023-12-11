@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 投诉表的SQL -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="ShopUser">
+
+			<Method name="queryShopUserCount">
+				select count(1) from ls_shop_user su, ls_shop_role sr where su.shop_role_id=sr.id
+				{? and su.shop_id = $shopId$}
+			</Method>
+
+			<Method name="queryShopUser">
+				select su.id,su.name,su.real_name as realName,su.enabled,sr.name as roleName
+				from ls_shop_user su, ls_shop_role sr where su.shop_role_id=sr.id
+				{? and su.shop_id = $shopId$}
+				order by su.rec_date desc
+			</Method>
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

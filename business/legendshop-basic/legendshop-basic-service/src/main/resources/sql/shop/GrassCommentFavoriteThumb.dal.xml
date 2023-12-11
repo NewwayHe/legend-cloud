@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 商品回复 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="GrassCommentFavoriteThumb">
+			<Method name="methodName">
+				<![CDATA[
+		     		querySql
+	            ]]>
+			</Method>
+			<Method name="queryMyGrassCommentFavoriteThumbsInformPage">
+				<![CDATA[
+				 SELECT f.*,c.content,u.avatar,d.nick_name FROM ls_grass_comment_favorite_thumb f LEFT JOIN ls_grass_comment c on f.comment_id = c.id
+                 LEFT JOIN ls_ordinary_user u on u.id=f.user_id LEFT JOIN ls_user_detail d ON f.user_id = d.user_id
+				WHERE 1 = 1
+				{? AND a.user_id = $userId$}
+				ORDER BY f.rec_date DESC
+				]]>
+			</Method>
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>
+

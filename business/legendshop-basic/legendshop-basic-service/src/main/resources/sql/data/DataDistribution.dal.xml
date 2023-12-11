@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 分销数据表 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="DataDistribution">
+			<Method name="pageDataDistribution">
+				<![CDATA[
+		     		SELECT
+					  	*
+					FROM
+					  	ls_data_distribution
+					where 1=1
+					{? and record_date <= $endTime$}
+					{? and record_date >= $startTime$}
+					{! ORDER BY record_date DESC || $orderIndicator$}
+	            ]]>
+			</Method>
+			<Method name="pageDataDistributionCount">
+				<![CDATA[
+		     		SELECT
+					  	count(*)
+					FROM
+					  	ls_data_distribution
+					where 1=1
+					{? and record_date <= $endTime$}
+					{? and record_date >= $startTime$}
+	            ]]>
+			</Method>
+
+
+			<Method name="queryNewDistribution">
+				<![CDATA[
+		     		SELECT
+						DATE_FORMAT(promoter_time, '%Y-%m-%d') AS recordDate,
+						COUNT(*) AS newDistributionCount
+					FROM
+						ls_distribution
+					where 1=1
+					{? and promoter_time <= $endTime$}
+					{? and promoter_time >= $startTime$}
+					GROUP BY DATE_FORMAT(promoter_time, '%Y-%m-%d')
+	            ]]>
+			</Method>
+
+
+			<Method name="queryNewDistributionOrder">
+				<![CDATA[
+				SELECT
+					DATE_FORMAT(loi.update_time, '%Y-%m-%d') AS recordDate,
+					COUNT(DISTINCT loi.order_number) AS newDistributionOrderCount,
+					SUM(loi.basket_count) AS newDistributionProductCount,
+					SUM(loi.actual_amount) AS newDistributionProductAmount,
+					SUM(loi.dist_commission_cash) AS newDistributionCommission
+				FROM
+					(SELECT
+						loi.order_number, loi.basket_count, loi.actual_amount, loi.dist_commission_cash - loi.self_purchase_total_amount AS dist_commission_cash, lcr.update_time
+					FROM
+						ls_distribution_commission_record lcr
+						INNER JOIN ls_order_item loi
+						  ON lcr.order_item_number = loi.order_item_number
+					WHERE lcr.status = 10
+						{? and lcr.update_time <= $endTime$}
+						{? and lcr.update_time >= $startTime$}
+					GROUP BY loi.id) loi
+				GROUP BY DATE_FORMAT(loi.update_time, '%Y-%m-%d')
+	            ]]>
+
+
+				<!--				SELECT-->
+				<!--				DATE_FORMAT(create_time, '%Y-%m-%d') AS recordDate,-->
+				<!--				COUNT(DISTINCT order_number) AS newDistributionOrderCount,-->
+				<!--				SUM(basket_count) AS newDistributionProductCount,-->
+				<!--				SUM(actual_amount) AS newDistributionProductAmount,-->
+				<!--				SUM(dist_commission_cash) AS newDistributionCommission-->
+				<!--				FROM-->
+				<!--				ls_order_item-->
+				<!--				WHERE dist_flag = 1-->
+				<!--				AND dist_commission_cash > 0-->
+				<!--				{? and create_time <= $endTime$}-->
+				<!--				{? and create_time >= $startTime$}-->
+				<!--				GROUP BY DATE_FORMAT(create_time, '%Y-%m-%d')-->
+			</Method>
+
+
+			<Method name="queryCumulativeDistributionOrder">
+				<![CDATA[
+		     		SELECT
+						IFNULL(COUNT(DISTINCT loi.order_number), 0) AS cumulativeDistributionOrderCount,
+						IFNULL(SUM(loi.basket_count), 0) AS cumulativeDistributionProductCount,
+						IFNULL(SUM(loi.actual_amount), 0) AS cumulativeDistributionProductAmount,
+						IFNULL(SUM(loi.dist_commission_cash), 0) AS cumulativeDistributionCommission
+					FROM
+						(SELECT
+							loi.*
+						FROM
+							ls_distribution_commission_record lcr
+							INNER JOIN ls_order_item loi
+							  ON lcr.order_item_number = loi.order_item_number
+						WHERE lcr.status = 10
+							{? and lcr.update_time <= $appointTime$}
+						GROUP BY loi.id) loi
+	            ]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>
+

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 商品咨询 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="ProductProperty">
+
+			<Method name="queryProdPropertyList">
+				<![CDATA[
+  					select pp.* from ls_product_property pp where pp.is_rule_attributes = ? {? and pp.prop_name like  $propName$}
+  					{? and pp.memo like  $memo$}
+				    and not exists (select 1 from ls_product_property_agg_specification pt where pt.prop_id = pp.prop_id and pt.type_id = ? )
+				 ]]>
+			</Method>
+			<Method name="queryProdParamList">
+				<![CDATA[
+  					select pp.* from ls_product_property pp where pp.is_rule_attributes = ? {? and pp.prop_name like  $propName$}
+  					{? and pp.memo like  $memo$}
+				    and not exists (select 1 from ls_product_property_agg_param pt where pt.prop_id = pp.prop_id and pt.type_id = ? )
+				 ]]>
+			</Method>
+			<Method name="queryProductPropertyPage">
+				<![CDATA[
+					with selectProp as (SELECT prop_id from ls_product_property_param_group
+					{? where group_id = $paramsGroupId$ } )
+					SELECT product_id,memo,update_time,source,type,prop_name,delete_flag,search_flag,create_time,
+					attribute_type,id,shop_id,IFNULL(selectProp.prop_id,0) as selectFlag
+					FROM ls_product_property
+					 LEFT JOIN selectProp ON selectProp.prop_id=id
+					WHERE
+					{? attribute_type=$attributeType$}
+					{? AND source=$source$}
+					{? and shop_id=$shopId$}
+					{? AND delete_flag=$deleteFlag$}
+					{? and prop_name like $propName$}
+					{? and memo like $memo$}
+					{? and type =$type$}
+					ORDER BY create_time desc, selectFlag desc,  id asc
+
+				 ]]>
+			</Method>
+			<Method name="queryProductPropertyPageCount">
+				<![CDATA[
+					with selectProp as (SELECT prop_id from ls_product_property_param_group
+					{? where group_id = $paramsGroupId$ } )
+					SELECT count(*)
+					FROM ls_product_property
+					 LEFT JOIN selectProp ON selectProp.prop_id=id
+					WHERE
+					{? attribute_type=$attributeType$}
+					{? AND source=$source$}
+					{? and shop_id=$shopId$}
+					{? AND delete_flag=$deleteFlag$}
+					{? and prop_name like $propName$}
+					{? and memo like $memo$}
+					{? and type =$type$}
+
+				 ]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

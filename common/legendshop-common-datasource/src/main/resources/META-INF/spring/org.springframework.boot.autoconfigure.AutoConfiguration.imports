@@ -1,0 +1,2 @@
+com.legendshop.common.datasource.SQLConfiguration
+com.legendshop.common.datasource.GenericDaoAutoConfiguration

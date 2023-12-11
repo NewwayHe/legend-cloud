@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 商品回复 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="PreSellProduct">
+			<Method name="methodName">
+				<![CDATA[
+		     		querySql
+	            ]]>
+			</Method>
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

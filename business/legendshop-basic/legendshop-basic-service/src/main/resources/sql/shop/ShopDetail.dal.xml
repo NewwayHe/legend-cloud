@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 店铺详情 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="ShopDetail">
+
+			<Method name="getShopDetail">
+				SELECT u.nick_name AS userName,u.nick_name AS nickName,s.shop_name AS siteName,s.op_status AS
+				opStatus,s.product_num AS productNum,
+				s.off_product_num AS offProductNum,s.status AS STATUS, s.user_id AS userId,s.id AS shopId,s.contact_name
+				AS contactName,
+				s.contact_mobile AS contactMobile, s.shop_pic AS shopPic,s.commission_rate AS commissionRate,s.shop_type
+				AS shopType
+				FROM ls_shop_detail s LEFT JOIN
+				ls_user_detail u ON s.user_id = u.id WHERE 1=1
+				{? and s.shop_name like $siteName$}
+				{? and u.nick_name like $nickName$}
+				{? and s.contact_name like $contactName$}
+				{? and s.contact_mobile like $contactMobile$}
+				{? and s.type = $type$}
+				{? and s.status = $status$}
+				{? and s.op_status = $opStatus$}
+				{? and s.shop_type = $shopType$}
+				{? and s.user_name = $userName$}
+				{! order by s.modify_date
+				desc||$orderIndicator$}
+			</Method>
+
+			<Method name="getShopDetailCount">
+				SELECT COUNT(*) FROM ls_shop_detail s LEFT JOIN ls_user_detail u ON s.user_id = u.id WHERE 1=1
+				{? and s.shop_name like $siteName$}
+				{? and u.nick_name like $nickName$}
+				{? and s.contact_name like $contactName$}
+				{? and s.contact_mobile like $contactMobile$}
+				{? and s.type = $type$}
+				{? and s.status = $status$}
+				{? and s.op_status = $opStatus$}
+				{? and s.shop_type = $shopType$}
+				{? and s.user_name = $userName$}
+			</Method>
+
+			<!-- 后台红包挑选店铺:获取除了 参与了没有过期红包  的所有店铺-->
+			<Method name="loadSelectShopCount">
+				<![CDATA[
+	            	SELECT count(1) FROM ls_shop_detail s WHERE s.status=1
+	            	{? AND s.shop_name like $siteName$}
+	            ]]>
+			</Method>
+			<Method name="loadSelectShop">
+				<![CDATA[
+	            	SELECT s.* FROM ls_shop_detail s WHERE s.status=1
+	            	{? AND s.shop_name like $siteName$}
+	            ]]>
+			</Method>
+
+			<Method name="queryUserShop">
+				<![CDATA[
+	            	SELECT shop_user_id,shop_name,shop_avatar,shop_type FROM ls_shop_detail
+	            	WHERE  status=1
+	            	{? AND shop_user_id = $shopUserId$}
+	            ]]>
+			</Method>
+			<Method name="getShopDetailVO">
+				<![CDATA[
+	            	SELECT
+					  ld.*,ld.shop_brief AS briefDesc,lu.avatar as userAvatar,lu.username,lu.mobile,lu.del_flag as delFlag,lu.lock_flag as lockFlag,
+					  lp.name as province,lc.name as city,la.name as area,ls.name as street
+					FROM
+					  ls_shop_detail ld
+					  LEFT JOIN ls_shop_user lu
+						ON ld.shop_user_id = lu.id
+					  LEFT JOIN ls_location lp
+						ON ld.province_id = lp.id
+					  LEFT JOIN ls_location lc
+						ON ld.city_id = lc.id
+					  LEFT JOIN ls_location la
+						ON ld.area_id = la.id
+					  LEFT JOIN ls_location ls
+						ON ld.street_id = ls.id
+					WHERE ld.id = ?
+	            ]]>
+			</Method>
+			<Method name="getShopOrderSetting">
+				<![CDATA[
+	            	SELECT
+	            	  ld.*,
+					  lp.name AS returnProvince,
+					  lc.name AS returnCity,
+					  la.name AS returnArea,
+					  ls.name AS returnStreet
+					FROM
+					  ls_shop_detail ld
+					  LEFT JOIN ls_location lp
+						ON ld.province_id = lp.id
+					  LEFT JOIN ls_location lc
+						ON ld.city_id = lc.id
+					  LEFT JOIN ls_location la
+						ON ld.area_id = la.id
+					  LEFT JOIN ls_location ls
+						ON ld.street_id = ls.id
+					WHERE ld.id = ?
+	            ]]>
+			</Method>
+
+			<Method name="searchShop">
+				<![CDATA[
+				SELECT
+				    DISTINCT sd.id,
+					sd.buys,
+					sd.shop_name,
+					sd.shop_avatar,
+					sd.id AS shopId,
+					sd.shop_type as shopType,
+					sd.apply_for_type as applyForType,
+					sd.shop_complete_address,
+					ROUND(IFNULL(sct.score,5)/IFNULL(sct.count,1),2) as credit,
+					IF(lfs.user_id  IS NULL,FALSE,TRUE) AS collectionFlag
+				FROM
+					ls_shop_detail sd
+					LEFT JOIN ls_shop_comment_statistics sct ON sd.id = sct.shop_id
+					LEFT JOIN
+					(SELECT user_id,shop_id FROM ls_favorite_shop WHERE 1=1{? and user_id=$userId$}) lfs ON lfs.shop_id=sd.id
+				where 1=1
+					 {? and sd.status=$shopStatus2$}
+					 {? and sd.op_status=$opStatus2$}
+					 {? and sd.id = $id$}
+					 {? and sd.shop_name LIKE $key$}
+					 ORDER BY collectionFlag DESC
+					 {$sortBy$}
+	            ]]>
+			</Method>
+			<Method name="searchShopCount">
+				<![CDATA[
+				SELECT
+					count(*)
+				FROM
+					(SELECT
+				    DISTINCT sd.id
+				FROM
+					ls_shop_detail sd
+					LEFT JOIN ls_shop_comment_statistics sct ON sd.id = sct.shop_id
+					LEFT JOIN
+					(SELECT user_id,shop_id FROM ls_favorite_shop WHERE 1=1{? and user_id=$userId$}) lfs ON lfs.shop_id=sd.id
+				where 1=1
+					 {? and sd.status=$shopStatus2$}
+					 {? and sd.op_status=$opStatus2$}
+					 {? and sd.id = $id$}
+					 {? and sd.shop_name LIKE $key$}
+					 ) as a
+	            ]]>
+			</Method>
+
+			<Method name="queryPicsByShopIds">
+				<![CDATA[
+                  SELECT  lp.id as productId, lp.pic as pic ,ls.buys,lp.price as price,lp.min_price as minPrice,lp.max_price as maxPrice FROM ls_product lp
+                  LEFT JOIN
+                      (SELECT product_id,SUM(buys) AS buys  FROM ls_sku GROUP BY product_id ) ls ON lp.id=ls.product_id
+                  WHERE
+                   lp.shop_id =?  ORDER BY ls.buys DESC,update_time DESC  LIMIT 4
+	            ]]>
+			</Method>
+
+			<Method name="queryDvyTypeAvg">
+				<![CDATA[
+                 SELECT  o.shop_id as shopId,ROUND(SUM(s.score)/SUM(s.count),2) AS avg FROM ls_logistics_comment_statistics s INNER JOIN  ls_order_logistics t
+				 ON s.logistics_company_id=t.logistics_company_id LEFT JOIN ls_order o ON o.id = t.order_id
+				 WHERE 1=1
+				 {@ and o.shop_id  IN $shopIds$ }
+				 GROUP BY o.shop_id
+	            ]]>
+			</Method>
+
+			<Method name="queryShopCommAvg">
+				<![CDATA[
+              SELECT  s.shop_id as shopId,ROUND(SUM(s.score)/SUM(s.count),2) AS avg FROM ls_shop_comment_statistics s
+				 WHERE 1=1
+				 {@ and s.shop_id  IN $shopIds$ }
+				 GROUP BY s.shop_id
+	            ]]>
+			</Method>
+
+			<Method name="queryProductCommentAvg">
+				<![CDATA[
+              SELECT p.shop_id as shopId,ROUND(SUM(s.score)/SUM(s.comments),2) AS avg FROM ls_product_comment_statistics s, ls_product p
+				 WHERE 1=1
+				 AND s.product_id = p.id
+				 {@ and p.shop_id IN $shopIds$ }
+				 GROUP BY p.shop_id
+	            ]]>
+			</Method>
+			<Method name="queryProductCommentAvg">
+				<![CDATA[
+              SELECT p.shop_id as shopId,ROUND(SUM(s.score)/SUM(s.comments),2) AS avg FROM ls_product_comment_statistics s, ls_product p
+				 WHERE 1=1
+				 AND s.product_id = p.id
+				 {@ and p.shop_id IN $shopIds$ }
+				 GROUP BY p.shop_id
+	            ]]>
+			</Method>
+			<Method name="searchAllShop">
+				<![CDATA[
+                 SELECT COUNT(*)FROM ls_shop_detail WHERE status=1 and op_status=1
+	            ]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

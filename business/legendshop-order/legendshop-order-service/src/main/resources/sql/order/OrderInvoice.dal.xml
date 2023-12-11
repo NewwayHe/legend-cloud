@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 订单发票SQL -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="OrderInvoice">
+			<Method name="queryInvoiceOrderCount">
+				<![CDATA[
+        			SELECT count(*) FROM ls_order ls
+        			LEFT JOIN ls_order_invoice li ON ls.order_invoice_id = li.id
+        			LEFT JOIN ls_user_detail lud ON ls.user_id = lud.user_id
+        			LEFT JOIN ls_order_item loi ON ls.id=loi.order_id
+        			WHERE ls.order_invoice_id IS NOT NULL AND ls.need_invoice_flag = 1
+        			{? and ls.shop_id = $shopId$}
+        			{? and ls.order_number LIKE $orderNumber$}
+        			{? and ls.has_invoice_flag = $hasInvoiceFlag$}
+        			{? and li.type = $type$}
+        			{? and li.company LIKE $company$}
+        			{? and DATE(ls.create_time) = $createTime$}
+        			{? and lud.nick_name like $userName$}
+        		 ]]>
+			</Method>
+
+			<Method name="queryInvoiceOrder">
+				<![CDATA[
+        			SELECT ls.id,ls.order_number AS orderNumber,ls.product_quantity AS productQuantity,ls.total_price AS totalPrice,ls.actual_total_price AS actualTotalPrice,li.type AS type,li.title_type AS titleType,li.company AS company,li.create_time AS createTime,
+        			li.invoice_hum_number AS invoiceHumNumber,li.register_addr,li.register_phone,li.deposit_bank,li.bank_account_num,ls.has_invoice_flag AS hasInvoiceFlag,loi.pic AS productPic,lud.nick_name as userName
+        			FROM ls_order ls LEFT JOIN ls_order_invoice li ON ls.order_invoice_id = li.id
+        			LEFT JOIN ls_user_detail lud ON ls.user_id = lud.user_id
+                    LEFT JOIN ls_order_item loi ON ls.id=loi.order_id
+        			WHERE ls.order_invoice_id IS NOT NULL AND ls.need_invoice_flag = 1
+        			{? and ls.shop_id = $shopId$}
+        			{? and ls.order_number LIKE $orderNumber$}
+        			{? and ls.has_invoice_flag = $hasInvoiceFlag$}
+        			{? and li.type = $type$}
+        			{? and li.company LIKE $company$}
+        			{? and DATE(ls.create_time) = $createTime$}
+        			{? and lud.nick_name like $userName$}
+        			order by ls.create_time desc
+        		 ]]>
+			</Method>
+
+			<Method name="queryInvoiceOrderPage">
+				<![CDATA[
+        			SELECT
+        				ls.id,ls.order_number AS orderNumber,ls.product_quantity AS productQuantity,ls.total_price AS totalPrice,ls.actual_total_price AS actualTotalPrice,
+						li.type AS type,li.title_type AS titleType,li.company AS company,li.create_time AS createTime,li.invoice_hum_number AS invoiceHumNumber,
+						li.register_addr,li.register_phone,li.deposit_bank,li.bank_account_num,ls.has_invoice_flag AS hasInvoiceFlag,lud.nick_name AS userName
+					FROM
+						ls_order_invoice li
+						LEFT JOIN ls_order ls ON li.id = ls.order_invoice_id
+						LEFT JOIN ls_user_detail lud ON ls.user_id = lud.user_id
+					WHERE
+						1 = 1
+						{? and ls.shop_id = $shopId$}
+						{? and ls.order_number LIKE $orderNumber$}
+						{? and ls.has_invoice_flag = $hasInvoiceFlag$}
+						{? and li.type = $type$}
+						{? and li.company LIKE $company$}
+						{? and DATE(ls.create_time) = $createTime$}
+						{? and lud.nick_name like $userName$}
+						order by li.create_time desc
+        		 ]]>
+			</Method>
+
+			<Method name="queryInvoiceOrderPageCount">
+				<![CDATA[
+        			SELECT
+        				count(*)
+        			FROM
+						ls_order_invoice li
+						LEFT JOIN ls_order ls ON li.id = ls.order_invoice_id
+						LEFT JOIN ls_user_detail lud ON ls.user_id = lud.user_id
+					WHERE
+						1 = 1
+						{? and ls.shop_id = $shopId$}
+						{? and ls.order_number LIKE $orderNumber$}
+						{? and ls.has_invoice_flag = $hasInvoiceFlag$}
+						{? and li.type = $type$}
+						{? and li.company LIKE $company$}
+						{? and DATE(ls.create_time) = $createTime$}
+						{? and lud.nick_name like $userName$}
+        		 ]]>
+			</Method>
+		</Object>
+
+	</BusinessObjects>
+</DataAccessLayer>

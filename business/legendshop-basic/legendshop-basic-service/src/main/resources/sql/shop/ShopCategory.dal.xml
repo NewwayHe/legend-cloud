@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 商品分类 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="ShopCategory">
+
+			<Method name="queryShopCategory">
+				select id as id,parent_id as parentId,name as name,pic as pic,seq as seq,status as status,
+				shop_id as shopId,rec_date as recDate from ls_shop_cat where parent_id is null {? and name like $name$}
+				{? and shop_id = $shopId$} order by seq
+			</Method>
+
+			<Method name="queryShopCategoryCount">
+				select count(*) from ls_shop_cat where parent_id is null {? and name like $name$} {? and shop_id =
+				$shopId$}
+			</Method>
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

@@ -1,0 +1,522 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="IntegralData">
+			<Method name="getDateByShopId">
+				<![CDATA[
+		     		SELECT * from (
+						()a,
+
+						(SELECT count(1)allreturnCount from ls_order o ,ls_order_refund_return orr where orr.order_id=o.id and orr.handle_success_status=1 and orr.apply_type=2)b,
+
+						(SELECT count(1)monRefundCount from ls_order o ,ls_order_refund_return orr where orr.order_id=o.id and orr.handle_success_status=1 and orr.apply_type=1 and o.pay_time>"2021-01-01")c,
+
+						(SELECT count(1) allCount,sum(o.actual_total_price) allTotal from ls_order o
+						where o.shop_id=1102 and o.`status`=20 GROUP BY o.`status`)d,
+
+						(SELECT count(1)monReturnCount from ls_order o ,ls_order_refund_return orr where orr.order_id=o.id and orr.handle_success_status=1 and orr.apply_type=2 and o.pay_time>"2021-01-01")e,
+
+						()f,
+
+						(SELECT count(*) skuTotal FROM ls_sku sku,ls_product p where p.id=sku.product_id
+						and p.op_status=1 and p.shop_id=1102)g,
+
+						(SELECT cs.count commentCount, cs.score from ls_shop_comment_statistics cs where shop_id=1102)h,
+
+						(SELECT count(1)allCount,sum(o.actual_total_price)allTotal from ls_order o where o.shop_id=1102 and o.`status`=20 and o.order_type='I' GROUP BY o.`order_type`)i,
+
+						(select sum(productCount) from (SELECT count(*)productCount from ls_integral_sku ik where ik.op_status=1 and ik.delete_flag=0
+							union all
+							SELECT count(*)productCount from ls_integral_deduction_sku idk where idk.delete_flag=0)z)j,
+
+						(SELECT count(1)allCount,sum(o.actual_total_price)allTotal from ls_order o
+						where o.shop_id=1102 and o.`status`=20 and o.order_type='I' and o.create_time>"2021-01-01" )k,
+
+						(SELECT count(1)allCount,sum(o.actual_total_price)allTotal from ls_order o
+						where o.shop_id=1102 and o.`status`=20 and o.order_type='I' GROUP BY o.`order_type`)l,
+
+						(SELECT	sum(deal_integral) monIntegral from ls_user_integral_record r where r.operation_type in(4,6,8) and r.create_time>"2021-01-01")m,
+						(SELECT	sum(deal_integral) allIntegral from ls_user_integral_record r where r.operation_type in(4,6,8) )n
+
+						)
+	            ]]>
+			</Method>
+			<Method name="getSkuTotal">
+				<![CDATA[
+				SELECT count(*) skuTotal FROM ls_sku sku,ls_product p where p.id=sku.product_id
+						and p.op_status=? and p.shop_id=?
+	            ]]>
+			</Method>
+			<Method name="getMonthCount">
+				<![CDATA[
+		     		SELECT sum(oi.basket_count) monCount,sum(o.actual_total_price) monTotal from ls_order o,ls_order_item oi
+						where o.shop_id=? and o.pay_time>? and o.refund_status=? and oi.order_id=o.id and o.`status`=?
+	            ]]>
+			</Method>
+			<Method name="getSkuTotal">
+				<![CDATA[
+		     		SELECT count(1) allrefundCount from ls_order o ,ls_order_refund_return orr where orr.order_id=o.id
+		     		 and orr.handle_success_status=1 and orr.apply_type=1
+	            ]]>
+			</Method>
+
+			<!--获取积分店铺联系人信息和店铺信息-->
+			<Method name="getShopDetail">
+				<![CDATA[
+		     		select
+		     		lsd.id,lsu.username,lsu.mobile,lsd.shop_name,lsd.shop_avatar as shop_image,
+					max(lial.create_time) as apply_time,lsd.apply_integral_content,lsd.exit_integral_content
+		     		from ls_shop_detail lsd
+					left join ls_shop_user lsu on lsu.id = lsd.shop_user_id
+					left join ls_integral_apply_log lial on lial.shop_id = lsd.id
+					where 1=1
+					{? and lsd.id = $shopId$}
+					group by lsd.id
+	            ]]>
+			</Method>
+
+			<!--获取sku总数-->
+			<Method name="getSkuNum">
+				<![CDATA[
+		     		select
+					count(ls.id) as sku_num
+					from ls_product lp
+					left join ls_sku ls on ls.product_id = lp.id
+					where lp.op_status = 1
+					      and lp.del_status =1
+					{? and lp.shop_id = $shopId$}
+	            ]]>
+			</Method>
+
+			<!--获取成交商品数和订单总额-->
+			<Method name="getDealAmountAndGoodNum">
+				<![CDATA[
+		     		select
+					sum(loi.actual_amount) as deal_amount,sum(loi.basket_count) as deal_good_num from ls_order lo
+					left join ls_order_item loi on lo.id = loi.order_id
+					where 1=1
+					and lo.status = 20
+					and loi.refund_status = 0
+					{? and lo.create_time >= $startDate$}
+					{? and lo.create_time <= $endDate$}
+					{? and lo.shop_id = $shopId$}
+	            ]]>
+			</Method>
+
+			<!-- 获取支付订单商品数量 -->
+			<Method name="queryPayGoodNum">
+				<![CDATA[
+				select sum(loi.basket_count) from ls_order lo
+				left join ls_order_item loi on lo.id = loi.order_id
+				where lo.payed_flag = 1
+				{? and lo.create_time >= $startDate$}
+				{? and lo.create_time <= $endDate$}
+				{? and lo.shop_id = $shopId$}
+				 ]]>
+			</Method>
+
+			<!-- 获取退货和退款商品数量 -->
+			<Method name="queryReturnOrderGoodNum">
+				<![CDATA[
+				select sum(lorr.goods_num) from ls_order_refund_return lorr
+				where lorr.apply_status = 3
+				{? and lorr.apply_type = $applyType$}
+				{? and lorr.return_type = $returnType$}
+				{? and lorr.create_time >= $startDate$}
+				{? and lorr.create_time <= $endDate$}
+				{? and lorr.shop_id = $shopId$}
+				 ]]>
+			</Method>
+
+			<!-- 获取店铺评分 -->
+			<Method name="queryShopScore">
+				<![CDATA[
+				select
+				score/count as score
+				from ls_shop_comment_statistics lscs
+				where 1=1
+				{? and lscs.shop_id = $shopId$}
+				 ]]>
+			</Method>
+
+			<!-- 获取积分商品数量 -->
+			<Method name="queryIntegralGoodNum">
+				<![CDATA[
+				select count(lis.id) from ls_integral_sku lis
+				where 1=1
+				and   lis.op_status=1
+				and   lis.delete_flag=0
+				{? and lis.shop_id = $shopId$}
+				 ]]>
+			</Method>
+
+			<!-- 获取积分商品成交商品数量和积分量 -->
+			<Method name="queryIntegralDealData">
+				<![CDATA[
+				select
+				sum(loi.integral) as deal_integral, sum(loi.basket_count) as deal_good_num
+				from ls_integral_sku lis
+				left join ls_order_item loi on loi.product_id = lis.product_id
+				left join ls_order lo on lo.id = loi.order_id
+				where lo.status = 20
+				and loi.integral > 0
+				{? and lo.shop_id = $shopId$}
+				{? and loi.create_time >= $startDate$}
+				 ]]>
+			</Method>
+
+			<!-- 获取积分商城审核信息 -->
+			<Method name="getApplyMessage">
+				<![CDATA[
+				select
+				lial.op_status,lial.comment,lial.create_time as time,
+				lial.platform_flag
+				from ls_integral_apply_log lial
+				where 1=1
+				{? and lial.shop_id = $shopId$}
+				order by lial.create_time desc
+				limit 1
+				 ]]>
+			</Method>
+
+			<!-- 查询所有用户累计获得积分总和 -->
+			<Method name="getAllUserIntegral">
+				<![CDATA[
+				select sum(lud.cumulative_integral) from ls_user_detail lud
+				 ]]>
+			</Method>
+
+			<!-- 查询所有使用积分总和 -->
+			<Method name="getAllUsedIntegral">
+				<![CDATA[
+				select sum(loi.integral) from ls_order_item loi
+				left join ls_order lo on lo.id = loi.order_id
+				where lo.status <> -5
+				and lo.status <> 0
+				and lo.status <> 1
+				 ]]>
+			</Method>
+
+			<!-- 查询所有可用积分总和 -->
+			<Method name="getAllAvailableIntegral">
+				<![CDATA[
+				select sum(lud.available_integral) from ls_user_detail lud
+				 ]]>
+			</Method>
+
+			<!-- 查询所有积分兑换商品数量总和 -->
+			<Method name="getAllIntegralGoodNum">
+				<![CDATA[
+				select sum(lo.product_quantity) from ls_order lo
+				where 1=1
+				and lo.order_type = 'I'
+				and lo.refund_status <> 2
+				 ]]>
+			</Method>
+
+			<!-- 查询所有获得过积分的用户总数 -->
+			<Method name="getAllIntegralUserNum">
+				<![CDATA[
+				select count(lud.id) from ls_user_detail lud
+				where lud.cumulative_integral > 0
+				 ]]>
+			</Method>
+
+			<!-- 查询积分数据分页 -->
+			<Method name="getIntegralDataPage">
+				<![CDATA[
+				select lud.user_id,t.mobile,lud.cumulative_integral,lud.available_integral,sum(r.integral) as used_integral,sum(r.basket_count) as exchange_good_num,p.num as exchange_coupon_num
+				from ls_user_detail lud
+				left join
+				(select loi.integral ,loi.basket_count ,loi.user_id as user_id,loi.order_number from ls_order_item loi
+				left join ls_order lo on lo.id = loi.order_id
+				where 1=1
+				and loi.refund_status <> 2
+				and lo.order_type = 'I'
+				) r on lud.user_id = r.user_id
+				left join
+				(
+				select count(*) as num,user_id from ls_coupon_user lcu where lcu.get_type = 2
+				group by lcu.user_id
+				) p on p.user_id = lud.user_id
+				left join
+				(
+				select lorr.order_id,max(lorr.apply_status) as apply_status from ls_order_refund_return lorr
+				where 1=1
+				group by lorr.order_id
+				having apply_status <> 3
+				) s on s.order_id = r.user_id
+				left join
+				(select lou.id,lou.mobile from ls_ordinary_user lou
+				union
+				select lsu.id,lsu.mobile from ls_shop_user lsu) t on t.id = lud.user_id
+				where 1=1
+				{? and lud.user_id like $userId$}
+				{? and t.mobile like $mobile$}
+				group by lud.user_id
+				{! order by cumulative_integral desc||$orderBy$}
+				 ]]>
+			</Method>
+			<Method name="getIntegralDataPageCount">
+				<![CDATA[
+				select count(*) from
+				(
+				select lud.user_id,t.mobile,lud.cumulative_integral,lud.available_integral,sum(r.integral) as used_integral,sum(r.basket_count) as exchange_good_num,p.num as exchange_coupon_num
+				from ls_user_detail lud
+				left join
+				(select loi.integral ,loi.basket_count ,loi.user_id as user_id,loi.order_number from ls_order_item loi
+				left join ls_order lo on lo.id = loi.order_id
+				where 1=1
+				and loi.refund_status <> 2
+				and lo.order_type = 'I'
+				) r on lud.user_id = r.user_id
+				left join
+				(
+				select count(*) as num,user_id from ls_coupon_user lcu where lcu.get_type = 2
+				group by lcu.user_id
+				) p on p.user_id = lud.user_id
+				left join
+				(
+				select lorr.order_id,max(lorr.apply_status) as apply_status from ls_order_refund_return lorr
+				where 1=1
+				group by lorr.order_id
+				having apply_status <> 3
+				) s on s.order_id = r.user_id
+				left join
+				(select lou.id,lou.mobile from ls_ordinary_user lou
+				union
+				select lsu.id,lsu.mobile from ls_shop_user lsu) t on t.id = lud.user_id
+				where 1=1
+				{? and lud.user_id like $userId$}
+				{? and t.mobile like $mobile$}
+				group by lud.user_id
+				) x
+				 ]]>
+			</Method>
+
+			<!-- 查询积分明细分页 -->
+			<Method name="getIntegralDataRecord">
+				<![CDATA[
+				select
+				luir.user_id,luir.deal_type,luir.deal_integral,luir.available_integral,luir.cumulative_integral,luir.operation_type,luir.create_time,luir.remark
+				from ls_user_integral_record luir
+				where 1=1
+				{? and luir.user_id like $userId$}
+				{? and luir.deal_type = $dealType$}
+				{@ and luir.operation_type in $operation$}
+				{? and luir.create_time >= $startDate$}
+				{? and luir.create_time <= $endDate$}
+				{! order by create_time desc||$orderBy$}
+				 ]]>
+			</Method>
+			<Method name="getIntegralDataRecordCount">
+				<![CDATA[
+				select count(*) from
+				(
+				select
+				luir.id
+				from ls_user_integral_record luir
+				where 1=1
+				{? and luir.user_id like $userId$}
+				{? and luir.deal_type = $dealType$}
+				{@ and luir.operation_type in $operation$}
+				{? and luir.create_time >= $startDate$}
+				{? and luir.create_time <= $endDate$}
+				) t
+				 ]]>
+			</Method>
+
+			<!-- 查询兑换积分商品分页 -->
+			<Method name="getIntegralDataExchangeGood">
+				<![CDATA[
+				select
+				luir.user_id,loi.product_name as prod_name,loi.`attribute`,loi.order_number,loi.integral,loi.create_time,lorr.apply_status,loi.pic
+				from ls_user_integral_record luir
+				left join ls_order_item loi on loi.order_id = luir.detail_id
+				left join ls_order_refund_return lorr on lorr.order_item_id = loi.id
+				where luir.operation_type = 4
+				{? and luir.user_id like $userId$}
+				{? and loi.product_name like $prodName$}
+				{? and loi.order_number like $orderNumber$}
+				{? and luir.create_time >= $startDate$}
+				{? and luir.create_time <= $endDate$}
+				{! order by create_time desc||$orderBy$}
+				 ]]>
+			</Method>
+			<Method name="getIntegralDataExchangeGoodCount">
+				<![CDATA[
+				select count(*) from
+				(
+				select
+				luir.id
+				from ls_user_integral_record luir
+				left join ls_order_item loi on loi.order_id = luir.detail_id
+				left join ls_order_refund_return lorr on lorr.order_item_id = loi.id
+				where luir.operation_type = 4
+				{? and luir.user_id like $userId$}
+				{? and loi.product_name like $prodName$}
+				{? and loi.order_number like $orderNumber$}
+				{? and luir.create_time >= $startDate$}
+				{? and luir.create_time <= $endDate$}
+				) t
+				 ]]>
+			</Method>
+
+			<!-- 查询兑换积分商品分页 -->
+			<Method name="getIntegralDataChangeCoupon">
+				<![CDATA[
+				select
+				luir.user_id,lc.title as coupon_title,lc.use_type,lc.amount,
+				lc.min_point,lc.use_start_time as start_time,lc.pic as couponPic,
+				lc.use_end_time as end_time,lc.integral,lcu.get_time as create_time,lcu.status
+				from ls_user_integral_record luir
+				left join ls_coupon_user lcu on lcu.id = luir.detail_id
+				left join ls_coupon lc on lc.id = lcu.coupon_id
+				where luir.operation_type = 8
+				{? and luir.user_id like $userId$}
+				{? and lc.title like $couponTitle$}
+				{? and luir.create_time >= $startDate$}
+				{? and luir.create_time <= $endDate$}
+				{! order by create_time desc||$orderBy$}
+				 ]]>
+			</Method>
+			<Method name="getIntegralDataChangeCouponCount">
+				<![CDATA[
+				select count(*) from
+				(
+				select
+				luir.id
+				from ls_user_integral_record luir
+				left join ls_coupon_user lcu on lcu.id = luir.detail_id
+				left join ls_coupon lc on lc.id = lcu.coupon_id
+				where luir.operation_type = 8
+				{? and luir.user_id like $userId$}
+				{? and lc.title like $couponTitle$}
+				{? and luir.create_time >= $startDate$}
+				{? and luir.create_time <= $endDate$}
+				) t
+				 ]]>
+			</Method>
+
+			<!-- 查询活动列表优惠券分页 -->
+			<Method name="getIntegralDataCouponList">
+				<![CDATA[
+				select title as coupon_title,receive_type,min_point,amount,userNum as receiveUserNum,receiveNum,usedUserNum,usedNum from
+				(
+				select lc.title,"积分兑换" as receive_type,lc.id from ls_coupon lc
+				where lc.receive_type = 2
+				group by lc.id
+				) p
+				left join
+				(
+				select lc.id,lc.min_point,lc.amount,count(distinct lcu.user_id) as userNum,count(lcu.id) as receiveNum,
+				count(distinct if(lcu.status = 2 and lcu.get_type = 2,lcu.user_id,null)) as usedUserNum,
+				count(if(lcu.status = 2,lcu.id,null)) as usedNum
+				from ls_coupon lc
+				left join ls_coupon_user lcu on lcu.coupon_id = lc.id
+				where lc.receive_type = 2
+				{? and lcu.create_time >= $startDate$}
+				{? and lcu.create_time <= $endDate$}
+				group by lc.id
+				) t on t.id = p.id
+				{! order by amount desc||$orderBy$}
+				 ]]>
+			</Method>
+			<Method name="getIntegralDataCouponListCount">
+				<![CDATA[
+				select count(*) from
+				(
+				select p.id from
+				(
+				select lc.id from ls_coupon lc
+				where lc.receive_type = 2
+				group by lc.id
+				) p
+				left join
+				(
+				select lc.id
+				from ls_coupon lc
+				left join ls_coupon_user lcu on lcu.coupon_id = lc.id
+				where lc.receive_type = 2
+				{? and lcu.create_time >= $startDate$}
+				{? and lcu.create_time <= $endDate$}
+				group by lc.id
+				) t on t.id = p.id
+				) x
+				 ]]>
+			</Method>
+
+			<!-- 查询活动列表优惠券分页Excel -->
+			<Method name="getIntegralDataCouponListExcel">
+				<![CDATA[
+				select title as coupon_title,receive_type,min_point,amount,userNum as receiveUserNum,receiveNum,usedUserNum,usedNum from
+				(
+				select lc.title,"积分兑换" as receive_type,lc.id from ls_coupon lc
+				where lc.receive_type = 2
+				group by lc.id
+				) p
+				left join
+				(
+				select lc.id,lc.min_point,lc.amount,count(distinct lcu.user_id) as userNum,count(lcu.id) as receiveNum,
+				count(distinct if(lcu.status = 2 and lcu.get_type = 2,lcu.user_id,null)) as usedUserNum,
+				count(if(lcu.status = 2,lcu.id,null)) as usedNum
+				from ls_coupon lc
+				left join ls_coupon_user lcu on lcu.coupon_id = lc.id
+				where lc.receive_type = 2
+				{? and lcu.create_time >= $startDate$}
+				{? and lcu.create_time <= $endDate$}
+				group by lc.id
+				) t on t.id = p.id
+				{! order by amount desc||$orderBy$}
+				 ]]>
+			</Method>
+
+			<!-- 更新用户积分(加) -->
+			<Method name="updateAddUserIntegral">
+				<![CDATA[
+				update
+				ls_user_detail lsd
+				set
+				lsd.available_integral = lsd.available_integral + ?,
+				lsd.cumulative_integral = lsd.cumulative_integral + ?
+				where lsd.user_id = ?
+				 ]]>
+			</Method>
+
+			<!-- 更新用户积分(减) -->
+			<Method name="updateSubUserIntegral">
+				<![CDATA[
+				update
+				ls_user_detail lsd
+				set
+				lsd.available_integral = lsd.available_integral - ?
+				where lsd.user_id = ?
+				 ]]>
+			</Method>
+
+			<!-- 获取用户积分 -->
+			<Method name="getUserIntegral">
+				<![CDATA[
+				select lud.available_integral,lud.cumulative_integral from ls_user_detail lud
+				where lud.user_id = ?
+				 ]]>
+			</Method>
+
+			<Method name="getApplyShopDetail">
+				<![CDATA[
+		     		select
+		     		lsd.id,lsu.username,lsu.mobile,lsd.shop_name,lsd.shop_avatar as shop_image,
+					max(lial.create_time) as apply_time,lsd.apply_integral_content,lsd.exit_integral_content
+		     		from ls_shop_detail lsd
+					left join ls_shop_user lsu on lsu.id = lsd.shop_user_id
+					left join ls_integral_apply_log lial on lial.shop_id = lsd.id
+					where 1=1
+					{? and lsd.id = $shopId$}
+					{? and lial.platform_flag=$status$}
+					group by lsd.id
+	            ]]>
+			</Method>
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

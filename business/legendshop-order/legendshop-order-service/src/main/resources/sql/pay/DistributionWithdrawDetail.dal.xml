@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="DistributionWithdrawDetail">
+
+			<Method name="withdrawalPage">
+				<![CDATA[
+					select
+						ifnull(sum(amount), 0) as commission, date_format(update_time ,'%Y-%m-%d' ) as create_time
+					from
+						ls_distribution_withdraw_detail
+					where 1 = 1
+					{? and user_id  = $userId$}
+					{? and op_status = $opStatus$}
+					{? and op_status != $auditOpStatus$}
+					{$expandStatus$}
+					GROUP BY date_format(update_time ,'%Y-%m-%d')
+					order by create_time desc
+				]]>
+			</Method>
+
+			<Method name="withdrawalPageCount">
+				<![CDATA[
+ 					 SELECT
+ 					 	COUNT(*)
+ 					 FROM
+ 					 	(SELECT
+ 					 		*
+ 					 	FROM
+ 					 		ls_distribution_withdraw_detail
+ 					 	WHERE
+ 					 		1 = 1
+ 					 	{? and user_id  = $userId$}
+ 					 	{? and op_status = $opStatus$}
+ 					 	{? and op_status != $auditOpStatus$}
+ 					 	{$expandStatus$}
+ 					 		GROUP BY DATE_FORMAT(update_time ,'%Y-%m-%d')
+ 					 	) AS a
+
+				]]>
+			</Method>
+
+			<Method name="queryWithdrawalList">
+				<![CDATA[
+					select
+						*
+					from
+						ls_distribution_withdraw_detail
+					where 1 = 1
+						{? and op_status = $status$}
+						{? and user_id = $userId$ }
+						{? and op_status != $auditOpStatus$}
+						{? and update_time >= $startTime$}
+						{? and update_time <= $endTime$}
+						{$expandStatus$}
+				]]>
+			</Method>
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>
+

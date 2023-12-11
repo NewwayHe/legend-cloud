@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="AdvertiseCount">
+			<Method name="methodName">
+				<![CDATA[
+		     		querySql
+	            ]]>
+			</Method>
+			<Method name="getAdvertiseCount">
+				<![CDATA[
+				SELECT * FROM ls_advertise_count
+				where 1=1
+					{? and advertise_id = $advertiseId$}
+					{? AND create_time <= $endTime$}
+					{? AND create_time >= $beginTime$}
+					{? AND source = $source$}
+	            ]]>
+			</Method>
+			<Method name="queryAdvertiseDataReport">
+				<![CDATA[
+				SELECT * FROM ls_advertise_count ac
+				WHERE 1=1
+				    {? and ac.advertise_id = $advertiseId$}
+					{? AND ac.create_time <= $endTime$}
+					{? AND ac.create_time >= $beginTime$}
+					{? AND ac.source = $source$}
+					ORDER BY ac.create_time desc
+	            ]]>
+			</Method>
+			<Method name="queryAdvertiseDataReportCount">
+				<![CDATA[
+				SELECT count(*) FROM ls_advertise_count ac
+				WHERE 1=1
+				    {? and ac.advertise_id = $advertiseId$}
+					{? AND ac.create_time <= $endTime$}
+					{? AND ac.create_time >= $beginTime$}
+					{? AND ac.source = $source$}
+
+
+	            ]]>
+			</Method>
+			<Method name="getAdvertiseCountList">
+				<![CDATA[
+				SELECT advertise_id advertiseId,SUM(put_people) putPeople,SUM(put_count) putCount,SUM(click_people) clickPeople,
+				SUM(click_count) clickCount,create_time createTime FROM ls_advertise_count
+				WHERE 1=1
+					{? and advertise_id = $advertiseId$}
+					{? AND create_time <= $endTime$}
+					{? AND create_time >= $beginTime$}
+					{? AND source = $source$}
+	            ]]>
+			</Method>
+
+			<Method name="queryFrequency">
+				<![CDATA[
+				SELECT * FROM ls_advertise_count WHERE 1=1
+				{? and create_time = $createTime$}
+				{? and advertise_id = $advertiseId$}
+				{? AND source = $source$}
+               ]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>
+

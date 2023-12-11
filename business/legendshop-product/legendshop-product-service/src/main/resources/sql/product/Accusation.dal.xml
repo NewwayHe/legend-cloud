@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 投诉表的SQL -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="Accusation">
+
+			<Method name="getDetailedAccusation"><![CDATA[
+				SELECT la.id AS id,lp.name AS productName,la.product_id AS productId,las.title AS title,la.rec_date AS recDate,la.result AS result,
+				la.status AS STATUS,la.handle_time AS handleTime,la.handle_info AS handleInfo,la.content AS content,la.pic1 AS pic1, la.pic2 AS pic2, la.pic3 AS pic3,la.user_del_status AS userDelStatus,
+				lud.nick_name AS nickName, lat.name AS accuType,la.illegal_off AS illegalOff,lp.pic AS prodPic 
+				FROM ls_accusation la,ls_product lp,ls_accusation_subject las,ls_user_detail lud,ls_accusation_type lat
+				WHERE la.product_id = lp.id AND la.subject_id = las.id AND la.user_id=lud.id  AND las.type_id = lat.id
+				AND  la.id = ?
+            ]]></Method>
+
+			<!-- 获取用户提交的举报 -->
+			<Method name="getUserAccusation"><![CDATA[
+				SELECT la.id, la.pic ,la.product_id ,la.handle_time,la.type_id, pro.pic as image,usr.id AS userId,pro.name productName,usr.nick_name,la.type_name,la.content,la.create_time,shop.shop_name,la.status,la.result,la.illegal_off
+				FROM ls_accusation la
+				LEFT JOIN ls_user_detail usr ON la.user_id=usr.user_id
+				LEFT JOIN ls_product pro ON pro.id=la.product_id
+				LEFT JOIN ls_shop_detail shop ON shop.id=pro.shop_id
+				WHERE user_type = 1 AND la.id= ?
+            ]]></Method>
+
+			<!-- 获取平台提交的举报 -->
+			<Method name="getAdminAccusation"><![CDATA[
+				SELECT la.id, la.pic ,la.product_id ,la.handle_time,la.type_id, pro.pic as image,usr.id AS userId,pro.name productName,usr.username AS nickName,la.type_name,la.content,la.create_time,shop.shop_name,la.status,la.result,la.illegal_off
+				FROM ls_accusation la
+				LEFT JOIN ls_admin_user usr ON la.user_id=usr.id
+				LEFT JOIN ls_product pro ON pro.id=la.product_id
+				LEFT JOIN ls_shop_detail shop ON shop.id=pro.shop_id
+				WHERE user_type = 2 AND la.id= ?
+            ]]></Method>
+
+			<Method name="queryUnHandler"><![CDATA[
+				SELECT la.id AS id,lp.name AS productName,la.product_id AS productId,lp.pic AS prodPic,las.title AS title,la.rec_date AS recDate,
+				la.result AS
+				result,lud.nick_name AS nickName,la.status AS STATUS,la.handle_time AS handleTime,lsd.shop_name AS shopName,lsd.id
+				FROM ls_accusation la,ls_product lp,ls_accusation_subject las,ls_shop_detail lsd, ls_user_detail lud
+				WHERE la.product_id = lp.id AND la.subject_id = las.id AND
+				lsd.id=lp.shop_id AND lud.id=la.user_id
+				{? AND la.status = $STATUS$}
+				ORDER BY la.rec_date DESC
+            ]]></Method>
+
+			<Method name="querySimplePage">
+				SELECT la.id AS id,la.status, la.result, lp.name AS productName,lp.pic AS prodPic, la.product_id AS
+				productId,lat.name AS accuType,las.title AS title,
+				la.rec_date AS recDate,la.handle_info AS handleInfo,la.content AS content, la.pic1 AS pic1, la.pic2 AS
+				pic2, la.pic3 AS pic3
+				FROM ls_accusation la,ls_product lp,ls_accusation_subject las, ls_accusation_type lat
+				WHERE la.product_id = lp.id AND la.subject_id = las.id AND lat.id = las.type_id AND la.user_del_status=0
+				{? AND la.id = $accusationId$}
+				{? AND la.user_id = $userId$}
+				ORDER BY la.rec_date DESC
+			</Method>
+
+			<Method name="querySimplePageCount">
+				SELECT COUNT(*) FROM ls_accusation la,ls_product lp,ls_accusation_subject las, ls_accusation_type lat
+				WHERE la.product_id = lp.id AND la.subject_id = las.id AND lat.id = las.type_id
+				{? AND la.id = $accusationId$}
+				{? AND la.user_id = $userId$}
+			</Method>
+
+
+			<Method name="queryAccusation"><![CDATA[
+				SELECT la.id,la.product_id ,la.handle_time,la.type_id, pro.pic,la.user_id AS userId,pro.name productName,la.user_name AS nickName, la.type_name typeName,la.content,la.create_time,la.update_time,shop.shop_name,la.status,la.result
+				FROM ls_accusation la
+				LEFT JOIN ls_product pro ON pro.id=la.product_id
+				LEFT JOIN ls_shop_detail shop ON shop.id=pro.shop_id
+				WHERE user_del_status = 0
+				{? AND la.type_id = $typeId$}
+				{? AND pro.shop_id = $shopId$}
+				{? AND la.status = $status$}
+				{? AND la.result = $result$}
+				{? AND la.create_time >= $begDate$}
+				{? AND la.create_time <= $endDate$}
+				{? AND pro.name like $productName$}
+				order by la.status asc, la.create_time desc
+            ]]>
+
+			</Method>
+
+			<Method name="queryAccusationCount">
+				<![CDATA[
+				SELECT count(*)
+				FROM ls_accusation la
+				LEFT JOIN ls_product pro ON pro.id=la.product_id
+				LEFT JOIN ls_shop_detail shop ON shop.id=pro.shop_id
+				WHERE user_del_status = 0
+				{? AND la.type_id = $typeId$}
+				{? AND pro.shop_id = $shopId$}
+				{? AND la.status = $status$}
+				{? AND la.result = $result$}
+				{? AND la.create_time >= $begDate$}
+				{? AND la.create_time <= $endDate$}
+				{? AND pro.name like $productName$}
+				order by la.status asc, la.create_time desc
+            ]]>
+			</Method>
+
+
+			<Method name="queryMyAccusation"><![CDATA[
+				select la.id,pro.id as product_id,lst.name as typeName,la.content,la.create_time,la.`status`,la.result,la.handle_info,pro.`name` as product_name,pro.pic
+                from ls_accusation la,ls_accusation_type lst,ls_product pro
+                where la.type_id=lst.id and pro.id=la.product_id and la.user_del_status = '0'
+                {? and la.user_id = $userId$}
+				{? and la.type_id = $typeId$}
+				{? and la.create_time >= $begDate$}
+				{? and la.create_time <= $endDate$}
+				{? AND la.content like $content$}
+				order by la.create_time desc
+            ]]>
+
+			</Method>
+
+			<Method name="queryMyAccusationCount">
+				<![CDATA[
+				select count(*) from ls_accusation la,ls_accusation_type lst,ls_product pro
+				where la.type_id=lst.id and pro.id=la.product_id and la.user_del_status = '0'
+				{? and la.user_id = $userId$}
+				{? and la.type_id = $typeId$}
+				{? and la.create_time >= $begDate$}
+				{? and la.create_time <= $endDate$}
+				{? AND la.content like $content$}
+				order by la.create_time desc
+            ]]>
+			</Method>
+
+			<Method name="accusationPage">
+				<![CDATA[
+				SELECT p.name AS productName,acc.id,p.id AS productId,acc.user_id,acc.user_name AS nick_name,p.pic,acctype.name AS typeName,acc.content,acc.create_time,
+				acc.status,acc.result,acc.type_id
+				FROM ls_accusation acc
+				  LEFT JOIN ls_product p
+					ON p.id = acc.product_id
+				  LEFT JOIN ls_shop_detail shop
+					ON shop.id = p.shop_id
+					LEFT JOIN ls_accusation_type acctype ON acctype.id=acc.type_id
+					where user_del_status = 0
+				{? AND p.shop_id=$shopId$}
+				{? AND acc.status=$accStatus$}
+				{? AND acc.type_id=$accusationTypeId$}
+				{? AND acc.result=$accResult$}
+				{? AND p.name like $productName$}
+				{? AND acc.create_time >= $startDate$}
+				{? AND acc.create_time < $endDate$}
+				 order by acc.update_time desc
+				]]>
+			</Method>
+
+			<Method name="accusationPageCount">
+				<![CDATA[
+				SELECT COUNT(1)
+				FROM
+				ls_accusation acc
+				 LEFT JOIN ls_product p
+				ON p.id = acc.product_id
+				 LEFT JOIN ls_shop_detail shop
+					ON shop.id = p.shop_id
+		         WHERE user_del_status = 0
+				{? AND p.shop_id=$shopId$}
+				{? AND acc.status=$accStatus$}
+				{? AND acc.type_id=$accusationTypeId$}
+				{? AND acc.result=$accResult$}
+				{? AND p.name like $productName$}
+				{? AND acc.create_time >= $startDate$}
+				{? AND acc.create_time < $endDate$}
+				]]>
+			</Method>
+
+			<Method name="illegalPage"><![CDATA[
+				select p.id,p.pic,p.name,p.stocks,p.price,brand.brand_name, acc.handle_time,acc.handle_info
+					from ls_product p,ls_accusation acc,ls_accusation_type type,ls_brand brand
+					where acc.type_id=type.id and acc.product_id=p.id and brand.id=p.brand_id and p.op_status=2
+					 {? and p.brand_id = $brandId$}
+					 {? and p.name like $name$}
+					 {? and p.shop_id = $shopId$}
+					 order by acc.update_time desc
+            ]]></Method>
+
+			<Method name="illegalPageCount"><![CDATA[
+				select count(1)
+					from ls_product p,ls_accusation acc,ls_accusation_type type,ls_brand brand
+					where acc.type_id=type.id and acc.product_id=p.id and brand.id=p.brand_id and p.op_status=2
+					 {? and p.brand_id = $brandId$}
+					 {? and p.name like $name$}
+					 {? and p.shop_id = $shopId$}
+            ]]></Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

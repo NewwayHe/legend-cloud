@@ -1,0 +1,545 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- data服务 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="DataCount">
+
+			<!-- 查询新增用户数据 -->
+			<Method name="queryNewUser">
+				<![CDATA[
+				select count(*) from ls_user_detail lud
+				where 1 = 1
+				{? and lud.create_time >= $startDate$}
+				{? and lud.create_time <= $endDate$}
+				{? and lud.reg_source = $source$}
+				 ]]>
+			</Method>
+
+			<!-- 查询累计用户数据 -->
+			<Method name="queryAllUser">
+				<![CDATA[
+				select count(*) from ls_user_detail lud
+				where 1 = 1
+				{? and lud.create_time >= $startDate$}
+				{? and lud.create_time <= $endDate$}
+				{? and lud.reg_source = $source$}
+				 ]]>
+			</Method>
+
+			<!-- 查询消费用户数据 -->
+			<Method name="queryConsumptionUser">
+				<![CDATA[
+				select count(*) from ls_user_detail lud
+				where 1 = 1
+				{? and lud.recent_consumption_time >= $startDate$}
+				{? and lud.recent_consumption_time <= $endDate$}
+				{? and lud.reg_source = $source$}
+				 ]]>
+			</Method>
+			<!-- 查询地区分布统计数据 -->
+			<Method name="queryDistributedAreaUser">
+				<![CDATA[
+				select count(*) as people, ll.name as city ,
+				(select ll2.name from ls_location ll2 where ll2.id = ll.parent_id ) as province
+				from ls_user_detail lud ,ls_location ll
+				where lud.city_id = ll.id
+				and lud.province_id = ll.parent_id
+				and lud.create_time <= ?
+				group by ll.id
+				order by people desc
+				 ]]>
+			</Method>
+			<Method name="queryDistributedAreaUserPage">
+				<![CDATA[
+				select count(*) as people, ll.name as city ,
+				(select ll2.name from ls_location ll2 where ll2.id = ll.parent_id ) as province
+				from ls_user_detail lud ,ls_location ll
+				where lud.city_id = ll.id
+				and lud.province_id = ll.parent_id
+				{? and lud.create_time <= $endDate$}
+				group by ll.id
+				order by people desc
+				 ]]>
+			</Method>
+			<Method name="queryDistributedAreaUserPageCount">
+				<![CDATA[
+				SELECT
+				  COUNT(DISTINCT ll.id)
+				FROM
+				  ls_user_detail lud,
+				  ls_location ll
+				WHERE lud.city_id = ll.id
+				  AND lud.province_id = ll.parent_id
+				  {? and lud.create_time <= $endDate$}
+				 ]]>
+			</Method>
+
+			<!-- 查询等级分布统计数据 -->
+			<Method name="queryDistributedGradeUser">
+				<![CDATA[
+				select lud.grade_id as grade,count(*) as userNum from ls_user_detail lud
+				where lud.create_time <= ?
+				group by lud.grade_id
+				 ]]>
+			</Method>
+			<!-- 查询用户数量总数 -->
+			<Method name="queryUserCount">
+				<![CDATA[
+				select count(*) from ls_user_detail lud
+				where lud.create_time <= ?
+				 ]]>
+			</Method>
+
+			<!-- 查询用户购买力数据 -->
+			<Method name="queryPurchasingPower">
+				<![CDATA[
+				select lud.user_id,lou.mobile,lud.consumption_amount as money
+				from ls_user_detail lud,ls_ordinary_user lou
+				where lud.user_id = lou.id
+				and lud.create_time <= ?
+				order by lud.consumption_amount desc
+				limit 5
+				 ]]>
+			</Method>
+
+			<!-- 查询店铺销售数据 -->
+			<Method name="queryShopSale">
+				<![CDATA[
+				select lsd.id as shop_id,lsd.shop_name,sum(lo.actual_total_price) as money
+				from ls_shop_detail lsd , ls_order lo
+				where lsd.id = lo.shop_id
+				and lo.status = 20
+				and lo.create_time <= ?
+				group by lsd.shop_name
+				order by money desc
+				limit 5
+				 ]]>
+			</Method>
+
+			<!-- 查询最新一条数据的时间 -->
+			<Method name="queryLastedDataDate">
+				<![CDATA[
+				select * from ls_data_user_amount ldua
+				order by ldua.create_time desc
+				limit 1
+				 ]]>
+			</Method>
+
+			<!-- 查询用户数量总数 -->
+			<Method name="queryUserCount">
+				<![CDATA[
+				select count(*) from ls_user_detail lud
+				where lud.create_time <= ?
+				 ]]>
+			</Method>
+
+			<!-- 查询用户数量统计 -->
+			<Method name="queryUserNew">
+				<![CDATA[
+				select
+					ifnull(sum(case lud.reg_source when 'H5' then 1 else 0 end),0) as h5_new ,
+					ifnull(sum(case lud.reg_source when 'MP' then 1 else 0 end),0) as mp_new ,
+					ifnull(sum(case lud.reg_source when 'MINI' then 1 else 0 end),0) as mini_new,
+					ifnull(sum(case lud.reg_source when 'APP' then 1 else 0 end),0) as app_new,
+					ifnull(sum(case lud.reg_source when 'UNKNOWN' then 1 else 0 end),0) as unknown
+				from
+					ls_user_detail lud
+					where 1=1
+					{? and lud.create_time <= $endDate$}
+					{? and lud.create_time >= $startDate$}
+				 ]]>
+			</Method>
+
+			<!-- 查询用户详细表是否有数据 -->
+			<Method name="queryUserExist">
+				<![CDATA[
+				   select count(*) from ls_user_detail lud
+				 ]]>
+			</Method>
+
+			<!-- 查询用户在购买力表是否存在 -->
+			<Method name="queryPurchasingUserExist">
+				<![CDATA[
+				  select count(*) from ls_data_user_purchasing ldup where ldup.user_id = ?
+				 ]]>
+			</Method>
+
+			<!-- 根据用户id查询用户购买力数据 -->
+			<Method name="queryPurchasingDataById">
+				<![CDATA[
+				select * from ls_data_user_purchasing ldup
+				where ldup.user_id = ?
+				order by ldup.create_time desc
+				limit 1
+				 ]]>
+			</Method>
+
+			<!-- 根据用户id查询用户手机号码 -->
+			<Method name="queryMobileById">
+				<![CDATA[
+				select lud.nick_name,lou.mobile from ls_user_detail lud
+				left join ls_ordinary_user lou on lud.user_id = lou.id
+				where lud.user_id = ?
+				group by lud.user_id
+				 ]]>
+			</Method>
+
+			<!-- 根据用户id查询浏览记录 -->
+			<Method name="queryProdViewDataById">
+				<![CDATA[
+				select * from ls_product_view lpv
+				where 1=1
+				{? and lpv.product_id = $id$}
+				{? and lpv.create_time = $time$}
+				{? and lpv.source = $source$}
+				 ]]>
+			</Method>
+
+			<!-- 根据时间和来源浏览数量记录 -->
+			<Method name="queryProdViewNum">
+				<![CDATA[
+				select
+				ifnull(sum(view_people),0) as view_people,
+				ifnull(sum(view_frequency),0) as view_frequency,
+				sum(cart_num) as cartNum
+				from ls_product_view lpv
+				where 1 = 1
+				{? and lpv.source = $source$}
+				{? and lpv.create_time >= $startDate$}
+				{? and lpv.create_time <= $endDate$}
+				{? and lpv.shop_id = $shopId$}
+				 ]]>
+			</Method>
+
+			<!-- 根据时间获取购物车数量记录 -->
+			<Method name="queryCartNum">
+				<![CDATA[
+				select ifnull(sum(lc.total_count),0) from ls_cart lc
+				where 1 = 1
+				{? and lc.create_time >= $startDate$}
+				{? and lc.create_time <= $endDate$}
+				{? and lc.shop_id = $shopId$}
+				 ]]>
+			</Method>
+
+			<!-- 根据时间获取收藏数量记录 -->
+			<Method name="queryFavoriteNum">
+				<![CDATA[
+				select count(*) from ls_favorite_product lfp
+				left join ls_product lp on lfp.product_id = lp.id
+				where 1 = 1
+				{? and lfp.addtime >= $startDate$}
+				{? and lfp.addtime <= $endDate$}
+				{? and lp.shop_id = $shopId$}
+				{? and lfp.source = $source$}
+				 ]]>
+			</Method>
+
+			<!-- 获取运营概况订单相关数据 -->
+			<Method name="queryBusinessData">
+				<![CDATA[
+				select
+				sum(case when ldup.total_amount is not null then ldup.total_amount - ldup.freight_price else 0 end) as place_amount,
+				count(case when ldup.quantity is not null and ldup.total_amount is not null then ldup.total_amount else null end) as place_order_num,
+				sum(case when ldup.quantity is not null and ldup.total_amount is not null then ldup.quantity else 0 end) as place_sku_num,
+				count(distinct case when ldup.total_amount is not null then ldup.user_id else null end) as place_user_num,
+				sum(case when ldup.pay_amount is not null then ldup.pay_amount - ldup.freight_price else 0 end) as pay_amount,
+				count(case when ldup.pay_amount is not null then ldup.pay_amount else null end ) as pay_order_num,
+				sum(case when ldup.pay_amount is not null then ldup.quantity else 0 end) as pay_sku_num,
+				count(distinct case when ldup.pay_amount is not null then ldup.user_id else null end) as pay_user_num,
+				sum(case when ldup.deal_amount is not null AND lorr.id IS NULL then ldup.deal_amount - ldup.freight_price else 0 end) as deal_amount,
+				count(CASE WHEN lorr.id IS NULL AND ldup.deal_amount IS NOT NULL THEN ldup.id ELSE NULL END) as deal_order_num,
+				sum(case when ldup.quantity is not null and ldup.deal_amount>0 and lorr.id is null then ldup.quantity else 0 end) as deal_sku_num,
+				count(distinct case when ldup.deal_amount is not null and lorr.id is null then ldup.user_id else null end) as deal_user_num,
+				count(distinct lorr.order_id) as return_order_num,
+				sum(lorr.refund_amount) as returnAmount
+				from ls_data_user_purchasing ldup
+				left join ls_order_refund_return lorr on ldup.order_id = lorr.order_id and lorr.handle_success_status = 1
+				left join ls_pre_sell_order lps on ldup.order_id = lps.order_id
+				where 1=1
+				{? and ldup.source = $source$}
+				{? and ldup.create_time >= $startDate$}
+				{? and ldup.create_time <= $endDate$}
+				{? and ldup.shop_id = $shopId$}
+				 ]]>
+			</Method>
+
+			<!-- 获取运营概况售后订单相关数据 -->
+			<Method name="queryReturnOrder">
+				<![CDATA[
+				select
+				count(distinct order_id) as return_order_num,
+				sum(order_item_money) as return_order_amount
+				from ls_order_refund_return lorr
+				where lorr.seller_status = 1
+				{? and lorr.create_time >= $startDate$}
+				{? and lorr.create_time <= $endDate$}
+				{? and lorr.shop_id = $shopId$}
+				 ]]>
+			</Method>
+
+			<!-- 获取运营概况成交统计折线图 -->
+			<Method name="queryDealOrderPic">
+				<![CDATA[
+				SELECT
+				COUNT(CASE WHEN lorr.id IS NULL AND lo.status = 20 THEN lo.id ELSE NULL END) AS deal_order_num,
+				COUNT(DISTINCT CASE WHEN lo.status = 20 AND lorr.id IS NULL THEN lo.user_id ELSE NULL END) AS deal_order_user,
+				SUM(CASE WHEN lo.status = 20 AND lorr.id IS NULL THEN lo.actual_total_price - lo.freight_price ELSE NULL END) AS deal_order_amount
+				FROM ls_order lo
+				LEFT JOIN ls_order_refund_return lorr ON lorr.order_id = lo.id AND lorr.handle_success_status = 1
+				WHERE 1=1
+				{? and lo.create_time >= $startDate$}
+				{? and lo.create_time <= $endDate$}
+				{? and lo.shop_id = $shopId$}
+				 ]]>
+			</Method>
+
+			<!-- 获取运营概况售后统计折线图 -->
+			<Method name="queryReturnOrderPic">
+				<![CDATA[
+				SELECT SUM(a.goods_num)
+				FROM (SELECT
+				  	SUM(lorr.goods_num) AS goods_num
+				FROM
+					ls_order_refund_return lorr
+					LEFT JOIN ls_data_user_purchasing ldup
+						ON lorr.order_id = ldup.order_id
+				WHERE lorr.handle_success_status = 1
+				  	AND ldup.pay_amount IS NOT NULL
+				  	{? and lorr.apply_type = $applyType$}
+					{? and ldup.create_time >= $startDate$}
+					{? and ldup.create_time < $endDate$}
+					{? and lorr.shop_id = $shopId$}
+				GROUP BY lorr.order_item_id
+				ORDER BY lorr.create_time DESC) a
+				 ]]>
+			</Method>
+
+			<!-- 获取运营概况售后统计支付订单商品数 -->
+			<Method name="queryPayGoodNum">
+				<![CDATA[
+				select sum(ldup.quantity) from ls_data_user_purchasing ldup
+				where ldup.pay_amount is not null
+				{? and ldup.create_time >= $startDate$}
+				{? and ldup.create_time < $endDate$}
+				{? and ldup.shop_id = $shopId$}
+				 ]]>
+			</Method>
+
+			<!-- 根据用户id查询店铺浏览记录 -->
+			<Method name="queryShopViewDataById">
+				<![CDATA[
+				select * from ls_shop_view lsv
+				where 1=1
+				{? and lsv.shop_id = $id$}
+				{? and lsv.create_time = $time$}
+				{? and lsv.source = $source$}
+				 ]]>
+			</Method>
+
+			<!-- 查询店铺浏览记录 -->
+			<Method name="getShopViewPic">
+				<![CDATA[
+				select ifnull(sum(lsv.view_people),0) as view_people, ifnull(sum(lsv.view_frequency),0) as view_frequency from ls_shop_view lsv
+				where 1=1
+				{? and lsv.shop_id = $shopId$}
+				{? and lsv.create_time >= $startDate$}
+				{? and lsv.create_time <= $endDate$}
+				{? and lsv.source = $source$}
+				 ]]>
+			</Method>
+
+			<!-- 查询最新营销活动汇总数据 -->
+			<Method name="getLastedActivityData">
+				<![CDATA[
+				select * from ls_data_activity_collect ldac
+				order by ldac.create_time desc
+				limit 1
+				 ]]>
+			</Method>
+
+			<!-- 查询是否为营销活动新购买用户 -->
+			<Method name="queryIfNewCustomer">
+				<![CDATA[
+				select * from
+				(
+				select distinct lo.user_id from ls_order lo
+				left join ls_order_item loi on loi.order_id = lo.id
+				where 1=1
+				and lo.status = 20
+				{? and lo.create_time < $time$}
+				and (lo.order_type <> 'O'
+				or loi.limit_discounts_marketing_id is not null
+				or loi.reward_marketing_id is not null
+				or loi.coupon_off_price > 0
+				)
+				) x
+				where 1=1
+				{? and x.user_id = $userId$}
+				 ]]>
+			</Method>
+
+			<!-- 优惠券汇总 -->
+			<Method name="couponCollect">
+				<![CDATA[
+				select lc.id as activity_id,lc.create_time, lc.use_start_time as start_time, lc.use_end_time as end_time,lc.status as activity_status,ifnull(loi.actual_amount,0) as actual_total_price,lo.status as order_status,loi.refund_status,lo.final_return_deadline,lo.product_quantity,lo.user_id,lc.shop_provider_flag,lo.create_time as order_time,lc.shop_id,loi.id as order_item_id,loi.basket_count as basket_count,lo.id as order_id
+				from ls_coupon lc
+				left join ls_coupon_user lcu on lcu.coupon_id = lc.id
+				left join ls_order lo on lo.order_number = lcu.order_number
+				left join ls_order_item loi on loi.order_id = lo.id
+				where 1=1
+				{? and lc.create_time >= $startDate$}
+				{? and lc.create_time < $endDate$}
+				{@ and lc.id in $activityIds$}
+				]]>
+			</Method>
+
+			<!-- 限时折扣汇总 -->
+			<Method name="marketingLimitCollect">
+				<![CDATA[
+				select lmld.id as activity_id,lmld.create_time ,lmld.start_time ,lmld.end_time ,lmld.status as activity_status,ifnull(loi.actual_amount,0) as actual_total_price, lo.status as order_status, loi.refund_status, lo.final_return_deadline ,loi.basket_count as product_quantity,lo.user_id,loi.limit_discounts_marketing_price,lo.create_time as order_time,lmld.shop_id,loi.id as order_item_id,loi.basket_count as basket_count,lo.id as order_id
+				from ls_marketing_limit_discounts lmld
+				left join ls_order_item loi on loi.limit_discounts_marketing_id = lmld.id
+				left join ls_order lo on lo.id = loi.order_id
+				where 1=1
+				{? and lmld.create_time >= $startDate$}
+				{? and lmld.create_time < $endDate$}
+				{@ and lmld.id in $activityIds$}
+				]]>
+			</Method>
+
+			<!-- 满减满折汇总 -->
+			<Method name="marketingRewardCollect">
+				<![CDATA[
+				select lmr.id as activity_id,lmr.create_time ,lmr.start_time ,lmr.end_time ,lmr.status as activity_status ,ifnull(loi.actual_amount,0) as actual_total_price,lo.status as order_status,loi.refund_status ,lo.final_return_deadline ,loi.basket_count as product_quantity, lo.user_id ,loi.reward_marketing_price,lmr.`type` as marketing_type,lo.create_time as order_time,lmr.shop_id,loi.id as order_item_id,loi.basket_count as basket_count,lo.id as order_id
+				from ls_marketing_reward lmr
+				left join ls_order_item loi on loi.reward_marketing_id = lmr.id
+				left join ls_order lo on lo.id = loi.order_id
+				where 1=1
+				{? and lmr.create_time >= $startDate$}
+				{? and lmr.create_time < $endDate$}
+				{@ and lmr.id in $activityIds$}
+				]]>
+			</Method>
+
+			<!-- 根据时间查询营销汇总 -->
+			<Method name="getActivityPublishPic">
+				<![CDATA[
+				select * from ls_data_activity_collect ldac
+				where 1=1
+				{? and ldac.create_time >= $startDate$}
+				{? and ldac.create_time < $endDate$}
+				{? and ldac.shop_id = $shopId$}
+				]]>
+			</Method>
+
+			<!-- 根据时间查询营销成交折线图 -->
+			<Method name="getActivityDealPic">
+				<![CDATA[
+				select ldao.activity_id,ldao.activity_type,ldao.order_item_id,ldao.order_id,loi.actual_amount as amount,loi.basket_count,loi.user_id,lo.create_time
+				from ls_data_activity_order ldao
+				left join ls_order lo on ldao.order_id = lo.id
+				left join ls_order_item loi on ldao.order_item_id = loi.id
+				where 1=1
+				and loi.refund_status <> 2
+				and lo.status = 20
+				{? and lo.create_time >= $startDate$}
+				{? and lo.create_time < $endDate$}
+				{@ and concat(ldao.activity_id,ldao.activity_type) in $idType$}
+				]]>
+			</Method>
+
+			<!-- 根据时间查询营销支付数据 -->
+			<Method name="getActivityPayData">
+				<![CDATA[
+				select lo.actual_total_price,lo.total_price,lo.product_quantity from ls_order lo
+				where 1=1
+				and lo.status > 1
+				and (lo.order_type IN ( 'G', 'MG', 'S' )
+					OR lo.discount_total_amount > 0
+					OR lo.coupon_amount > 0
+					OR lo.platform_coupon_amount > 0
+				)
+				{? and lo.create_time >= $startDate$}
+				{? and lo.create_time < $endDate$}
+				{? and lo.shop_id = $shopId$}
+				]]>
+			</Method>
+
+			<!-- 根据时间查询店铺支付数据 -->
+			<Method name="getPayData">
+				<![CDATA[
+				select lo.actual_total_price from ls_order lo
+				where 1=1
+				and lo.status > 1
+				{? and lo.create_time >= $startDate$}
+				{? and lo.create_time < $endDate$}
+				{? and lo.shop_id = $shopId$}
+				]]>
+			</Method>
+
+			<!-- 查询活动访问数据 -->
+			<Method name="queryActivityView">
+				<![CDATA[
+				select * from ls_data_activity_view ldav
+				where 1=1
+				{? and ldav.type = $type$}
+				{? and ldav.create_time >= $startDate$}
+				{? and ldav.create_time <= $endDate$}
+				{@ and ldav.activity_id in $ids$}
+				]]>
+			</Method>
+
+			<!-- 查询活动访问数据 -->
+			<Method name="queryDistributionLevelInfo">
+				<![CDATA[
+				SELECT ldl.level_name,
+				IF(a.userTotalCount IS NULL, 0, a.userTotalCount) AS userTotalCount,
+				IF(b.growCount IS NULL, 0, b.growCount) AS growCount,
+				IF(c.netGrowthCount IS NULL, 0, c.netGrowthCount) AS netGrowthCount
+
+				FROM
+
+				ls_distribution_level ldl LEFT JOIN
+
+				(
+				SELECT COUNT(*) AS userTotalCount, a.level_id FROM (SELECT user_id, MAX(level_id) AS level_id FROM ls_distribution_upgrade
+				WHERE
+				1=1
+				{? and record_date <= $endTime$}
+				GROUP BY user_id) a GROUP BY a.level_id
+				) a
+
+				ON ldl.id = a.level_id
+
+				LEFT JOIN
+
+				(
+				SELECT COUNT(DISTINCT user_id) AS growCount, level_id FROM ls_distribution_upgrade
+				WHERE
+				1=1
+				{? and record_date >= $startTime$}
+				{? and record_date <= $endTime$}
+				GROUP BY level_id
+				) b
+
+				ON ldl.id = b.level_id
+
+				LEFT JOIN
+
+				(
+				SELECT COUNT(*) AS netGrowthCount, a.level_id FROM (SELECT user_id, MAX(level_id) AS level_id FROM ls_distribution_upgrade
+				WHERE
+				1=1
+				{? and record_date >= $startTime$}
+				{? and record_date <= $endTime$}
+				GROUP BY user_id ) a GROUP BY a.level_id
+				) c
+				ON ldl.id = c.level_id
+				]]>
+			</Method>
+
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

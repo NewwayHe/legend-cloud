@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 公告 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="Pub">
+
+			<Method name="queryShopPub">
+				<![CDATA[
+					SELECT id,start_date AS startDate,title AS title,rec_date AS recDate,STATUS,end_date AS endDate,TYPE,msg 
+					FROM ls_pub WHERE  ((start_date >= ? OR start_date IS NULL) AND (end_date >= ? OR end_date IS NULL)) AND TYPE=? AND STATUS=? ORDER BY rec_date DESC LIMIT 5
+				   ]]>
+			</Method>
+
+			<Method name="getPubs">
+				<![CDATA[
+					select id, title  from ls_pub where 
+					id = (select max(id) from ls_pub where status = 1 and id < ?)
+					or id =(select min(id) from ls_pub where status = 1 and id > ?)
+				   ]]>
+			</Method>
+
+			<Method name="getPubsByUser">
+				<![CDATA[
+					select id, title from ls_pub where type = 0 and 
+					id = (select max(id) from ls_pub where status = 1 and id < ?)
+					or id =(select min(id) from ls_pub where status = 1 and id > ?)
+				   ]]>
+			</Method>
+
+			<Method name="getPubList"><![CDATA[
+	      		SELECT p.* FROM ls_pub p where 1=1 
+				{? and p.title like $title$} 
+				{? and p.type = $type$} 
+				{? and p.status = $status$}
+				order by p.create_time desc
+            ]]></Method>
+
+			<Method name="getPubListCount"><![CDATA[
+	      		SELECT count(p.id) FROM ls_pub p  where 1=1 
+				{? and p.title like $title$} 
+				{? and p.type = $type$}
+				{? and p.status = $status$}
+            ]]></Method>
+
+			<Method name="queryPubPageListByType"><![CDATA[
+	      		SELECT
+	      			lp.id,
+				  	lp.admin_user_id,
+				  	lp.admin_user_name,
+				  	lp.title,
+				  	lp.content,
+				  	lp.create_time,
+				  	lp.update_time,
+				  	lp.start_time,
+				  	lp.end_time,
+				  	lp.status,
+				  	lp.type,
+				  	IFNULL(lr.status, 0) AS receiverStatus
+				FROM
+					ls_pub lp
+					LEFT JOIN ls_receiver lr
+						ON lp.id = lr.business_id
+						{? AND lr.user_id = $userId$}
+						{? AND lr.user_type = $receiverType$}
+				WHERE 1=1
+				  	{? AND lp.type = $type$}
+				  	{? AND lp.status = $status$}
+				  	{? AND (lp.start_time <= $startTime$ or lp.start_time is null)}
+				  	{? AND (lp.end_time >= $endTime$ or lp.end_time is null)}
+				group by lp.id
+				ORDER BY lp.create_time desc
+            ]]></Method>
+
+			<Method name="queryPubPageListByTypeCount"><![CDATA[
+	      		SELECT
+				  	COUNT(distinct lp.id)
+				FROM
+					ls_pub lp
+					LEFT JOIN ls_receiver lr
+						ON lp.id = lr.business_id
+						{? AND lr.user_id = $userId$}
+						{? AND lr.user_type = $receiverType$}
+				WHERE 1=1
+				  	{? AND lp.type = $type$}
+				  	{? AND lp.status = $status$}
+				  	{? AND (lp.start_time <= $startTime$ or lp.start_time is null)}
+				  	{? AND (lp.end_time >= $endTime$ or lp.end_time is null)}
+            ]]></Method>
+		</Object>
+
+	</BusinessObjects>
+</DataAccessLayer>

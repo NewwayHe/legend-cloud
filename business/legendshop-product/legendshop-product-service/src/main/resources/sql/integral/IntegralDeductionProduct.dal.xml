@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="IntegralDeductionProduct">
+			<Method name="queryPage">
+				<![CDATA[
+				 SELECT shop.shop_name,d.*,p.name,p.pic,p.price,p.`status`as productStatus,p.op_status as productOpstatus,d.delete_flag,p.del_status,p.stocks
+					 FROM ls_integral_deduction_product d
+					 INNER JOIN ls_product p ON d.product_id = p.id
+					 INNER JOIN ls_shop_detail shop on shop.id=d.shop_id
+						{? AND d.shop_id = $shopId$ }
+						{? AND p.status=$status$ }
+						{? AND d.delete_flag=$deleteFlag$ }
+						{? AND p.op_status=$productOpStatus$ }
+						{? AND p.name LIKE $productName$ }
+						{? AND shop.shop_name LIKE $shopName$ }
+						{! ORDER BY p.update_time DESC,d.create_time DESC || $orderIndicator$}
+	            ]]>
+			</Method>
+			<Method name="queryPageCount">
+				<![CDATA[
+		     		SELECT count(*)
+						FROM ls_integral_deduction_product d
+						INNER JOIN ls_product p ON d.product_id = p.id
+						INNER JOIN ls_shop_detail shop on shop.id=d.shop_id
+							{? AND d.shop_id = $shopId$ }
+							{? AND p.status=$status$ }
+							{? AND d.delete_flag=$deleteFlag$ }
+							{? AND p.op_status=$productOpStatus$ }
+							{? AND p.name LIKE $productName$ }
+							{? AND shop.shop_name LIKE $shopName$ }
+							{! ORDER BY p.update_time DESC,d.create_time DESC || $orderIndicator$}
+	            ]]>
+			</Method>
+
+
+			<Method name="check">
+				<![CDATA[
+		     		WITH allprod as(
+					SELECT distinct s.product_id from ls_integral_deduction_sku s
+					where 1=1
+					{@ and id in $ids$}
+					),
+					nomalProd as(
+					SELECT a.product_id,SUM(a.delete_flag) delCount from ls_integral_deduction_sku  a,allprod where a.product_id in(
+					allprod.product_id) and a.delete_flag=0 GROUP BY a.product_id
+					)
+					SELECT DISTINCT allprod.product_id from allprod where allprod.product_id not in (SELECT product_id from nomalProd)
+	            ]]>
+			</Method>
+
+
+			<Method name="reviseIntegralDeductionProduct">
+				<![CDATA[
+		     		UPDATE
+		     		ls_integral_deduction_product idp,
+		     		(SELECT d.product_id,MIN(d.proportion) min,MAX(d.proportion) max from ls_integral_deduction_sku d
+		     		where d.delete_flag=0
+		     		and d.product_id in
+		     		(SELECT DISTINCT product_id from ls_integral_deduction_sku where id = ?
+					) GROUP BY d.product_id) co
+					set idp.max_proportion=co.max,idp.min_proportion=co.min where idp.product_id=co.product_id
+	            ]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

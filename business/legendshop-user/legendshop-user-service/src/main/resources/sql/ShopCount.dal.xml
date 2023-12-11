@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="ShopCount">
+
+			<!-- 累计入驻商家数量-->
+			<Method name="queryNewShop">
+				<![CDATA[
+				SELECT COUNT(1) FROM ls_shop_detail
+				WHERE 1=1
+				{? and create_time >= $startDate$}
+				{? and create_time <= $endDate$}
+				 ]]>
+			</Method>
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

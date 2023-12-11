@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 商品回复 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="ProductType">
+			<Method name="getTypeAboutSkuByPropId">
+				<![CDATA[
+		     		SELECT ls.sku_id FROM ls_sku ls LEFT JOIN ls_product lp ON lp.product_id = ls.product_id
+		     		LEFT JOIN ls_category lc ON lc.id = lp.category_id
+		     		LEFT JOIN ls_product_property_agg lt ON lc.type_id = lt.id
+		     		WHERE 1 = 1
+		     		{? and lt.id = $proTypeId$}
+	            ]]>
+			</Method>
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

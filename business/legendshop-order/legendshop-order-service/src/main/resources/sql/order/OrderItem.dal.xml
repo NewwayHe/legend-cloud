@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 投诉表的SQL -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="OrderItem">
+			<Method name="getDistOrderItems">
+				<![CDATA[
+					select si.*,s.status as subStatus,s.finally_date as finallyDate from ls_order_item si, ls_sub s where si.order_number =s.order_number
+					{? and s.shop_id = $shopId$}
+					{? and si.dist_user_id like $distUserId$}
+					{? and s.status = $status$}
+					{? and si.order_item_number like $subItemNum$}
+					{? and si.order_item_date >= $startDate$}
+					{? and si.order_item_date < $endDate$}
+					 order by si.order_item_date desc
+            	 ]]>
+			</Method>
+
+
+			<Method name="getDistOrderItemsCount">
+				<![CDATA[
+				 	select count(1) from ls_order_item si, ls_sub s where si.order_number =s.order_number
+					and si.dist_user_name is not null
+					{? and s.shop_id = $shopId$}
+					{? and si.dist_user_id like $distUserId$}
+					{? and s.status = $status$}
+					{? and si.order_item_number like $subItemNum$}
+					{? and si.order_item_date >= $startDate$}
+					{? and si.order_item_date < $endDate$}
+            	 ]]>
+			</Method>
+
+			<!-- 查询结算分销订单列表 start -->
+			<Method name="shop.queryDistSubItemList">
+				<![CDATA[
+				SELECT
+				  si.sub_item_id AS subItemId,
+				  si.sub_item_number as subItemNumber,
+				  si.order_number AS subNumber,
+				  si.product_id AS productId,
+				  si.sku_id AS skuId,
+				  si.dist_user_name AS distUserName,
+				  ifnull (si.dist_user_commis, '0.00') AS distUserCommis,
+				  ifnull (si.dist_commis_cash, '0.00') AS distCommisCash,
+				  si.dist_second_name AS distSecondName,
+				  ifnull (si.dist_second_commis, '0.00') AS distSecondCommis,
+				  si.dist_third_name AS distThirdName,
+				  ifnull (si.dist_third_commis, '0.00') AS distThirdCommis
+				FROM
+				  ls_sub_item si,
+				  ls_sub s
+				WHERE si.order_number = s.order_number
+				  AND si.has_dist = 1
+				  AND s.refund_status != 2
+				  AND s.refund_status != 1
+				  {? and s.shop_id = $shopId$}
+				  {? and s.status = $status$}
+				  {? and s.bill_sn = $billSn$}
+				  {? and s.order_number like $subNumber$}
+				ORDER BY si.sub_item_date DESC
+             ]]>
+			</Method>
+			<Method name="shop.queryDistSubItemListCount">
+				<![CDATA[
+             	SELECT COUNT(*)
+             	FROM
+				  ls_sub_item si,
+				  ls_sub s
+				WHERE si.order_number = s.order_number
+				  AND si.has_dist = 1
+				  AND s.refund_status != 2
+				  AND s.refund_status != 1
+				  {? and s.shop_id = $shopId$}
+				  {? and s.status = $status$}
+				  {? and s.bill_sn = $billSn$}
+				  {? and s.order_number like $subNumber$}
+             ]]>
+			</Method>
+			<!-- 查询结算分销订单列表 end -->
+
+			<!-- 查询结算分销订单列表 start -->
+			<Method name="getShopOrderBillDistributionPage">
+				<![CDATA[
+					SELECT
+						oi.id AS orderItemId,
+						o.order_number AS orderNumber,
+						oi.pic,
+						oi.product_name,
+						oi.attribute,
+						oi.basket_count,
+						oi.dist_ratio,
+						oi.dist_commission_cash,
+						oi.commission_settle_status,
+						oi.refund_status,
+						oi.actual_amount
+					FROM
+						ls_order_item oi
+						INNER JOIN ls_order o
+						ON o.order_number = oi.order_number
+					WHERE
+						o.bill_flag = '1'
+						 and oi.dist_flag = 1
+						{? AND o.bill_sn = $billSn$}
+						{? AND o.shop_id = $shopId$}
+						{? AND o.order_number = $orderNumber$}
+						{? AND o.create_time <= $orderEndTime$}
+						{? AND o.create_time >= $orderStartTime$}
+						{? AND o.pay_time <= $payEndTime$}
+						{? AND o.pay_time >= $payStartTime$}
+					ORDER BY o.create_time DESC
+            	]]>
+			</Method>
+			<Method name="getShopOrderBillDistributionPageCount">
+				<![CDATA[
+					SELECT
+						count(oi.id)
+					FROM
+						ls_order_item oi
+						INNER JOIN ls_order o
+						ON o.order_number = oi.order_number
+					WHERE
+						o.bill_flag = '1'
+						 and oi.dist_flag = 1
+						{? AND o.bill_sn = $billSn$}
+						{? AND o.shop_id = $shopId$}
+						{? AND o.order_number = $orderNumber$}
+						{? AND o.create_time <= $orderEndTime$}
+						{? AND o.create_time >= $orderStartTime$}
+						{? AND o.pay_time <= $payEndTime$}
+						{? AND o.pay_time >= $payStartTime$}
+				]]>
+			</Method>
+			<!-- 查询结算分销订单列表 end -->
+
+			<!-- 查询结算分销订单列表 start -->
+			<Method name="queryOrderItemsProd">
+				<![CDATA[
+					SELECT lo.product_id, lo.pic, lp.name AS product_name
+					FROM ls_order_item lo
+					INNER JOIN ls_product lp
+					ON lo.product_id = lp.id
+					WHERE lp.status=1
+					{? AND lp.name LIKE $productName$}
+					{? AND lo.user_id = $userId$}
+					GROUP BY product_id
+					ORDER BY lo.create_time DESC
+            	]]>
+			</Method>
+			<Method name="queryOrderItemsProdCount">
+				<![CDATA[
+					select count(distinct product_id)
+					FROM ls_order_item lo
+					INNER JOIN ls_product lp
+					ON lo.product_id = lp.id
+					WHERE lp.status=1
+					{? AND lp.name LIKE $productName$}
+					{? AND lo.user_id = $userId$}
+				]]>
+			</Method>
+			<!-- 查询结算分销订单列表 end -->
+
+			<!-- 查询订单项和关联商品状态 -->
+			<Method name="queryDetailByOrderId">
+				<![CDATA[
+					select loi.*,lp.status as product_status from ls_order_item loi
+					left join ls_product lp on lp.id = loi.product_id
+					where 1=1
+					{@ and loi.order_id in $orderId$}
+				]]>
+			</Method>
+
+			<!-- 获取售后期结束未分账的订单 -->
+			<Method name="getExpiredDivideOrder">
+				<![CDATA[
+					SELECT
+					  	oi.*
+					FROM
+						ls_order_item oi
+						LEFT JOIN ls_order o
+							ON o.order_number = oi.order_number
+						LEFT JOIN ls_pay_settlement_order lpo
+							ON o.order_number = lpo.order_number
+						LEFT JOIN ls_pay_settlement lps
+							ON lpo.pay_settlement_sn = lps.pay_settlement_sn
+						LEFT JOIN ls_yeepay_order lyo
+							ON lps.pay_settlement_sn = lyo.pay_settlement_sn
+						LEFT JOIN ls_yeepay_divide ld
+							ON lyo.id = ld.yeepay_order_id
+							AND ld.type = 'complete'
+					WHERE
+						lps.state = 1
+						AND (
+							o.pay_type_id = ?
+							OR o.pay_type_id = ?
+						)
+						AND oi.return_deadline < NOW()
+						AND o.status = ?
+						AND oi.refund_status <> ?
+						AND (
+							ld.id IS NULL
+							OR ld.status != 'SUCCESS'
+						)
+				]]>
+			</Method>
+
+			<Method name="quotaOrderSUM">
+				<![CDATA[
+					select IFNULL(SUM(lo.product_quantity), 0)
+					from
+					  ls_order_item loi
+					inner join
+					  ls_order lo
+					on loi.order_id = lo.id
+					where 1=1
+					{? and lo.user_id = $userId$}
+					{? and loi.product_id = $productId$}
+					{? and lo.create_time >= $beginTime$}
+					{? and lo.create_time <= $endTime$}
+					{? and lo.create_time >= $quotaTime$}
+					AND (lo.status <> -5 OR lo.payed_flag = 1)
+					AND (lo.order_type = "O" OR lo.order_type = "P")
+					order by lo.pay_time desc
+				]]>
+			</Method>
+
+		</Object>
+
+	</BusinessObjects>
+</DataAccessLayer>

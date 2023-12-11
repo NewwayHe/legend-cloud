@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 投诉表的SQL -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="OrderRefundReturn">
+			<!-- 结算功能  退货退款订单列表 start -->
+			<Method name="getRefundReturnOrder">
+				<![CDATA[
+					SELECT
+					  r.settlement_number,
+					  r.product_name,
+					  r.create_time,
+					  r.settlement_time,
+					  r.deposit_order_settlement_sn,
+					  r.order_number,
+					  r.pay_serial_number,
+					  r.return_type,
+					  r.refund_sn,
+					  r.deposit_pay_type_id,
+					  r.order_item_money,
+					  r.deposit_pay_type_name,
+					  r.refund_amount,
+					  r.platform_refund,
+					  r.refund_deposit_flag,
+					  r.apply_status,
+					  r.deposit_out_refund_no,
+					  r.seller_status,
+					  r.product_num,
+					  r.order_money,
+					  r.user_id,
+					  r.deposit_order_datetime,
+					  r.deposit_refund,
+					  r.handle_type,
+					  r.bill_sn,
+					  r.id,
+					  r.order_item_id AS orderItemId,
+					  r.apply_type,
+  					  r.admin_time,
+					  IFNULL (i.platform_coupon_off_price,'0.00') AS returnRedPackOffPrice
+					FROM
+					  ls_order_refund_return r
+					  LEFT JOIN ls_order_item i ON r.order_item_id = i.id
+					WHERE 1 = 1
+						{? and r.shop_id =$shopId$}
+						{? and r.apply_status = $applyStatus$ }
+						{? and r.bill_sn =$billSn$}
+						{? and r.order_number like $orderNumber$}
+					]]>
+			</Method>
+
+			<Method name="getRefundReturnOrderCount">
+				<![CDATA[
+					SELECT count(*)
+					FROM
+					  ls_order_refund_return r
+					  LEFT JOIN ls_order_item i ON r.order_item_id = i.id
+					WHERE 1 = 1
+						{? and r.shop_id =$shopId$}
+						{? and r.apply_status = $applyStatus$ }
+						{? and r.bill_sn =$billSn$}
+						{? and r.order_number like $orderNumber$}
+					]]>
+			</Method>
+			<!-- 结算功能  退货退款订单列表  -->
+			<Method name="page">
+				<![CDATA[
+					SELECT DISTINCT
+					r.id,r.user_id,r.shop_id,r.shop_name,r.product_name,IFNULL(r.product_attribute,"") as productAttribute,r.product_image,r.apply_status,r.order_number,r.refund_sn,r.reason,
+					r.apply_type,r.return_type,r.goods_num,r.goods_status,r.handle_success_status,r.seller_status,r.create_time,r.order_item_money,r.refund_amount,r.order_type,r.integral,
+					item.snapshot_id,r.sku_id,item.id as orderItemId,
+					addr.receiver,addr.mobile,
+					ud.nick_name, o.id AS orderId,
+					o.status AS orderStatus,o.total_deduction_amount,o.total_integral,o.pay_time,o.activity_id as activeId,
+					IF(ld.level_id IS NULL, 0, 1) AS isMember
+					FROM ls_order_refund_return r
+					INNER JOIN ls_order_item item ON r.order_item_id = item.id
+					INNER JOIN ls_order o ON o.id = r.order_id
+					LEFT JOIN ls_order_user_address addr ON o.address_order_id = addr.id
+					INNER JOIN ls_user_detail ud ON ud.user_id = o.user_id
+					LEFT JOIN ls_distribution ld ON r.user_id = ld.user_id
+					where 1=1
+					{? and r.user_id = $userId$}
+					{? and o.refund_status = $orderRefundStatus$}
+					{? and r.shop_id = $shopId$}
+					{? and r.apply_type = $applyType$}
+					{? and ud.nick_name like $userName$}
+					{? and ud.nick_name like $nickName$}
+					{? AND addr.mobile LIKE $receiverMobile$}
+                    {? AND addr.receiver LIKE $receiverName$}
+					{? and r.shop_name like $shopName$}
+					{? and r.product_name like $productName$}
+					{? and r.order_number like $orderNumber$}
+					{? and r.refund_sn like $refundSn$}
+					{? and r.reason like $reason$}
+					{? and r.create_time >= $startTime$}
+					{? and r.create_time <= $endTime$}
+					{ $applyStatus$}
+					{ $customStatus$}
+					{$isMember$}
+					order by r.create_time desc
+				]]>
+			</Method>
+			<Method name="pageCount">
+				<![CDATA[
+					SELECT COUNT(*) FROM (
+					SELECT DISTINCT
+					r.id,r.user_id,r.shop_id,r.shop_name,r.product_name,IFNULL(r.product_attribute,"") as productAttribute,r.product_image,r.apply_status,r.order_number,r.refund_sn,
+					r.apply_type,r.return_type,r.goods_num,r.goods_status,r.handle_success_status,r.seller_status,r.create_time,r.order_item_money,r.refund_amount,r.order_type,r.integral,
+					item.snapshot_id,
+					addr.receiver,addr.mobile,
+					ud.nick_name, o.id AS orderId,
+					o.status AS orderStatus
+					,IF(ld.level_id IS NULL, 0, 1) AS isMember
+					FROM ls_order_refund_return r
+					INNER JOIN ls_order_item item ON r.order_item_id = item.id
+					INNER JOIN ls_order o ON o.id = r.order_id
+					LEFT JOIN ls_order_user_address addr ON o.address_order_id = addr.id
+					INNER JOIN ls_user_detail ud ON ud.user_id = o.user_id
+					LEFT JOIN ls_distribution ld ON r.user_id = ld.user_id
+					where 1=1
+					{? and r.user_id = $userId$}
+					{? and o.refund_status = $orderRefundStatus$}
+					{? and r.shop_id = $shopId$}
+					{? and r.apply_type = $applyType$}
+					{? and ud.nick_name like $userName$}
+					{? and ud.nick_name like $nickName$}
+					{? AND addr.mobile LIKE $receiverMobile$}
+                    {? AND addr.receiver LIKE $receiverName$}
+					{? and r.shop_name like $shopName$}
+					{? and r.reason like $reason$}
+					{? and r.product_name like $productName$}
+					{? and r.order_number like $orderNumber$}
+					{? and r.refund_sn like $refundSn$}
+					{? and r.create_time >= $startTime$}
+					{? and r.create_time <= $endTime$}
+					{ $applyStatus$}
+					{ $customStatus$}
+					{$isMember$}
+					) tmp
+				]]>
+			</Method>
+
+			<Method name="getShopOrderBillRefundPage">
+				<![CDATA[
+					SELECT
+						o.id AS orderId,
+						r.order_number AS orderNumber,
+						o.create_time AS orderTime,
+						r.refund_sn AS refundNumber,
+						r.create_time AS createTime,
+						r.integral,
+						IFNULL(r.refund_amount, '0.00') AS refundAmount
+					FROM
+						ls_order_refund_return r
+						LEFT JOIN ls_order o
+						ON o.order_number = r.order_number
+					WHERE
+						r.bill_flag = '1'
+						{? AND r.bill_sn = $billSn$}
+						{? AND r.shop_id = $shopId$}
+						{? AND r.order_number = $orderNumber$}
+						{? AND o.create_time <= $orderEndTime$}
+						{? AND o.create_time >= $orderStartTime$}
+						{? AND r.create_time <= $applyEndTime$}
+						{? AND r.create_time >= $applyStartTime$}
+					ORDER BY o.create_time DESC
+				]]>
+			</Method>
+
+			<Method name="getShopOrderBillRefundPageCount">
+				<![CDATA[
+					SELECT
+						COUNT(*)
+					FROM
+						ls_order_refund_return r
+						LEFT JOIN ls_order o
+						ON o.order_number = r.order_number
+					WHERE
+						r.bill_flag = '1'
+						{? AND r.bill_sn = $billSn$}
+						{? AND r.shop_id = $shopId$}
+						{? AND r.order_number = $orderNumber$}
+						{? AND o.create_time <= $orderEndTime$}
+						{? AND o.create_time >= $orderStartTime$}
+						{? AND r.create_time <= $payEndTime$}
+						{? AND r.create_time >= $payStartTime$}
+				]]>
+			</Method>
+
+			<Method name="getListByStatusAndBillFlag">
+				<![CDATA[
+					SELECT r.id,r.platform_refund,r.order_id,r.shop_id,r.order_number,r.order_item_id,r.seller_status,r.apply_status,r.refund_amount
+					FROM ls_order_refund_return r
+					LEFT join ls_order o
+					on o.order_number = r.order_number
+					WHERE 1=1
+					{? AND o.`status` = $status$}
+					{? AND r.handle_success_status = $handleSuccess$}
+					{? AND r.bill_flag = $billFlag$}
+					{? AND r.apply_status = $applyStatus$}
+					{? AND r.admin_time < $endDate$}
+					{@ AND r.order_id IN $ids$}
+				]]>
+			</Method>
+
+			<Method name="papeCancelOrder">
+				<![CDATA[
+					SELECT DISTINCT
+					 r.id,
+					 r.shop_name,
+					 r.product_name,
+					 ud.nick_name,
+					 r.shop_id,
+					 r.sku_id,
+					 r.order_id,
+					 r.order_type,
+					 o.`status` orderStatus,
+					 IFNULL( r.product_attribute, "" ) AS productAttribute,
+					 r.product_image ,
+					 r.order_number ,
+					 r.refund_sn ,
+					 r.goods_num,
+					 r.shop_operator,
+					 r.shop_operator_time,
+					 r.admin_operator,
+					 r.admin_operator_time,
+					 r.buyer_message,
+					r.seller_status,
+					 r.apply_status,
+				     r.seller_time,
+					 r.admin_time,
+					 r.create_time,
+					 o.freight_price shipping_price,
+					CONCAT( "￥", r.order_money) order_money,
+					 CONCAT( "￥",  o.freight_price)  freight_price,
+					 r.reason ,
+					 r.seller_message ,
+					 r.admin_message
+					FROM
+					 ls_order_refund_return r
+					 LEFT JOIN ls_order o ON o.id = r.order_id
+					 LEFT JOIN ls_user_detail ud ON ud.user_id = o.user_id
+					WHERE
+					 1 = 1
+					{? and r.product_name like $productName$}
+					{? and r.order_number like $orderNumber$}
+					{? and r.create_time >= $startTime$}
+					{? and r.create_time <= $endTime$}
+					{? and r.reason=$reason$}
+					{? and r.shop_id=$shopId$}
+					{? and r.apply_type=$applyType$}
+					{? and r.apply_status=$applyStatus$}
+					{? and r.refund_source=$refundSource$}
+					ORDER BY r.create_time desc
+				]]>
+			</Method>
+
+			<Method name="papeCancelOrderCount">
+				<![CDATA[
+				  select count(0) from (
+					SELECT DISTINCT
+					 r.id,
+					 r.shop_name,
+					 r.product_name,
+					 ud.nick_name,
+					 r.shop_id,
+					 r.sku_id,
+					 r.order_id,
+					 r.order_type,
+					 o.`status` orderStatus,
+					 IFNULL( r.product_attribute, "" ) AS productAttribute,
+					 r.product_image ,
+					 r.order_number ,
+					 r.refund_sn ,
+					 r.goods_num,
+				 	 r.shop_operator,
+					 r.shop_operator_time,
+					 r.admin_operator,
+					 r.admin_operator_time,
+					 r.buyer_message,
+					r.seller_status,
+					 r.apply_status,
+				     r.seller_time,
+					 r.admin_time,
+					 r.create_time,
+					 o.freight_price shipping_price,
+					CONCAT( "￥", r.order_money) order_money,
+					 CONCAT( "￥",  o.freight_price)  freight_price,
+					 r.reason ,
+					 r.seller_message ,
+					 r.admin_message
+					FROM
+					 ls_order_refund_return r
+					 LEFT JOIN ls_order o ON o.id = r.order_id
+					 LEFT JOIN ls_user_detail ud ON ud.user_id = o.user_id
+					WHERE
+					 1 = 1
+					{? and r.product_name like $productName$}
+					{? and r.order_number like $orderNumber$}
+					{? and r.create_time >= $startTime$}
+					{? and r.create_time <= $endTime$}
+					{? and r.reason=$reason$}
+					{? and r.shop_id=$shopId$}
+					{? and r.apply_type=$applyType$}
+					{? and r.apply_status=$applyStatus$}
+					{? and r.refund_source=$refundSource$}
+					ORDER BY r.create_time desc) t
+				]]>
+			</Method>
+
+			<!-- 结算功能 用户退货退款订单列表  -->
+			<Method name="pageOrderRefundUser">
+				<![CDATA[
+					SELECT DISTINCT
+					r.id,r.user_id,r.shop_id,r.shop_name,r.product_name,IFNULL(r.product_attribute,"") as productAttribute,r.product_image,r.apply_status,r.order_number,r.refund_sn,
+					r.apply_type,r.return_type,r.goods_num,r.goods_status,r.handle_success_status,r.seller_status,r.create_time,r.order_item_money,r.refund_amount,r.order_type,r.integral,
+					item.snapshot_id,r.sku_id,item.id as orderItemId,
+					addr.receiver,addr.mobile,
+					ud.nick_name, o.id AS orderId,
+					o.status AS orderStatus,o.total_deduction_amount,o.total_integral,o.pay_time,o.activity_id as activeId,
+					IF(ld.level_id IS NULL, 0, 1) AS isMember
+					FROM ls_order_refund_return r
+					INNER JOIN ls_order_item item ON r.order_item_id = item.id
+					INNER JOIN ls_order o ON o.id = r.order_id
+					LEFT JOIN ls_order_user_address addr ON o.address_order_id = addr.id
+					INNER JOIN ls_user_detail ud ON ud.user_id = o.user_id
+					LEFT JOIN ls_distribution ld ON r.user_id = ld.user_id
+					where 1=1
+					{? and r.user_id = $userId$}
+					{? and o.refund_status = $orderRefundStatus$}
+					{? and r.shop_id = $shopId$}
+					{@ and r.apply_type IN $applyType$}
+					{? and ud.nick_name like $userName$}
+					{? and ud.nick_name like $nickName$}
+					{? AND addr.mobile LIKE $receiverMobile$}
+                    {? AND addr.receiver LIKE $receiverName$}
+					{? and r.shop_name like $shopName$}
+					{? and r.product_name like $productName$}
+					{? and r.order_number like $orderNumber$}
+					{? and r.refund_sn like $refundSn$}
+					{? and r.create_time >= $startTime$}
+					{? and r.create_time <= $endTime$}
+					{ $applyStatus$}
+					{ $customStatus$}
+					{$isMember$}
+					order by r.create_time desc
+				]]>
+			</Method>
+			<!-- 结算功能 用户退货退款订单列表  -->
+			<Method name="pageOrderRefundUserCount">
+				<![CDATA[
+					SELECT COUNT(*) FROM (
+					SELECT DISTINCT
+					r.id,r.user_id,r.shop_id,r.shop_name,r.product_name,IFNULL(r.product_attribute,"") as productAttribute,r.product_image,r.apply_status,r.order_number,r.refund_sn,
+					r.apply_type,r.return_type,r.goods_num,r.goods_status,r.handle_success_status,r.seller_status,r.create_time,r.order_item_money,r.refund_amount,r.order_type,r.integral,
+					item.snapshot_id,r.sku_id,item.id as orderItemId,
+					addr.receiver,addr.mobile,
+					ud.nick_name, o.id AS orderId,
+					o.status AS orderStatus,o.total_deduction_amount,o.total_integral,o.pay_time,o.activity_id as activeId,
+					IF(ld.level_id IS NULL, 0, 1) AS isMember
+					FROM ls_order_refund_return r
+					INNER JOIN ls_order_item item ON r.order_item_id = item.id
+					INNER JOIN ls_order o ON o.id = r.order_id
+					LEFT JOIN ls_order_user_address addr ON o.address_order_id = addr.id
+					INNER JOIN ls_user_detail ud ON ud.user_id = o.user_id
+					LEFT JOIN ls_distribution ld ON r.user_id = ld.user_id
+					where 1=1
+					{? and r.user_id = $userId$}
+					{? and o.refund_status = $orderRefundStatus$}
+					{? and r.shop_id = $shopId$}
+					{@ and r.apply_type IN $applyType$}
+					{? and ud.nick_name like $userName$}
+					{? and ud.nick_name like $nickName$}
+					{? AND addr.mobile LIKE $receiverMobile$}
+                    {? AND addr.receiver LIKE $receiverName$}
+					{? and r.shop_name like $shopName$}
+					{? and r.product_name like $productName$}
+					{? and r.order_number like $orderNumber$}
+					{? and r.refund_sn like $refundSn$}
+					{? and r.create_time >= $startTime$}
+					{? and r.create_time <= $endTime$}
+					{ $applyStatus$}
+					{ $customStatus$}
+					{$isMember$}
+					order by r.create_time desc
+					) tmp
+				]]>
+			</Method>
+
+			<Method name="queryAfterSalesReason">
+				<![CDATA[
+				SELECT DISTINCT
+					r.*
+				FROM
+					ls_order_refund_return r
+					INNER JOIN ls_order_item item ON r.order_item_id = item.id
+					INNER JOIN ls_order o ON o.id = r.order_id
+					LEFT JOIN ls_order_user_address addr ON o.address_order_id = addr.id
+					INNER JOIN ls_user_detail ud ON ud.user_id = o.user_id
+					LEFT JOIN ls_distribution ld ON r.user_id = ld.user_id
+				WHERE
+					1 = 1
+					{? and r.shop_id = $shopId$}
+					{? and r.apply_type = $applyType$}
+				ORDER BY
+					r.create_time DESC
+				]]>
+			</Method>
+		</Object>
+
+	</BusinessObjects>
+</DataAccessLayer>

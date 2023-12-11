@@ -1,0 +1,5 @@
+com.legendshop.common.core.util.SpringContextHolder
+com.legendshop.common.core.advice.SqlExceptionHandlerResolver
+com.legendshop.common.core.config.JacksonConfig
+com.legendshop.common.core.properties.EnvironmentProperties
+com.legendshop.common.core.CoreConfiguration

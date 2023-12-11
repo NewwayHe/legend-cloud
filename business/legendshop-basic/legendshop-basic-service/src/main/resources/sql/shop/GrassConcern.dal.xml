@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 新闻图片 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="GrassConcern">
+
+			<!--获取关注列表/粉丝列表-->
+			<Method name="queryUserPage"><![CDATA[
+				SELECT gc.*
+				FROM ls_grass_concern  gc
+				WHERE 1=1
+				{? and gc.grauser_id = $beUserId$}
+				{? and gc.user_id = $userId$}
+				{? and gc.grauser_type = $grauserType$ }
+				{? and gc.user_type = $userType$ }
+				ORDER BY gc.create_time DESC
+            ]]></Method>
+			<Method name="queryUserPageCount"><![CDATA[
+				SELECT COUNT(*)
+				FROM ls_grass_concern  gc
+				WHERE 1=1
+				{? and gc.grauser_id = $beUserId$}
+				{? and gc.user_id = $userId$}
+				{? and gc.grauser_type = $grauserType$ }
+				{? and gc.user_type = $userType$ }
+            ]]></Method>
+
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

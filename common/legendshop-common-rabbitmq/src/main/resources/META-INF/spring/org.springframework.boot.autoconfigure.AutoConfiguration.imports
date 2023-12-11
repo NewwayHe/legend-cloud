@@ -1,0 +1,5 @@
+com.legendshop.common.rabbitmq.producer.impl.MessageProducerServiceImpl
+com.legendshop.common.rabbitmq.producer.impl.LogisticsProducerServiceImpl
+com.legendshop.common.rabbitmq.producer.impl.ExceptionProducerServiceImpl
+com.legendshop.common.rabbitmq.util.AmqpSendMsgUtil
+com.legendshop.common.rabbitmq.config.RabbitMqConfig

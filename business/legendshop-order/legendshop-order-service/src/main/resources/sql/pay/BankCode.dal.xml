@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 易宝支付分账信息 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="BankCode">
+			<Method name="queryBankCode">
+				<![CDATA[
+		     		SELECT *
+		     		FROM ls_bank_code
+		     		WHERE 1=1
+		     		{? and name like $name$}
+		     		{? ORDER BY CODE = $code$ DESC}
+	            ]]>
+			</Method>
+			<Method name="queryBankCodeCount">
+				<![CDATA[
+		     		SELECT count(*)
+		     		FROM ls_bank_code
+		     		WHERE 1=1
+		     		{? and name like $name$}
+		     		{? ORDER BY CODE = $code$ DESC}
+	            ]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 新闻图片 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="SystemConfig">
+
+			<Method name="getRegProtocolTemplate"><![CDATA[
+             SELECT reg_protocol_templatelate FROM ls_sys_conf
+            ]]></Method>
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

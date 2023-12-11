@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 附件表 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="Attachment">
+			<Method name="getAttachment">
+				<![CDATA[
+				   select la.*
+				   from ls_attachment la where 
+				   {? la.shop_id=$shopId$} 
+				   {? and la.tree_id=$treeId$} 
+				   {? and la.is_managed= $isManaged$} 
+				   {? and la.status= $status$} 
+				   {? and la.img_type = $imgType$}
+				   {? and la.file_name like $fileName$}
+				   order by la.rec_date desc
+				]]>
+			</Method>
+			<Method name="getAttachmentCount">
+				<![CDATA[
+                   select count(la.id) from ls_attachment la where 
+				   {? la.shop_id=$shopId$} 
+				   {? and la.tree_id=$treeId$} 
+				   {? and la.is_managed= $isManaged$} 
+				   {? and la.status= $status$} 
+				   {? and la.img_type = $imgType$}
+				   {? and la.file_name like $fileName$}
+				]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

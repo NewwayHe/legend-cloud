@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 收藏的文章SQL -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="FavoriteThumbArticle">
+
+			<!-- 查询收藏商品 -->
+			<Method name="collect">
+				<![CDATA[
+				SELECT f.type,f.article_type,f.rec_date,f.id,f.art_id,a.status,a.`name` as dis_title,a.image as dis_image,a.writer_name as dis_writer,g.writer_name as grass_writer, g.image as grass_image,g.title as grass_title,
+				a.favorite_num AS dis_favorite_num,g.favorite_num AS grass_favorite_num
+                FROM ls_article_favorite_thumb f left JOIN ls_discover_article a on f.art_id = a.id left JOIN ls_grass_article g ON f.art_id = g.id where 1=1
+				{? and f.user_id = $userId$}
+				{? and f.type = $allType$}
+				{? and f.article_type = $articleType$}
+				{? and f.rec_date >= $startDate$}
+				{? and f.rec_date <= $endDate$}
+				{? and (a.name like $name$}
+				{? or g.title like $name$)}
+				{? and g.type = $grassType$}
+				ORDER BY f.rec_date DESC
+				]]>
+			</Method>
+
+			<Method name="collectCount">
+				<![CDATA[
+				select count(*) as count FROM ls_article_favorite_thumb f left JOIN ls_discover_article a on f.art_id = a.id left JOIN ls_grass_article g ON f.art_id = g.id where 1=1
+				{? and f.user_id=$userId$}
+				{? and f.type = $allType$}
+				{? and f.article_type = $articleType$}
+				{? and f.rec_date >= $startDate$}
+				{? and f.rec_date <= $endDate$}
+				{? and (a.name like $name$}
+				{? or g.title like $name$)}
+				{? and g.type = $grassType$}
+				]]>
+			</Method>
+
+			<Method name="queryMyArticleFavoriteThumbsPage">
+				<![CDATA[
+				SELECT d.nick_name,o.avatar,m.id,m.user_id,m.create_time,t.id as art_id,t.name as artName,t.pic,m.type FROM ls_article_favorite_thumb m  LEFT JOIN ls_article t on t.id = m.art_id
+				LEFT JOIN ls_ordinary_user o ON m.user_id = o.id LEFT JOIN ls_user_detail d on o.id = d.user_id
+				WHERE 1 = 1
+				{? AND t.user_id = $userId$}
+				ORDER BY m.create_time DESC
+				]]>
+			</Method>
+
+			<Method name="queryMyArticleFavoriteThumbsPageCount">
+				<![CDATA[
+				SELECT count(*) FROM ls_article_favorite_thumb m  LEFT JOIN ls_article t on t.id = m.art_id
+				LEFT JOIN ls_ordinary_user o ON m.user_id = o.id LEFT JOIN ls_user_detail d on o.id = d.user_id
+				WHERE 1 = 1
+				{? AND t.user_id = $userId$}
+				]]>
+			</Method>
+
+			<Method name="queryMyArticleFavoriteThumbsInformPage">
+				<![CDATA[
+				 SELECT f.*,a.title,a.image,u.avatar,d.nick_name FROM ls_article_favorite_thumb f LEFT JOIN ls_grass_article a on f.art_id = a.id
+                 LEFT JOIN ls_ordinary_user u on u.id=f.user_id LEFT JOIN ls_user_detail d ON f.user_id = d.user_id
+				WHERE 1 = 1
+				{? AND a.user_id = $userId$}
+				ORDER BY f.rec_date DESC
+				]]>
+			</Method>
+
+			<Method name="queryMyArticleFavoriteThumbsInformPageCount">
+				<![CDATA[
+				SELECT count(*) FROM ls_article_favorite_thumb f LEFT JOIN ls_grass_article a on f.art_id = a.id
+                LEFT JOIN ls_ordinary_user u on u.id=f.user_id LEFT JOIN ls_user_detail d ON f.user_id = d.user_id
+				WHERE 1 = 1
+				{? AND a.user_id = $userId$}
+				]]>
+			</Method>
+
+			<Method name="queryMyArticleThumbsPage">
+				SELECT d.nick_name,o.avatar,m.user_id,m.create_time,t.name,t.pic FROM ls_article_favorite_thumb m LEFT
+				JOIN ls_article t on t.id = m.art_id
+				LEFT JOIN ls_ordinary_user o ON m.user_id = o.id LEFT JOIN ls_user_detail d on o.id = d.user_id
+				WHERE 1 = 1
+				{? AND t.user_id = $userId$}
+				ORDER BY c.create_time DESC
+			</Method>
+
+			<Method name="queryMyArticleThumbsPageCount">
+				SELECT count(*) FROM ls_article_favorite_thumb m LEFT JOIN ls_article t on t.id = m.art_id
+				LEFT JOIN ls_ordinary_user o ON m.user_id = o.id LEFT JOIN ls_user_detail d on o.id = d.user_id
+				WHERE 1 = 1
+				{? AND t.user_id = $userId$}
+				ORDER BY c.create_time DESC
+			</Method>
+
+			<!-- 查询发现文章收藏数量 -->
+			<Method name="queryFavoriteArticle">
+				SELECT * FROM ls_article_favorite_thumb m
+				WHERE 1 = 1
+				{? AND m.user_id = $userId$}
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

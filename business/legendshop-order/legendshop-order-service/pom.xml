@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<artifactId>legendshop-order</artifactId>
+		<groupId>com.legendshop</groupId>
+		<version>LS.7.0.0</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>legendshop-order-service</artifactId>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-undertow</artifactId>
+		</dependency>
+
+		<!--注册中心客户端-->
+		<dependency>
+			<groupId>com.alibaba.cloud</groupId>
+			<artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+		</dependency>
+
+		<!--配置中心客户端-->
+		<dependency>
+			<groupId>com.alibaba.cloud</groupId>
+			<artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+		</dependency>
+
+		<!--服务相关-->
+		<dependency>
+			<groupId>com.legendshop</groupId>
+			<artifactId>legendshop-order-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.legendshop</groupId>
+			<artifactId>legendshop-common-datasource</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.legendshop</groupId>
+			<artifactId>legendshop-common-logistics</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.legendshop</groupId>
+			<artifactId>legendshop-common-validator</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.legendshop</groupId>
+			<artifactId>legendshop-common-util</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.legendshop</groupId>
+			<artifactId>legendshop-common-data</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.legendshop</groupId>
+			<artifactId>legendshop-common-feign</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.legendshop</groupId>
+			<artifactId>legendshop-common-rabbitmq</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.legendshop</groupId>
+			<artifactId>legendshop-common-log</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.legendshop</groupId>
+			<artifactId>legendshop-basic-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.legendshop</groupId>
+			<artifactId>legendshop-common-sentinel</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.legendshop</groupId>
+			<artifactId>legendshop-common-excel</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.legendshop</groupId>
+			<artifactId>legendshop-common-service</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.redisson</groupId>
+			<artifactId>redisson-spring-boot-starter</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.javen205</groupId>
+			<artifactId>IJPay-AliPay</artifactId>
+			<version>${ijpay.version}</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>hutool-json</artifactId>
+					<groupId>cn.hutool</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>hutool-http</artifactId>
+					<groupId>cn.hutool</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>hutool-crypto</artifactId>
+					<groupId>cn.hutool</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>hutool-core</artifactId>
+					<groupId>cn.hutool</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.javen205</groupId>
+			<artifactId>IJPay-WxPay</artifactId>
+			<version>${ijpay.version}</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>hutool-json</artifactId>
+					<groupId>cn.hutool</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>hutool-http</artifactId>
+					<groupId>cn.hutool</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>hutool-crypto</artifactId>
+					<groupId>cn.hutool</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>com.alipay.sdk</groupId>
+			<artifactId>alipay-easysdk</artifactId>
+			<version>${alipay.easy.sdk.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.alipay.sdk</groupId>
+			<artifactId>alipay-sdk-java</artifactId>
+			<version>${alipay.sdk.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>cn.legendshop</groupId>
+			<artifactId>jpaplus</artifactId>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>io.fabric8</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<configuration>
+					<skip>false</skip>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

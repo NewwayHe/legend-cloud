@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="Advertise">
+			<Method name="methodName">
+				<![CDATA[
+		     		querySql
+	            ]]>
+			</Method>
+			<Method name="queryAdvertisePage">
+				<![CDATA[
+				SELECT id,title,source,seq,start_time startTime,end_time endTime,status FROM ls_advertise
+				where 1=1
+					{? and title like $title$}
+					{? AND status = $status$}
+					{? AND end_time <= $endTime$}
+					{? AND start_time >= $beginTime$}
+					{? AND source like $source$}
+					ORDER BY start_time desc,seq
+	            ]]>
+			</Method>
+			<Method name="queryAdvertisePageCount">
+				<![CDATA[
+				SELECT count(*) FROM ls_advertise
+				where 1=1
+					{? and title like $title$}
+					{? AND status = $status$}
+					{? AND end_time <= $endTime$}
+					{? AND start_time >= $beginTime$}
+					{? AND source like $source$}
+
+	            ]]>
+			</Method>
+			<Method name="queryAdvertiseAll">
+				<![CDATA[
+			SELECT COUNT(*) COUNT,status FROM ls_advertise WHERE 1=1
+                  {? AND status = $status$}
+	            ]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>
+

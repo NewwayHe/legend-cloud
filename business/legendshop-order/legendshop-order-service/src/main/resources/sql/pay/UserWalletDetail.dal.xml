@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 投诉表的SQL -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="UserWalletDetails">
+
+			<Method name="associatePage">
+				<![CDATA[
+					SELECT
+						uwd.*, ou.mobile AS mobile, ud.nick_name AS nickName,ldl.grade,la.op_status
+					FROM
+						ls_user_wallet_details uwd
+						LEFT JOIN ls_ordinary_user ou ON uwd.user_id = ou.id
+						LEFT JOIN ls_user_detail ud ON ou.id = ud.user_id
+						LEFT JOIN ls_distribution ld ON ld.user_id = uwd.user_id
+						LEFT JOIN ls_audit la on uwd.id = la.common_id and la.audit_type=12
+						left join ls_distribution_level ldl on ldl.id = ld.level_id
+					WHERE 1 = 1
+						{? and ou.mobile like $mobile$}
+						{? and ud.nick_name like $nickName$}
+						{? and uwd.user_id = $userId$}
+						{? and uwd.serial_no = $serialNo$}
+						{? and uwd.business_id = $businessId$}
+						{? and uwd.business_type = $businessType$}
+						{? and uwd.operation_type = $operationType$}
+						{? and uwd.state = $state$}
+						{? and uwd.create_time >= $startDate$}
+						{? and uwd.create_time <= $endDate$}
+						{? and uwd.create_time >= $payStartDate$}
+						{? and uwd.create_time <= $payEndDate$}
+						{? and ldl.grade = $grade$}
+						{? and uwd.style = $style$}
+						{opStatus}
+					ORDER BY uwd.create_time DESC
+			   ]]>
+			</Method>
+
+			<Method name="associatePageCount">
+				<![CDATA[
+					SELECT
+						COUNT(uwd.id)
+					FROM
+						ls_user_wallet_details uwd
+						LEFT JOIN ls_ordinary_user ou ON uwd.user_id = ou.id
+						LEFT JOIN ls_user_detail ud ON ou.id = ud.user_id
+						LEFT JOIN ls_distribution ld ON ld.user_id = uwd.user_id
+						LEFT JOIN ls_audit la on uwd.id = la.common_id and la.audit_type=12
+						left join ls_distribution_level ldl on ldl.id = ld.level_id
+					WHERE 1 = 1
+						{? and ou.mobile like $mobile$}
+						{? and ud.nick_name like $nickName$}
+						{? and uwd.user_id = $userId$}
+						{? and uwd.serial_no = $serialNo$}
+						{? and uwd.business_id = $businessId$}
+						{? and uwd.business_type = $businessType$}
+						{? and uwd.operation_type = $operationType$}
+						{? and uwd.state = $state$}
+						{? and uwd.create_time >= $startDate$}
+						{? and uwd.create_time <= $endDate$}
+						{? and uwd.create_time >= $payStartDate$}
+						{? and uwd.create_time <= $payEndDate$}
+						{? and ldl.grade = $grade$}
+						{? and uwd.style = $style$}
+						{opStatus}
+					ORDER BY uwd.create_time DESC
+			   ]]>
+			</Method>
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

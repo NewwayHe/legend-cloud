@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 用户钱包详情中间表 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="UserWalletDetailedCentre">
+			<Method name="methodName">
+				<![CDATA[
+		     		querySql
+	            ]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>
+

@@ -1,0 +1,624 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.legendshop</groupId>
+	<artifactId>dev</artifactId>
+	<version>LS.7.0.0</version>
+	<packaging>pom</packaging>
+
+	<properties>
+		<!-- Legendshop核心包版本 -->
+		<legendshop.version>LS.7.0.0</legendshop.version>
+		<jpaplus.version>7.0.0.0</jpaplus.version>
+		<!-- 核心架构版本 -->
+		<spring.boot.version>3.1.5</spring.boot.version>
+		<spring.cloud.version>2022.0.4</spring.cloud.version>
+		<spring.cloud.alibaba.version>2022.0.0.0</spring.cloud.alibaba.version>
+		<spring.cloud.starter.bootstrap.version>4.0.1</spring.cloud.starter.bootstrap.version>
+		<spring.boot.admin.version>3.1.4</spring.boot.admin.version>
+		<!-- 微服务中间件版本 -->
+		<seata.version>1.4.0</seata.version>
+		<!-- 其他中间件版本 -->
+		<druid.version>1.2.4</druid.version>
+		<redisson.version>3.16.3</redisson.version>
+		<xxl.job.version>2.4.0</xxl.job.version>
+		<!-- 工具类版本 -->
+		<jakarta.servlet.version>6.0.0</jakarta.servlet.version>
+		<httpcomponents.version>4.5.13</httpcomponents.version>
+		<swagger.fox.version>2.9.2</swagger.fox.version>
+		<swagger.core.version>1.5.22</swagger.core.version>
+		<knife4j.version>4.3.0</knife4j.version>
+		<spring.checkstyle.version>0.0.23</spring.checkstyle.version>
+		<hutool.version>5.8.22</hutool.version>
+		<jasypt.version>3.0.3</jasypt.version>
+		<mapstruct.version>1.5.0.RC1</mapstruct.version>
+		<screw-core>1.0.5</screw-core>
+		<lombok.version>1.18.22</lombok.version>
+		<lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+		<docker.registry>harbor.legendshop.cn</docker.registry>
+		<docker.host>http://192.168.0.142:2375</docker.host>
+		<docker.namespace>legendshop6.0</docker.namespace>
+		<docker.username>legendshop</docker.username>
+		<docker.password>S018Fu3Nm4BxFqEW</docker.password>
+		<docker.plugin.version>0.32.0</docker.plugin.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<powermock.version>2.0.2</powermock.version>
+		<ijpay.version>2.7.0</ijpay.version>
+		<alipay.easy.sdk.version>2.1.2</alipay.easy.sdk.version>
+		<alipay.sdk.version>4.16.21.ALL</alipay.sdk.version>
+		<aliyun-opensearch.version>3.1.3</aliyun-opensearch.version>
+	</properties>
+
+	<modules>
+		<module>business</module>
+		<module>common</module>
+		<module>common-private</module>
+	</modules>
+
+	<dependencies>
+		<!--Lombok-->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<!--配置文件处理器自动提示-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-configuration-processor</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<!--jasypt配置文件加解密-->
+		<dependency>
+			<groupId>com.github.ulisesbocchio</groupId>
+			<artifactId>jasypt-spring-boot-starter</artifactId>
+			<version>${jasypt.version}</version>
+		</dependency>
+		<!-- 工具类 -->
+		<dependency>
+			<groupId>cn.hutool</groupId>
+			<artifactId>hutool-all</artifactId>
+			<version>${hutool.version}</version>
+		</dependency>
+		<!--测试依赖-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!--数据库文档生成-->
+		<dependency>
+			<groupId>cn.smallbun.screw</groupId>
+			<artifactId>screw-core</artifactId>
+			<version>${screw-core}</version>
+			<scope>test</scope>
+		</dependency>
+		<!--  springboot3.x 兼容依赖 -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-bootstrap</artifactId>
+			<version>${spring.cloud.starter.bootstrap.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-loadbalancer</artifactId>
+		</dependency>
+	</dependencies>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring.boot.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-web</artifactId>
+				<version>${spring.boot.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-starter-tomcat</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+
+			<dependency>
+				<groupId>jakarta.servlet</groupId>
+				<artifactId>jakarta.servlet-api</artifactId>
+				<version>${jakarta.servlet.version}</version>
+			</dependency>
+
+			<!-- Spring Boot 3.x 已经移除的httpclient依赖 -->
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpclient</artifactId>
+				<version>${httpcomponents.version}</version>
+			</dependency>
+
+			<!-- redisson -->
+			<dependency>
+				<groupId>org.redisson</groupId>
+				<artifactId>redisson-spring-boot-starter</artifactId>
+				<version>${redisson.version}</version>
+			</dependency>
+
+			<!-- spring Cloud依赖 -->
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring.cloud.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<!-- spring Cloud Alibaba依赖 -->
+			<dependency>
+				<groupId>com.alibaba.cloud</groupId>
+				<artifactId>spring-cloud-alibaba-dependencies</artifactId>
+				<version>${spring.cloud.alibaba.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<!--swagger 内置版本替换 解决：Illegal DefaultValue null for parameter type integer 问题-->
+			<dependency>
+				<groupId>io.swagger</groupId>
+				<artifactId>swagger-models</artifactId>
+				<version>${swagger.core.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.swagger</groupId>
+				<artifactId>swagger-annotations</artifactId>
+				<version>${swagger.core.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.alibaba</groupId>
+				<artifactId>druid-spring-boot-starter</artifactId>
+				<version>${druid.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.xuxueli</groupId>
+				<artifactId>xxl-job-core</artifactId>
+				<version>${xxl.job.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.mapstruct</groupId>
+				<artifactId>mapstruct</artifactId>
+				<version>${mapstruct.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.github.xiaoymin</groupId>
+				<artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+				<version>${knife4j.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.powermock</groupId>
+				<artifactId>powermock-module-junit4</artifactId>
+				<version>${powermock.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.powermock</groupId>
+				<artifactId>powermock-api-mockito2</artifactId>
+				<version>${powermock.version}</version>
+				<scope>test</scope>
+			</dependency>
+
+			<!-- 阿里云openSearch -->
+			<dependency>
+				<groupId>com.aliyun.opensearch</groupId>
+				<artifactId>aliyun-sdk-opensearch</artifactId>
+				<version>${aliyun-opensearch.version}</version>
+			</dependency>
+
+			<!--common工程依赖开始-->
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-datasource</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-core</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-id</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-data</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-util</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-feign</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-monitor</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-sentinel</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-service</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-prometheus</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-gateway</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-rabbitmq</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-captcha</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-validator</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-xss</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-region</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-security</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-excel</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-log</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-job</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-sms</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-logistics</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-swagger</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-wechat</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-spider</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<!--common工程依赖结束-->
+
+			<!--business工程依赖开始-->
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-common-oss</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-user-service</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-user-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-basic-service</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-basic-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-order-service</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-order-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-product-service</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-product-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-id-core</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-id-service</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-auth</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.legendshop</groupId>
+				<artifactId>legendshop-task-service</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<!--business工程依赖结束-->
+
+			<!--legendshop工程依赖开始-->
+			<dependency>
+				<groupId>cn.legendshop</groupId>
+				<artifactId>jpaplus-annotation</artifactId>
+				<version>${jpaplus.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>cn.legendshop</groupId>
+				<artifactId>jpaplus</artifactId>
+				<version>${jpaplus.version}</version>
+			</dependency>
+			<!--legendshop工程依赖结束-->
+
+			<!-- 监控客户端 -->
+			<dependency>
+				<groupId>de.codecentric</groupId>
+				<artifactId>spring-boot-admin-starter-client</artifactId>
+				<version>${spring.boot.admin.version}</version>
+			</dependency>
+
+			<!-- Alibaba seata 启动器 -->
+			<dependency>
+				<groupId>io.seata</groupId>
+				<artifactId>seata-spring-boot-starter</artifactId>
+				<version>${seata.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>io.seata</groupId>
+				<artifactId>seata-all</artifactId>
+				<version>${seata.version}</version>
+			</dependency>
+
+			<!-- SpringBoot 2.4.x的版本之后，对于bootstrap.properties/bootstrap.yaml配置文件的支持 -->
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-starter-bootstrap</artifactId>
+				<version>${spring.cloud.starter.bootstrap.version}</version>
+			</dependency>
+
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<finalName>${project.name}</finalName>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+
+		<pluginManagement>
+			<plugins>
+				<!--spring boot 默认插件-->
+				<plugin>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
+					<version>${spring.boot.version}</version>
+					<executions>
+						<execution>
+							<goals>
+								<goal>repackage</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>io.fabric8</groupId>
+					<artifactId>docker-maven-plugin</artifactId>
+					<version>${docker.plugin.version}</version>
+					<configuration>
+						<dockerHost>${docker.host}</dockerHost>
+						<registry>${docker.registry}</registry>
+						<authConfig>
+							<push>
+								<username>${docker.username}</username>
+								<password>${docker.password}</password>
+							</push>
+						</authConfig>
+						<images>
+							<image>
+								<name>${docker.registry}/${docker.namespace}/${project.name}:${project.version}</name>
+								<build>
+									<dockerFile>${project.basedir}/Dockerfile</dockerFile>
+								</build>
+							</image>
+						</images>
+					</configuration>
+				</plugin>
+				<plugin>
+					<artifactId>maven-resources-plugin</artifactId>
+					<configuration>
+						<nonFilteredFileExtensions>
+							<nonFilteredFileExtension>db</nonFilteredFileExtension>
+						</nonFilteredFileExtensions>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+			<!--代码格式插件，默认使用spring 规则-->
+			<plugin>
+				<groupId>io.spring.javaformat</groupId>
+				<artifactId>spring-javaformat-maven-plugin</artifactId>
+				<version>${spring.checkstyle.version}</version>
+			</plugin>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.6.1</version>
+				<configuration>
+					<target>17</target>
+					<source>17</source>
+					<encoding>UTF-8</encoding>
+					<skip>true</skip>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.springframework.boot</groupId>
+							<artifactId>spring-boot-configuration-processor</artifactId>
+							<version>${spring.boot.version}</version>
+						</path>
+						<!-- mapstruct-processor -->
+						<path>
+							<groupId>org.mapstruct</groupId>
+							<artifactId>mapstruct-processor</artifactId>
+							<version>${mapstruct.version}</version>
+						</path>
+						<!-- 引入 lombok-processor -->
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
+						</path>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok-mapstruct-binding</artifactId>
+							<version>${lombok-mapstruct-binding.version}</version>
+						</path>
+					</annotationProcessorPaths>
+					<compilerArgs>
+						<compilerArg>-Amapstruct.defaultComponentModel=spring</compilerArg>
+						<compilerArg>-Amapstruct.suppressGeneratorTimestamp=true</compilerArg>
+						<compilerArg>-Amapstruct.suppressGeneratorVersionInfoComment=true</compilerArg>
+					</compilerArgs>
+
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<!-- 环境部署 -->
+	<profiles>
+		<!-- 默认打包环境是本地开发环境 -->
+		<profile>
+			<id>dev</id>
+			<properties>
+				<!-- 环境标识，需要与配置文件的名称相对应 -->
+				<profiles.active>dev</profiles.active>
+			</properties>
+			<activation>
+				<!-- 默认环境 -->
+				<activeByDefault>true</activeByDefault>
+			</activation>
+		</profile>
+	</profiles>
+
+</project>

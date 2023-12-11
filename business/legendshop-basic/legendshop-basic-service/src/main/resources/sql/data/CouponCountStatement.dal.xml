@@ -1,0 +1,718 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="CouponCountStatement">
+
+			<Method name="getMarketingAmount">
+				<![CDATA[
+				SELECT
+					IFNULL(SUM(loi.coupon_item_amount), 0) AS  marketing_payment_amount,
+					IFNULL(SUM(loi.product_total_amount - loi.coupon_item_amount - loi.cost_price * loi.basket_count), 0)  AS  marketing_profit_amount
+				FROM
+					(select lco.coupon_item_amount, loi.product_total_amount, loi.cost_price, loi.basket_count, loi.id
+					from
+					ls_coupon_order lco
+					LEFT JOIN ls_order lo
+						ON lco.order_id = lo.id
+					LEFT JOIN ls_order_item loi
+						ON lco.order_item_id = loi.id
+					left join ls_coupon lc
+					   on lco.coupon_id = lc.id
+				WHERE lo.payed_flag = 1
+					{? AND lc.shop_id = $shopId$}
+					{? AND lo.create_time <= $endTime$}
+					{? AND lo.create_time >= $beginTime$}
+					{? AND lco.coupon_id = $couponId$}
+					{? AND lco.source = $source$}
+				GROUP by loi.id) loi
+	            ]]>
+			</Method>
+
+			<Method name="getTransactionAmount">
+				<![CDATA[
+				SELECT
+					IFNULL(SUM(loi.actual_amount), 0) as transactionAmount,
+					IFNULL(SUM(loi.basket_count), 0) as dealCount,
+					IFNULL(COUNT(distinct loi.order_id), 0) as payCount,
+					IFNULL(COUNT(distinct loi.user_id), 0) as userPayCount
+				FROM
+					(select loi.actual_amount, loi.basket_count, loi.order_id, loi.user_id, loi.id
+					FROM
+					ls_coupon_order lco
+					LEFT JOIN ls_order lo
+						ON lco.order_id = lo.id
+					LEFT JOIN ls_order_item loi
+						ON lco.order_item_id = loi.id
+					left join ls_coupon lc
+					   on lco.coupon_id = lc.id
+				WHERE lo.payed_flag = 1 and lo.status = 20 and loi.refund_status < 2
+					{? AND lc.shop_id = $shopId$}
+					{? AND lo.complete_time <= $endTime$}
+					{? AND lo.complete_time >= $beginTime$}
+					{? AND lco.coupon_id = $couponId$}
+					{? AND lco.source = $source$}
+				GROUP by loi.id) loi
+	            ]]>
+			</Method>
+
+			<Method name="getOldOrderUserCount">
+				<![CDATA[
+					SELECT
+						COUNT(DISTINCT user_id)
+					FROM
+					  	ls_order
+					WHERE refund_status < 2
+						AND user_id IN
+							(SELECT DISTINCT
+								lo.user_id
+							FROM
+								ls_coupon_order lco
+								LEFT JOIN ls_order lo
+								  ON lco.order_id = lo.id
+							WHERE 1=1
+								{? AND lco.coupon_id = $couponId$}
+								{? AND lo.shop_id = $shopId$}
+								{? AND lco.create_time <= $endTime$}
+								{? AND lco.create_time >= $beginTime$}
+								{? AND lco.source = $source$}
+							)
+	            ]]>
+			</Method>
+
+			<Method name="getOrderUserCount">
+				<![CDATA[
+					SELECT
+						count(DISTINCT lo.user_id)
+					FROM
+						ls_coupon_order lco
+						LEFT JOIN ls_order lo
+						  ON lco.order_id = lo.id
+					WHERE 1=1
+						{? AND lco.coupon_id = $couponId$}
+						{? AND lo.shop_id = $shopId$}
+						{? AND lco.create_time <= $endTime$}
+						{? AND lco.create_time >= $beginTime$}
+						{? AND lco.source = $source$}
+	            ]]>
+			</Method>
+
+
+			<Method name="getReceivedCount">
+				<![CDATA[
+				SELECT
+					COUNT(DISTINCT lcu.id) as couponsReceivedCount,
+					COUNT(DISTINCT lcu.user_id) as couponsReceivedUser
+				FROM
+					ls_coupon_user lcu
+					LEFT JOIN ls_coupon_order lco
+						ON lcu.coupon_id = lco.coupon_id
+					left join ls_coupon lc
+					    on lcu.coupon_id = lc.id
+				WHERE 1 = 1
+					{? and lc.shop_id = $shopId$}
+					{? AND lcu.get_time <= $endTime$}
+					{? AND lcu.get_time >= $beginTime$}
+					{? AND lcu.coupon_id = $couponId$}
+					{? AND lco.source = $source$}
+	            ]]>
+			</Method>
+
+
+			<Method name="getOrderCount">
+				<![CDATA[
+				SELECT
+					COUNT(DISTINCT lco.order_id) as orderCount,
+					COUNT(DISTINCT lco.user_id) as userOrderCount
+				FROM
+					ls_coupon_user lcu
+					LEFT JOIN ls_coupon_order lco
+						ON lcu.coupon_id = lco.coupon_id
+					left join ls_coupon lc
+					    on lcu.coupon_id = lc.id
+				WHERE 1 = 1
+					{? and lc.shop_id = $shopId$}
+					{? AND lco.create_time <= $endTime$}
+					{? AND lco.create_time >= $beginTime$}
+					{? AND lco.coupon_id = $couponId$}
+					{? AND lco.source = $source$}
+	            ]]>
+			</Method>
+
+
+			<!--			#平台下单成交用户数-->
+			<Method name="getPlatformUserPayCount">
+				<![CDATA[
+
+		           SELECT  COUNT(DISTINCT lo.user_id) user_pay_count,
+		             COUNT(*) pay_count
+				FROM
+				  ls_order lo
+				  INNER JOIN ls_coupon_order co
+					ON lo.id = co.order_id
+				  INNER JOIN ls_coupon lc
+					ON co.coupon_id = lc.id
+				WHERE lc.shop_provider_flag = 0
+				  AND lo.status = 20
+
+				  {? AND lo.id=$couponId$}
+				 {? AND co.source=$source$}
+		         {? AND lo.create_time<=$endTime$}
+				 {? AND lo.create_time>=$beginTime$}
+
+	            ]]>
+			</Method>
+
+			<!--			#平台下单用户数-->
+			<Method name="getPlatformUserOrderCount">
+				<![CDATA[
+                   SELECT COUNT(DISTINCT lo.user_id) user_order_count,
+                   COUNT(*) order_count
+				FROM
+				  ls_order lo
+				  INNER JOIN ls_coupon_order co
+					ON lo.id = co.order_id
+				  INNER JOIN ls_coupon lc
+					ON co.coupon_id = lc.id
+				WHERE lc.shop_provider_flag = 0
+				{? AND lo.id=$couponId$}
+				   {? AND co.source=$source$}
+		         {? AND lo.create_time<=$endTime$}
+				 {? AND lo.create_time>=$beginTime$}
+
+	            ]]>
+			</Method>
+
+			<!--			#平台领取的次数和用户数-->
+			<Method name="getPlatformCouponsReceivedCount">
+				<![CDATA[
+
+		       SELECT SUM(lc.receive_count) coupons_received_count,
+		       COUNT(DISTINCT lu.user_id) coupons_received_user
+                 FROM
+				ls_coupon lc INNER JOIN ls_coupon_user lu ON lc.id=lu.coupon_id
+			    WHERE shop_provider_flag=0
+
+			    {? AND lu.id=$couponId$}
+			    {? AND co.source=$source$}
+                {? AND lc.create_time<=$endTime$}
+			    {? AND lc.create_time>=$beginTime$}
+
+	            ]]>
+			</Method>
+
+
+			<!--	x		#平台下单用户id-->
+			<Method name="queryPlatformOrderUserIdCount">
+				<![CDATA[
+                 SELECT DISTINCT lo.user_id FROM ls_order lo
+					INNER JOIN ls_coupon_order co
+						  ON co.order_id = lo.id
+					INNER JOIN ls_coupon lc
+						  ON co.coupon_id = lc.id
+				 WHERE
+					lc.shop_provider_flag=1
+					AND lo.payed_flag = 0
+					{? AND lo.id=$couponId$}
+					{? AND co.source=$source$}
+                   {? AND lo.create_time<=$endTime$}
+			       {? AND lo.create_time>=$beginTime$}
+
+	            ]]>
+			</Method>
+			<!--			#平台累计成交金额,成交订单，成交数量-->
+			<Method name="queryPlatformAmountList">
+				<![CDATA[
+				SELECT
+					SUM(basket_count) AS deal_count,
+					SUM(actual_amount) AS transaction_amount_list,
+					COUNT(DISTINCT loi.order_id) as order_count_list
+				FROM
+					ls_order_item loi
+					INNER JOIN ls_order lo
+					  ON loi.order_id = lo.id
+					INNER JOIN ls_coupon_order co
+					  ON co.order_item_id = loi.id
+					INNER JOIN ls_coupon lc
+					  ON co.coupon_id = lc.id
+				WHERE 1 = 1
+					AND lo.status = 20
+					AND loi.refund_status < 2
+					{? AND lo.complete_time <= $endTime$}
+					{? AND co.coupon_id=$couponId$}
+				    {? AND co.source=$source$}
+
+	            ]]>
+
+				<!--				SELECT
+									  DATE( t.create_time ) AS TIME,
+									  SUM(t.new_add_deal_count )OVER(ORDER BY t.create_time) deal_count ,
+									   SUM(t.new_transaction_amount )OVER(ORDER BY t.create_time) transaction_amount_list,
+										SUM(t.new_add_order_count )OVER(ORDER BY t.create_time) order_count_list
+									FROM
+									  ( SELECT
+										DATE( lo.create_time ) AS create_time,
+									  SUM(basket_count ) AS new_add_deal_count,
+									  SUM(actual_amount) AS new_transaction_amount,
+									  COUNT(DISTINCT loi.order_id) new_add_order_count
+										FROM
+										  ls_order_item loi
+										  INNER JOIN ls_order lo
+											ON loi.order_id = lo.id
+										  INNER JOIN ls_coupon_order co
+											ON co.order_item_id = loi.id
+										  INNER JOIN ls_coupon lc
+											ON co.coupon_id = lc.id
+										WHERE 1=1
+										   AND lo.status = 20
+										   {? AND co.coupon_id=$couponId$}
+										   {? AND co.source=$source$}
+										  {? AND lo.create_time<=$endTime$}
+										  {? AND lo.create_time>=$beginTime$}
+										  GROUP BY  DATE(lo.create_time))t
+									GROUP BY DATE (t.create_time)-->
+			</Method>
+			<!--			#累计成交金额,成交订单，成交数量-->
+			<Method name="queryMerchantAmountList">
+				<![CDATA[
+				SELECT
+                        DATE( lo.create_time ) AS TIME,
+					  SUM(basket_count ) AS deal_count,
+                      SUM(actual_amount) AS transaction_amount_list,
+				      COUNT(DISTINCT loi.order_id) order_count_list
+						FROM
+						  ls_order_item loi
+						  INNER JOIN ls_order lo
+							ON loi.order_id = lo.id
+						  INNER JOIN ls_coupon_order co
+							ON co.order_item_id = loi.id
+						  INNER JOIN ls_coupon lc
+							ON co.coupon_id = lc.id
+						WHERE lc.shop_provider_flag = 1
+						   AND lo.status = 20
+						   {? AND lo.shop_id=$shopId$}
+						   {? AND lo.id=$couponId$}
+						  {? AND co.source=$source$}
+			              {? AND lo.create_time<=$endTime$}
+			              {? AND lo.create_time>=$beginTime$}
+	            ]]>
+
+				<!--				SELECT
+									  DATE( t.create_time ) AS TIME,
+									  SUM(t.new_add_deal_count )OVER(ORDER BY t.create_time) deal_count ,
+									   SUM(t.new_transaction_amount )OVER(ORDER BY t.create_time) transaction_amount_list,
+										SUM(t.new_add_order_count )OVER(ORDER BY t.create_time) order_count_list
+									FROM
+									  ( SELECT
+										DATE( lo.create_time ) AS create_time,
+									  SUM(basket_count ) AS new_add_deal_count,
+									  SUM(actual_amount) AS new_transaction_amount,
+									  COUNT(DISTINCT loi.order_id) new_add_order_count
+										FROM
+										  ls_order_item loi
+										  INNER JOIN ls_order lo
+											ON loi.order_id = lo.id
+										  INNER JOIN ls_coupon_order co
+											ON co.order_item_id = loi.id
+										  INNER JOIN ls_coupon lc
+											ON co.coupon_id = lc.id
+										WHERE lc.shop_provider_flag = 1
+										   AND lo.status = 20
+										   {? AND lo.shop_id=$shopId$}
+										   {? AND lo.id=$couponId$}
+										  {? AND co.source=$source$}
+										  {? AND lo.create_time<=$endTime$}
+										  {? AND lo.create_time>=$beginTime$}
+										  GROUP BY  DATE(lo.create_time))t
+									GROUP BY DATE (t.create_time)-->
+			</Method>
+			<!--			#折线图平台新增成交数据-->
+			<Method name="queryPlatformNewAmount">
+				<![CDATA[
+
+				    SELECT
+						DATE( lo.create_time ) AS create_time,
+						SUM(basket_count ) AS new_add_deal_count,
+						SUM(actual_amount) AS new_transaction_amount,
+						COUNT(*) new_add_order_count
+					FROM
+						ls_order_item loi
+					INNER JOIN ls_order lo
+						ON loi.order_id = lo.id
+					INNER JOIN ls_coupon_order co
+						ON co.order_item_id = loi.id
+					INNER JOIN ls_coupon lc
+						ON co.coupon_id = lc.id
+					WHERE lo.status = 20
+						{? AND lc.shop_id = $shopId$}
+						{? AND lo.id = $couponId$}
+						{? AND co.source = $source$}
+						{? AND lo.create_time <= $endTime$}
+						{? AND lo.create_time >= $beginTime$}
+						GROUP BY DATE(lo.create_time)
+
+	            ]]>
+			</Method>
+
+
+			<!--新增下单用户数-->
+			<Method name="queryPlatformNewOrderUserCount">
+				<![CDATA[
+
+			 SELECT
+				  DATE( lo.create_time ) AS time,
+
+				 COUNT(DISTINCT co.user_id) newOrderUserCount
+				 FROM
+					 ls_order lo
+					    INNER JOIN ls_order_item loi
+					      ON lo.id=loi.order_id
+					    INNER JOIN ls_coupon_order co
+					      ON co.order_item_id = loi.id
+					    INNER JOIN ls_coupon lc
+					      ON co.coupon_id = lc.id
+				  WHERE lc.shop_provider_flag = 0
+				       {? AND lo.id=$couponId$}
+				     {? AND co.source=$source$}
+					{? AND lo.create_time<=$endTime$}
+			        {? AND lo.create_time>=$beginTime$}
+				 GROUP BY
+				 DATE( lo.create_time )
+
+	            ]]>
+
+			</Method>
+			<!--累计下单用户数-->
+			<Method name="queryPlatformOrderUserCountList">
+				<![CDATA[
+				SELECT
+				  DATE( lo.create_time ) AS time,
+				  COUNT(DISTINCT co.user_id) order_user_count_list
+				 FROM
+					 ls_order lo
+					    INNER JOIN ls_order_item loi
+					      ON lo.id=loi.order_id
+					    INNER JOIN ls_coupon_order co
+					      ON co.order_item_id = loi.id
+					    INNER JOIN ls_coupon lc
+					      ON co.coupon_id = lc.id
+				  WHERE 1=1
+				     {? AND lc.id=$couponId$}
+				     {? AND co.source=$source$}
+					 {? AND lo.create_time<=$endTime$}
+			         {? AND lo.create_time>=$beginTime$}
+	            ]]>
+
+				<!--				SELECT
+								 t.create_time as time,
+								 SUM(t.user_count)OVER(ORDER BY create_time) order_user_count_list
+								FROM
+								 (
+								 SELECT
+								  DATE( lo.create_time ) AS create_time,
+								  COUNT(DISTINCT co.user_id) user_count
+								 FROM
+									 ls_order lo
+										INNER JOIN ls_order_item loi
+										  ON lo.id=loi.order_id
+										INNER JOIN ls_coupon_order co
+										  ON co.order_item_id = loi.id
+										INNER JOIN ls_coupon lc
+										  ON co.coupon_id = lc.id
+								  WHERE 1=1
+									 {? AND lc.id=$couponId$}
+									 {? AND co.source=$source$}
+									 {? AND lo.create_time<=$endTime$}
+									 {? AND lo.create_time>=$beginTime$}
+								 GROUP BY
+								 DATE( lo.create_time )
+								 ) t GROUP BY DATE( t.create_time )-->
+
+			</Method>
+
+			<!--累计下单用户数-->
+			<Method name="queryMerchantOrderUserCountList">
+				<![CDATA[
+				SELECT
+				  DATE( lo.create_time ) AS time,
+				  COUNT(DISTINCT co.user_id) order_user_count_list
+				 FROM
+					 ls_order lo
+					    INNER JOIN ls_order_item loi
+					      ON lo.id=loi.order_id
+					    INNER JOIN ls_coupon_order co
+					      ON co.order_item_id = loi.id
+					    INNER JOIN ls_coupon lc
+					      ON co.coupon_id = lc.id
+				  WHERE lc.shop_provider_flag = 1
+			    	  {? AND lo.shop_id=$shopId$}
+				     {? AND lo.id=$couponId$}
+				     {? AND co.source=$source$}
+					 {? AND lo.create_time<=$endTime$}
+			         {? AND lo.create_time>=$beginTime$}
+	            ]]>
+				<!--SELECT
+								 DATE( t.create_time ) AS time,
+								 SUM(t.user_count)OVER(ORDER BY create_time) order_user_count_list
+								FROM
+								 (
+								 SELECT
+								  DATE( lo.create_time ) AS create_time,
+								  COUNT(DISTINCT co.user_id) user_count
+								 FROM
+									 ls_order lo
+										INNER JOIN ls_order_item loi
+										  ON lo.id=loi.order_id
+										INNER JOIN ls_coupon_order co
+										  ON co.order_item_id = loi.id
+										INNER JOIN ls_coupon lc
+										  ON co.coupon_id = lc.id
+								  WHERE lc.shop_provider_flag = 1
+									  {? AND lo.shop_id=$shopId$}
+									 {? AND lo.id=$couponId$}
+									 {? AND co.source=$source$}
+									 {? AND lo.create_time<=$endTime$}
+									 {? AND lo.create_time>=$beginTime$}
+								 GROUP BY
+								 DATE( lo.create_time )
+								 ) t GROUP BY DATE( t.create_time )-->
+			</Method>
+			<!--			#新增成交数据-->
+			<Method name="queryMerchantNewAmount">
+				<![CDATA[
+                        SELECT
+                        DATE( lo.create_time ) AS create_time,
+					  SUM(basket_count ) AS new_add_deal_count,
+                      SUM(actual_amount) AS new_transaction_amount,
+				      COUNT(*) new_add_order_count
+						FROM
+						  ls_order_item loi
+						  INNER JOIN ls_order lo
+							ON loi.order_id = lo.id
+						  INNER JOIN ls_coupon_order co
+							ON co.order_item_id = loi.id
+						  INNER JOIN ls_coupon lc
+							ON co.coupon_id = lc.id
+						WHERE lc.shop_provider_flag = 1
+						   AND lo.status = 20
+						   {? AND lo.shop_id=$shopId$}
+						  {? AND lo.id=$couponId$}
+						  {? AND co.source=$source$}
+			              {? AND lo.create_time<=$endTime$}
+			              {? AND lo.create_time>=$beginTime$}
+						  GROUP BY  DATE(lo.create_time)
+
+
+	            ]]>
+			</Method>
+
+			<!--新增下单用户数-->
+			<Method name="queryMerchantNewOrderUserCount">
+				<![CDATA[
+                    SELECT
+				 DATE( lo.create_time ) AS time,
+
+				 COUNT(DISTINCT co.user_id) new_order_user_count
+				 FROM
+					 ls_order lo
+					    INNER JOIN ls_order_item loi
+					      ON lo.id=loi.order_id
+					    INNER JOIN ls_coupon_order co
+					      ON co.order_item_id = loi.id
+					    INNER JOIN ls_coupon lc
+					      ON co.coupon_id = lc.id
+				  WHERE lc.shop_provider_flag = 1
+				  AND payed_flag=1
+				  {? AND lo.shop_id=$shopId$}
+				  {? AND lo.id=$couponId$}
+				 {? AND co.source=$source$}
+                 {? AND lo.create_time<=$endTime$}
+			     {? AND lo.create_time>=$beginTime$}
+				 GROUP BY
+					 DATE( lo.create_time )
+
+	           ]]>
+
+			</Method>
+
+			<!--#查询访问记录-->
+			<Method name="queryVisit">
+				<![CDATA[
+
+		   	     SELECT * FROM ls_coupon_view lv
+		   	     INNER JOIN  ls_coupon_order co ON co.coupon_id=lv.coupon_id
+		   	      INNER JOIN ls_coupon lc ON lv.coupon_id=lc.id
+		   	     where 1=1
+                 {? AND lc.shop_id=$shopId$}
+		   	     {? AND lv.coupon_id=$couponId$}
+		   	    {? AND lv.source=$source$}
+		   	    {? AND lv.create_time=$createTime$}
+
+
+	            ]]>
+			</Method>
+			<!--#店铺新增访问记录-->
+			<Method name="queryMerchantNewVisitCount">
+				<![CDATA[
+
+		   	      SELECT DATE( lv.create_time ) AS TIME,
+		   	     SUM( view_people ) new_visit_user_count ,
+		   	     SUM(view_frequency) new_visit_count
+		   	     FROM ls_coupon_view lv
+					 INNER JOIN ls_coupon lc ON lv.coupon_id=lc.id
+					  INNER JOIN  ls_coupon_order co ON co.coupon_id=lc.id
+					 WHERE lc.shop_provider_flag = 1
+					    {? AND lc.shop_id=$shopId$}
+                        {? AND co.coupon_id=$couponId$}
+					    {? AND co.source=$source$}
+					  {? AND lv.create_time<=$endTime$}
+			          {? AND lv.create_time>=$beginTime$}
+					 GROUP BY DATE( lv.create_time )
+
+
+
+	            ]]>
+			</Method>
+			<!--#平台新增访问记录-->
+			<Method name="queryPlatformNewVisitCount">
+				<![CDATA[
+
+		   	     SELECT DATE( lv.create_time ) AS TIME,
+		   	     	SUM( view_people ) new_visit_user_count ,
+		   	     	SUM(view_frequency) new_visit_count
+		   	     FROM ls_coupon_view lv
+					 INNER JOIN ls_coupon lc ON lv.coupon_id=lc.id
+				 WHERE 1=1
+					{? and lc.shop_id = $shopId$}
+                 	{? AND lv.coupon_id=$couponId$}
+					{? AND lv.source=$source$}
+					{? AND lv.create_time<=$endTime$}
+			     	{? AND lv.create_time>=$beginTime$}
+				GROUP BY DATE( lv.create_time )
+	            ]]>
+			</Method>
+			<!--#平台累计访问记录-->
+			<Method name="queryPlatformVisitCount">
+				<![CDATA[
+				SELECT DATE( lv.create_time ) TIME,
+		   	     SUM( view_people ) visit_user_count_list,
+		   	     SUM(view_frequency) visit_count_list
+		   	     FROM ls_coupon_view lv
+					INNER JOIN ls_coupon lc ON lv.coupon_id=lc.id
+					 WHERE 1=1
+					 {? and lc.shop_id = $shopId$}
+					  {? AND lv.coupon_id=$couponId$}
+					  {? AND lv.source=$source$}
+					  {? AND lv.create_time<=$endTime$}
+			          {? AND lv.create_time>=$beginTime$}
+
+	            ]]>
+
+				<!--				SELECT
+									  DATE( t.create_time ) AS TIME,
+									  SUM(t.view_people )OVER(ORDER BY t.create_time) visit_user_count_list ,
+									  SUM(t.view_frequency )OVER(ORDER BY t.create_time) visit_count_list
+								FROM
+								  ( SELECT DATE( lv.create_time ) create_time,
+									SUM( view_people ) view_people,
+									SUM(view_frequency) view_frequency
+									FROM ls_coupon_view lv
+									INNER JOIN ls_coupon lc ON lv.coupon_id=lc.id
+									 WHERE 1=1
+									 {? and lc.shop_id = $shopId$}
+									  {? AND lv.coupon_id=$couponId$}
+									  {? AND lv.source=$source$}
+									  {? AND lv.create_time<=$endTime$}
+									  {? AND lv.create_time>=$beginTime$}
+									 GROUP BY DATE( lv.create_time ))t
+									GROUP BY DATE (t.create_time)-->
+			</Method>
+			<!--#店铺累计访问记录-->
+			<Method name="queryMerchantVisitCount">
+				<![CDATA[
+				SELECT DATE( lv.create_time ) TIME,
+					 SUM( view_people ) visit_user_count_list,
+					 SUM(view_frequency) visit_count_list
+					 FROM ls_coupon_view lv
+			    	INNER JOIN ls_coupon lc ON lc.id=lv.coupon_id
+					INNER JOIN  ls_coupon_order co ON co.coupon_id=lc.id
+					 WHERE lc.shop_provider_flag = 1
+					  {? AND lc.shop_id=$shopId$}
+					  {? AND lo.id=$couponId$}
+					  {? AND co.coupon_id=$couponId$}
+					  {? AND co.source=$source$}
+					  {? AND lv.create_time<=$endTime$}
+			          {? AND lv.create_time>=$beginTime$}
+
+	          ]]>
+
+				<!--				 SELECT
+									  DATE( t.create_time ) AS TIME,
+									  SUM(t.view_people )OVER(ORDER BY t.create_time) visit_user_count_list ,
+									   SUM(t.view_frequency )OVER(ORDER BY t.create_time) visit_count_list
+									FROM
+									  ( SELECT DATE( lv.create_time ) create_time,
+									 SUM( view_people ) view_people,
+									 SUM(view_frequency) view_frequency
+									 FROM ls_coupon_view lv
+									INNER JOIN ls_coupon lc ON lc.id=lv.coupon_id
+									INNER JOIN  ls_coupon_order co ON co.coupon_id=lc.id
+									 WHERE lc.shop_provider_flag = 1
+									  {? AND lc.shop_id=$shopId$}
+									  {? AND lo.id=$couponId$}
+									  {? AND co.coupon_id=$couponId$}
+									  {? AND co.source=$source$}
+									  {? AND lv.create_time<=$endTime$}
+									  {? AND lv.create_time>=$beginTime$}
+									 GROUP BY DATE( lv.create_time ))t
+									GROUP BY DATE (t.create_time)-->
+			</Method>
+			<Method name="getPlatformVisitCount">
+				<![CDATA[
+
+		   	    SELECT
+					  DATE( t.create_time ) AS TIME,
+					  SUM(t.view_people )OVER(ORDER BY t.create_time) visit_user_count_list ,
+					   SUM(t.view_frequency )OVER(ORDER BY t.create_time) visit_count_list
+					FROM
+					  ( SELECT DATE( lv.create_time ) create_time,
+		   	     SUM( view_people ) view_people,
+		   	     SUM(view_frequency) view_frequency
+		   	     FROM ls_coupon_view lv
+					INNER JOIN ls_coupon lc ON lv.coupon_id=lc.id
+				    INNER JOIN  ls_coupon_order co ON co.coupon_id=lc.id
+
+					 WHERE lc.shop_provider_flag = 0
+
+					 {? AND co.coupon_id=$couponId$}
+					    {? AND co.source=$source$}
+					  {? AND lv.create_time<=$endTime$}
+			          {? AND lv.create_time>=$beginTime$}
+					 GROUP BY DATE( lv.create_time ))t
+					GROUP BY DATE (t.create_time)
+
+
+
+	          ]]>
+			</Method>
+			<Method name="queryVisit">
+				<![CDATA[
+
+		   	  SELECT *FROM ls_coupon_view lcv
+		    	INNER JOIN ls_coupon lc ON lc.id=lcv.coupon_id
+		   	    WHERE 1=1
+                      {? AND lc.shop_id=$shopId$}
+                     {? AND lcv.coupon_id=$couponId$}
+			          {? AND lcv.source=$source$}
+                   ]]>
+			</Method>
+			<Method name="querySource">
+				<![CDATA[
+
+		   	  SELECT distinct source source_list FROM ls_coupon_view
+
+                   ]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

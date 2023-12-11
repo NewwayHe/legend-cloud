@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 浏览历史 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="VitLog">
+			<Method name="getVisitLogListPageCount">
+				<![CDATA[
+        			SELECT COUNT(DISTINCT ls.product_id)
+        			FROM ls_vit_log ls
+        			WHERE 1=1
+        			{? and ls.user_id = $userId$}
+        			{? and ls.page = $page$}
+        			{? and ls.user_del_flag = $userDelFlag$}
+        			{? and ls.product_name like $productName$}
+        			{? and ls.create_time >= $startDate$}
+        			{? and ls.create_time <= $endDate$}
+        		 ]]>
+			</Method>
+
+			<Method name="getVisitLogListPage">
+				<![CDATA[
+        			SELECT *,COUNT(DISTINCT ls.product_id)
+        			FROM ls_vit_log ls
+        			WHERE 1=1
+        			{? and ls.user_id = $userId$}
+        			{? and ls.page = $page$}
+        			{? and ls.user_del_flag = $userDelFlag$}
+        			{? and ls.product_name like $productName$}
+        			{? and ls.create_time >= $startDate$}
+        			{? and ls.create_time <= $endDate$}
+        			GROUP BY ls.product_id
+        			ORDER BY ls.create_time DESC
+        		 ]]>
+			</Method>
+
+			<Method name="getUserVisitLogListPageCount">
+				<![CDATA[
+					SELECT COUNT(1) FROM
+					(
+        			SELECT product_id FROM ls_vit_log
+        			WHERE user_del_flag=0
+        			{? and user_id = $userId$}
+        			GROUP BY product_id, DATE(create_time)
+        			ORDER BY MAX(create_time) DESC
+        			) T
+        		 ]]>
+			</Method>
+
+			<Method name="getUserVisitLogListPage">
+				<![CDATA[
+        			SELECT product_id, product_name ,pic,price,COUNT(1) AS 'visit_num', create_time FROM ls_vit_log
+        			WHERE user_del_flag=0
+        			{? and user_id = $userId$}
+        			GROUP BY product_id, DATE(create_time)
+        			ORDER BY MAX(create_time) DESC
+        		 ]]>
+			</Method>
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

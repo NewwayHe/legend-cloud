@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 消息 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="Location">
+
+			<!-- 获取详细地址 -->
+			<Method name="getDetailAddress">
+				<![CDATA[
+				 select r.*,lp.name,lc.name,la.name,ls.name,concat(lp.name,lc.name,la.name,ls.name) as detail_address from
+				 (
+				 select ? as province, ? as city, ? as area, ? as street
+				 ) r
+				 left join ls_location lp on lp.id = r.province
+				 left join ls_location lc on lc.id = r.city
+				 left join ls_location la on la.id = r.area
+				 left join ls_location ls on ls.id = r.street
+			   ]]>
+			</Method>
+
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

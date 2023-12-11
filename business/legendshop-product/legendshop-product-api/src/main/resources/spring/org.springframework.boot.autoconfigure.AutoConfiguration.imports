@@ -1,0 +1,11 @@
+com.legendshop.activity.fallback.ActivitySkuFallback
+
+com.legendshop.activity.distribution.fallback.DistributionProdFallback
+com.legendshop.activity.distribution.fallback.DistributionCommissionRecordFallback
+com.legendshop.activity.distribution.fallback.DistributionFallback
+com.legendshop.activity.distribution.fallback.DistributionApiFallback
+com.legendshop.activity.distribution.fallback.DistributionHierarchicalDistanceFallback
+com.legendshop.activity.distribution.fallback.DistributionLevelFallback
+com.legendshop.activity.distribution.fallback.DistributionRulesFallback
+com.legendshop.activity.distribution.fallback.UserDistributionProdFallback
+

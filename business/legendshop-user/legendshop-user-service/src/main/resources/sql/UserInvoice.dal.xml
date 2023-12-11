@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 用户统计报表 -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="UserInvoice">
+
+			<!-- 查询用户订单发票分页 -->
+			<Method name="queryUserInvoiceOrderById">
+				<![CDATA[
+				SELECT lo.id as orderId,lo.order_number as orderNum,lo.has_invoice_flag as hasInvoiceFlag,loi.*,lui.*, lo.shop_name, lo.shop_id FROM ls_order_invoice lui
+                LEFT JOIN ls_order lo ON lui.id=lo.order_invoice_id
+                LEFT JOIN
+                (SELECT order_id,SUM(basket_count) as orderProductNum ,SUM(actual_amount) as orderPrice FROM ls_order_item GROUP BY order_id)
+                loi ON loi.order_id=lo.id
+                WHERE 1=1
+	            {? and lui.user_id= $userId$}
+	            {? and lo.order_number LIKE $orderNumber$}
+        	    {? and lo.has_invoice_flag = $hasInvoiceFlag$}
+        	    {? and lui.type = $type$}
+        	    {? and lui.title_type = $titleType$}
+        	    order by lui.create_time
+
+				 ]]>
+			</Method>
+			<Method name="queryUserInvoiceOrderByIdCount">
+				<![CDATA[
+				SELECT count(*)  FROM ls_order_invoice lui
+                LEFT JOIN ls_order lo ON lui.id=lo.order_invoice_id
+                LEFT JOIN
+                (SELECT order_id,SUM(basket_count) as orderProductNum ,SUM(actual_amount) as orderPrice FROM ls_order_item GROUP BY order_id)
+                loi ON loi.order_id=lo.id
+                WHERE 1=1
+	            {? and lui.user_id= $userId$}
+	            {? and lo.order_number LIKE $orderNumber$}
+        	    {? and lo.has_invoice_flag = $hasInvoiceFlag$}
+        	    {? and lui.type = $type$}
+        	    {? and lui.title_type = $titleType$}
+				 ]]>
+			</Method>
+
+			<Method name="getDetail">
+				<![CDATA[
+					select
+						loi.*, lo.shop_id, lo.product_name, lo.product_quantity as counts, lo.discount_total_amount as price,lo.total_price as totalPrice,  lo.has_invoice_flag,
+						loua.receiver as name, loua.mobile as mobile, loua.province_id, loua.city_id, loua.area_id, loua.street_id, loua.detail_address as address,lo.shop_name shopname,
+						loit.pic as path,lo.id as orderId
+					from
+						ls_order_invoice loi
+					left join
+						ls_order lo
+					on
+						lo.order_invoice_id = loi.id
+					left join
+						ls_order_user_address loua
+					on
+						loua.id = lo.address_order_id
+					left join
+						ls_order_item loit
+					on
+						loit.order_id = lo.id
+					where 1 = 1
+					{? and loi.id = $id$}
+				]]>
+			</Method>
+
+			<Method name="getOrderItem">
+				<![CDATA[
+					select
+						product_name,attribute,pic
+					from
+
+						ls_order_item
+                   where 1 = 1
+					{? and order_id = $id$}
+				]]>
+			</Method>
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 商品分组的SQL -->
+<DataAccessLayer>
+	<BusinessObjects>
+		<Object objectName="ProductGroup">
+			<Method name="queryProductList">
+				<![CDATA[
+				SELECT r.group_id AS groupId,p.pic,p.name AS productName,p.price,s.shop_name AS shopName,r.product_id AS productId,
+				p.status, r.id FROM ls_product_group_relation r
+				LEFT JOIN ls_product p ON r.product_id = p.id
+				LEFT JOIN ls_shop_detail s ON p.shop_id = s.id
+				LEFT JOIN ls_product_group g ON g.id=r.group_id
+				WHERE 1=1
+				{? and r.group_id = $groupId$}
+				{? and p.name like $productName$}
+				{? and s.shop_name like $shopName$}
+				{? and p.status = $status$}
+				{? and p.op_status = $opStatus$}
+				{? and p.del_status = $delStatus$}
+				{$orderBy$}
+				]]>
+			</Method>
+			<Method name="queryProductListCount">
+				<![CDATA[
+				SELECT count(1)
+				FROM ls_product_group_relation r
+				LEFT JOIN ls_product p ON r.product_id = p.id
+				LEFT JOIN ls_shop_detail s ON p.shop_id = s.id
+				LEFT JOIN ls_product_group g ON g.id=r.group_id
+				WHERE 1=1
+				{? and r.group_id = $groupId$}
+				{? and p.name like $productName$}
+				{? and s.shop_name like $shopName$}
+				{? and p.status = $status$}
+				{? and p.op_status = $opStatus$}
+				{? and p.del_status = $delStatus$}
+				]]>
+			</Method>
+
+
+		</Object>
+	</BusinessObjects>
+</DataAccessLayer>
