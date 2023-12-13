@@ -1,7 +1,7 @@
 [comment]: <> (<p align="center"><img src="./readme/legend-logo.png" height="300" width="400" alt="logo"/></p>)
 ![输入图片说明](./readme/legend-logo.png)
 
-<h2 align="center">共建共享 · 稳定高效 | 精益求精 · 开源共赢 </h2>
+<h2 align="center">Legend 企业级开源商城系统</h2>
 <h4 align="center">全新升级 &nbsp; | &nbsp;  SpringBoot3.1.x  &nbsp; | &nbsp;  JDK17 &nbsp; | &nbsp; 全新Spring Cloud版本</h4>
 <h4 align="center">基于 Spring Authorization Server 全新适配 OAuth 2.1 协议的企业级微服务架构</h4>
 
@@ -48,7 +48,7 @@ Legend Cloud 是一款企业级微服务架构电商系统，全面拥抱Spring�
 
 > 部分功能演示视图，正在添加中
 
-## 功能介绍
+## 功能版本介绍
 
 <a href="https://code.legendshop.cn">详情见官方网站>>>>>>></a>
 
@@ -103,7 +103,7 @@ Legend Cloud 是一款企业级微服务架构电商系统，全面拥抱Spring�
 
 ```
 legend-cloud
-├── business -- 依赖组件半成品拼装工程
+├── business -- 主要业务服务工程
 ├    ├── legendshop-auth -- 登录认证服务
 ├    ├── legendshop-basic -- 系统基础服务
 ├    ├── legendshop-gateway -- Gateway路由模块
@@ -112,7 +112,7 @@ legend-cloud
 ├    ├── legendshop-product -- 商品服务
 ├    ├── legendshop-task -- 定时器任务
 ├    └── legendshop-user  -- 用户服务
-├── common -- 平台核心服务
+├── common -- 系统公共包
 ├    ├── legendshop-common-core -- 系统基础核心模块
 ├    ├── legendshop-common-data -- Redis公共集成
 ├    ├── legendshop-common-datasource -- 数据源公共集成
@@ -135,7 +135,7 @@ legend-cloud
 ├    ├── legendshop-common-wechat -- 微信相关公共集成
 ├    ├── legendshop-common-xss -- xss防范
 ├    └── legendshop-id-core -- 分布式ID生成核心类
-├── common-private -- 平台业务服务
+├── common-private -- 系统公共包
 ├    ├── legendshop-common-captcha -- 滑块验证码模块
 ├    ├── legendshop-common-gateway -- Gateway公共类
 ├    ├── legendshop-common-oss -- 文件存储模块
