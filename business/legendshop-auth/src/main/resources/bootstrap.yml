@@ -7,12 +7,12 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: ${NACOS_HOST:http://192.168.0.16}:${NACOS_PORT:8868}
-        namespace: ${NACOS_NAMESPACE:bbc700-code}
+        server-addr: ${NACOS_HOST:http://localhost}:${NACOS_PORT:8848}
+        namespace: ${NACOS_NAMESPACE:legend_cloud}
         username: ${NACOS_USERNAME:nacos}
         password: ${NACOS_PASSWORD:nacos}
       config:
-        namespace: ${NACOS_NAMESPACE:bbc700-code}
+        namespace: ${NACOS_NAMESPACE:legend_cloud}
         username: ${NACOS_USERNAME:nacos}
         password: ${NACOS_PASSWORD:nacos}
         server-addr: ${spring.cloud.nacos.discovery.server-addr}
