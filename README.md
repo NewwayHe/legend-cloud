@@ -48,6 +48,9 @@ Legend Cloud 是一款企业级微服务架构电商系统，全面拥抱Spring�
 
 > 部分功能演示视图，正在添加中
 
+## 启动文档
+- <a href="https://gitee.com/legendmall/legend-cloud/wikis/pages/preview?sort_id=9258245&doc_id=4914160"> 快速启动（后端项目） </a>
+
 ## 功能版本介绍
 
 <a href="https://code.legendshop.cn">详情见官方网站>>>>>>></a>
@@ -176,8 +179,8 @@ legend-cloud
 ## 交流反馈
 
 - Legend Cloud 官网 https://code.legendshop.cn
-- Legend Cloud官方技术QQ 1群：8888888888
-- Legend Cloud官方技术QQ 2群：8888888888
+- Legend Cloud官方技术QQ 1群：96642931
+- Legend Cloud官方技术QQ 2群：190339088
 - 如需购买商业高级版源码，请联系商务微信
 
 ## 特别鸣谢\(^o^)/~\(^o^)/~\(^o^)/~
