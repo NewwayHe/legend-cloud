@@ -42,9 +42,9 @@ Legend Cloud 是一款企业级微服务架构电商系统，全面拥抱Spring�
 ![输入图片说明](./readme/architecture.jpg)
 
 ## 演示地址
-- 商城后台管理：http://mall-admin.legendmall.cn/
-- 商城商家端：http://mall-shop.legendmall.cn/
-- 用户H5端：http://mall.legendmall.cn/
+- 商城后台管理：https://mall-admin.legendshop.cn/
+- 商城商家端：https://mall-shop.legendshop.cn/
+- 用户H5端：https://mall-m.legendshop.cn/
 
 > 部分功能演示视图，正在添加中
 
