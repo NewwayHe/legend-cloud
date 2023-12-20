@@ -120,8 +120,7 @@ public abstract class BaseConfirmRefundStrategy implements ConfirmRefundStrategy
 	@Autowired
 	protected CustomerBillApi customerBillApi;
 
-	@Getter
-	@Setter
+	@Autowired
 	private RedissonClient redissonClient;
 
 	private final static String CONFIRM_REFUND = "redisson:confirmRefund:";

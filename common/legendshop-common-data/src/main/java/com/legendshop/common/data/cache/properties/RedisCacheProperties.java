@@ -21,9 +21,15 @@ import java.time.temporal.ChronoUnit;
  * @author legendshop
  */
 @ConditionalOnExpression("!'${spring.redis.expired-time-type}'.isEmpty()")
-@ConfigurationProperties(prefix = "spring.redis")
+@ConfigurationProperties(prefix = "spring.data.redis")
 @Data
 public class RedisCacheProperties {
+
+	private String host;
+
+	private String port;
+
+	private String password;
 
 	/**
 	 * 过期时间，默认为30

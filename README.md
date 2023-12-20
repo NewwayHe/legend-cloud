@@ -25,7 +25,7 @@
 <p align="center">
     <a href="https://github.com/legendmall/legend-cloud">Github 仓库</a> &nbsp; | &nbsp;
     <a href="https://gitee.com/legendmall/legend-cloud">Gitee 仓库</a> &nbsp; | &nbsp;&nbsp;
-    <a href="https://code.legendshop.cn">文档</a>
+    <a href="https://gitee.com/legendmall/legend-cloud.wiki.git">wiki文档</a>
 </p>
 
 <h3 align="center"> 如果您觉得有帮助，请点右上角 "Star" 支持一下，谢谢！</h3>
@@ -41,21 +41,26 @@ Legend Cloud 是一款企业级微服务架构电商系统，全面拥抱Spring�
 
 ![输入图片说明](./readme/architecture.jpg)
 
-## 演示地址
-- 商城后台管理：https://mall-admin.legendshop.cn/
-- 商城商家端：https://mall-shop.legendshop.cn/
-- 用户H5端：https://mall-m.legendshop.cn/
-
-> 部分功能演示视图，正在添加中
-
-- 用户端系统截图演示
-  ![输入图片说明](./readme/h5-1.png )![输入图片说明](./readme/h5-2.png )
-
-
-
 ## 启动文档
 - <a href="https://gitee.com/legendmall/legend-cloud/wikis/pages/preview?sort_id=9258245&doc_id=4914160"> 快速启动（后端项目） </a>
 
+## 演示地址
+- 商城后台管理：https://mall-admin.legendshop.cn/
+- 商城商家端：https://mall-shop.legendshop.cn/
+- 以下为微信H5端、小程序、公众号（扫码获取平台端、商家端体验账号）
+
+![输入图片说明](./readme/wp-h5-code.png) ![输入图片说明](./readme/mp-code.jpg)  ![输入图片说明](./readme/wp-code.jpg)
+-
+> 部分功能演示视图，正在添加中
+
+- 用户端截图
+  ![输入图片说明](./readme/h5-1.png)
+  ![输入图片说明](./readme/h5-2.png)
+  ![输入图片说明](./readme/h5-4.png)
+- 平台端演示截图
+  ![输入图片说明](./readme/admin-1.gif)
+- 商家端演示截图
+  ![输入图片说明](./readme/shop-1.gif)
 ## 功能版本介绍
 
 <a href="https://code.legendshop.cn">详情见官方网站>>>>>>></a>

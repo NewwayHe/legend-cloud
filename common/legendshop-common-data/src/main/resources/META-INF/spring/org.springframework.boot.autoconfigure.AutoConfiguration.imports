@@ -3,3 +3,4 @@ com.legendshop.common.data.cache.RedisCacheManagerConfig
 com.legendshop.common.data.cache.RedisCacheAutoConfiguration
 com.legendshop.common.data.cache.util.StringRedisUtil
 com.legendshop.common.data.cache.util.CacheManagerUtil
+com.legendshop.common.data.cache.RedissonConfig

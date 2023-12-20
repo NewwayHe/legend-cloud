@@ -295,14 +295,14 @@ public class OrderRefundReturnDaoImpl extends GenericDaoImpl<OrderRefundReturn, 
 
 	@Override
 	public OrderRefundReturnBO getShopRefundDetail(Long refundId, Long shopId) {
-		String sql = "select DISTINCT r.*, r.pay_settlement_sn as paySerialNumber, addr.receiver,addr.mobile,o.order_type,o.freight_price, o.status as orderStatus, o.total_integral as totalIntegral,o.delivery_type, o.activity_id as activeId from ls_order_refund_return r INNER JOIN ls_order o ON o.id = r.order_id " +
+		String sql = "select DISTINCT r.*, r.pay_settlement_sn as paySerialNumber,o.order_type,o.freight_price, o.status as orderStatus, o.total_integral as totalIntegral,o.delivery_type, o.activity_id as activeId from ls_order_refund_return r INNER JOIN ls_order o ON o.id = r.order_id " +
 				" where r.id = ? and r.shop_id = ?";
 		return get(sql, OrderRefundReturnBO.class, refundId, shopId);
 	}
 
 	@Override
 	public OrderRefundReturnBO getAdminRefundDetail(Long refundId) {
-		String sql = "select DISTINCT r.*, r.pay_settlement_sn as paySerialNumber,addr.receiver,addr.mobile,ud.nick_name,user.mobile as userMobile,o.freight_price, o.status as orderStatus,o.order_type, o.total_integral as totalIntegral,o.delivery_type,o.activity_id as activeId from ls_order_refund_return r " +
+		String sql = "select DISTINCT r.*, r.pay_settlement_sn as paySerialNumber,ud.nick_name,user.mobile as userMobile,o.freight_price, o.status as orderStatus,o.order_type, o.total_integral as totalIntegral,o.delivery_type,o.activity_id as activeId from ls_order_refund_return r " +
 				"INNER JOIN ls_order o ON o.id = r.order_id " +
 				"INNER JOIN ls_user_detail ud ON ud.user_id = r.user_id INNER JOIN ls_ordinary_user user ON user.id = r.user_id where r.id = ?";
 		return get(sql, OrderRefundReturnBO.class, refundId);

@@ -424,7 +424,7 @@ public class SearchProductIndexServiceImpl implements SearchProductIndexService,
 				long totalHits = hitsMetadata.total().value();
 				//只有索引有数据时才进行计算
 				if (totalHits > 0) {
-					esDocumentDTO.setProductDocumentCount(hitsMetadata.hits().stream().count());
+					esDocumentDTO.setProductDocumentCount(totalHits);
 				} else {
 					esDocumentDTO.setProductDocumentCount(0L);
 				}
