@@ -30,7 +30,7 @@
     <a href="https://gitee.com/legendmall/legend-cloud.wiki.git">wiki文档</a>
 </p>
 
-<h3 align="center"> 如果您觉得有帮助，请点右上角 "Star" 支持一下，谢谢！</h3>
+<h3 align="center"> 如果您觉得有帮助，请点右上角 "Star" 支持一下，万分感谢！</h3>
 
 ---
 
