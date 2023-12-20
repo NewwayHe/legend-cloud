@@ -19,6 +19,8 @@
     <a href="https://bell-sw.com/pages/downloads/#downloads" target="_blank"><img src="https://img.shields.io/badge/JDK-17%2B-green.svg?logo=openjdk" alt="Java 17"></a>
     <a href="./LICENSE"><img src="https://img.shields.io/badge/License-AGPL--3.0-blue.svg?logo=apache" alt="License AGPL 3.0"></a>
     <a href="https://www.legendshop.cn"><img src="https://visitor-badge.laobi.icu/badge?page_id=legend-cloud&title=Total%20Visits" alt="Total Visits"></a>
+<a href='https://gitee.com/legendmall/legend-cloud/stargazers'><img src='https://gitee.com/legendmall/legend-cloud/badge/star.svg?theme=dark' alt='star'></img></a>
+<a href='https://gitee.com/legendmall/legend-cloud/members'><img src='https://gitee.com/legendmall/legend-cloud/badge/fork.svg?theme=dark' alt='fork'></img></a>
     <a href="https://gitee.com/legendmall/legend-cloud"><img src="https://img.shields.io/github/stars/legendmall/legend-cloud?style=flat&logo=github" alt="Github star"></a>)
     <a href="https://gitee.com/legendmall/legend-cloud"><img src="https://img.shields.io/github/forks/legendmall/legend-cloud?style=flat&logo=github" alt="Github fork"></a>
 </p>
