@@ -200,10 +200,3 @@ legend-cloud
 
 ## 特别鸣谢\(^o^)/~\(^o^)/~\(^o^)/~
 - [广州朗尊软件科技有限公司](https://www.legendshop.cn)
-
-
-### 感谢 JetBrains 提供的免费开源 License
-
-![https://jb.gg/OpenSourceSupport](./readme/jb_beam.svg)
-
-
