@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
+ * 购物车API
  * @author legendshop
  */
 @FeignClient(contextId = "cartApi", name = ServiceNameConstants.ORDER_SERVICE, fallback = CartApiFallback.class)
