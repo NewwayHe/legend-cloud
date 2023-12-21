@@ -64,4 +64,9 @@ public interface CommonConstants {
 	String NO = "NO";
 
 	String ORDER_INDICATOR = "orderIndicator";
+
+	/**
+	 * 系统默认验证码
+	 */
+	String DEFAULT_VERIFICATION_CODE = "666666";
 }

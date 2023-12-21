@@ -10,6 +10,7 @@ package com.legendshop.user.handler.impl;
 
 import com.legendshop.basic.enums.MsgSendTypeEnum;
 import com.legendshop.basic.enums.SmsTemplateTypeEnum;
+import com.legendshop.common.core.constant.CommonConstants;
 import com.legendshop.common.core.constant.R;
 import com.legendshop.common.core.constant.StringConstant;
 import com.legendshop.common.core.enums.UserTypeEnum;
@@ -38,8 +39,16 @@ public class SmsLoginHandler extends AbstractSocialLoginHandler {
 	protected R<Void> verify(BasisLoginParamsDTO loginParams) {
 		String key = loginParams.getUserType() + StringConstant.COLON + MsgSendTypeEnum.VAL + SmsTemplateTypeEnum.LOGIN + StringConstant.COLON + loginParams.getPrincipal();
 		String cacheCode = redisTemplate.opsForValue().get(key);
-		if (null == cacheCode || !cacheCode.equals(loginParams.getCredentials())) {
-			return R.fail(LegendshopSecurityErrorEnum.VERIFY_CODE_ERROR.name());
+
+		// 非开发/演示环境
+		if (!environmentProperties.isDebug()){
+			if (null == cacheCode || !cacheCode.equals(loginParams.getCredentials())) {
+				return R.fail(LegendshopSecurityErrorEnum.VERIFY_CODE_ERROR.name());
+			}
+		}else {
+			if (null == cacheCode || !loginParams.getCredentials().equals(CommonConstants.DEFAULT_VERIFICATION_CODE)) {
+				return R.fail(LegendshopSecurityErrorEnum.VERIFY_CODE_ERROR.name());
+			}
 		}
 		redisTemplate.delete(key);
 		return R.ok();

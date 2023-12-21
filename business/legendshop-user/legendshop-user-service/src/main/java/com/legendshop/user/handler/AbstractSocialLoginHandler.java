@@ -18,6 +18,7 @@ import com.legendshop.common.core.config.sys.params.WxMpConfig;
 import com.legendshop.common.core.constant.R;
 import com.legendshop.common.core.constant.SecurityConstants;
 import com.legendshop.common.core.enums.VisitSourceEnum;
+import com.legendshop.common.core.properties.EnvironmentProperties;
 import com.legendshop.common.security.enums.LegendshopSecurityErrorEnum;
 import com.legendshop.user.bo.PassportBO;
 import com.legendshop.user.dto.*;
@@ -74,6 +75,9 @@ public abstract class AbstractSocialLoginHandler implements SocialLoginHandler {
 
 	@Autowired
 	protected CommonProperties commonProperties;
+
+	@Autowired
+	protected EnvironmentProperties environmentProperties;
 
 	@Override
 	public String authUrl() {
