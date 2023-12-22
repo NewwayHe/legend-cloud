@@ -27,7 +27,7 @@
 <p align="center">
     <a href="https://github.com/legendmall/legend-cloud">Github 仓库</a> &nbsp; | &nbsp;
     <a href="https://gitee.com/legendmall/legend-cloud">Gitee 仓库</a> &nbsp; | &nbsp;&nbsp;
-    <a href="https://gitee.com/legendmall/legend-cloud.wiki.git">wiki文档</a>
+    <a href="https://gitee.com/legendmall/legend-cloud/wikis/Home">wiki文档</a>
 </p>
 
 <h3 align="center"> 如果您觉得有帮助，请点右上角 "Star" 支持一下，万分感谢！</h3>

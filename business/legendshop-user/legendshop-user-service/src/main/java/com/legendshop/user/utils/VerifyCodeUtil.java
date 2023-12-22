@@ -96,7 +96,7 @@ public class VerifyCodeUtil {
 				return false;
 			}
 		}else {
-			if (StringUtils.isBlank(code) || !code.equals(CommonConstants.DEFAULT_VERIFICATION_CODE)) {
+			if (StringUtils.isBlank(code) || !verifyCodeDTO.getCode().equals(CommonConstants.DEFAULT_VERIFICATION_CODE)) {
 				return false;
 			}
 		}
