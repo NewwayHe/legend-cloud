@@ -8,7 +8,9 @@
  */
 package com.legendshop.common.security.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.legendshop.common.security.component.PermitAllUrlProperties;
+import com.legendshop.common.security.component.ResourceAuthExceptionEntryPoint;
 import com.legendshop.common.security.interceptor.CustomizeOpaqueTokenIntrospector;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -34,5 +36,15 @@ public class ResourceServerAutoConfiguration {
 	@Bean
 	public OpaqueTokenIntrospector opaqueTokenIntrospector(OAuth2AuthorizationService authorizationService) {
 		return new CustomizeOpaqueTokenIntrospector(authorizationService);
+	}
+
+	/**
+	 * 资源服务器异常处理
+	 * @param objectMapper jackson 输出对象
+	 * @return ResourceAuthExceptionEntryPoint
+	 */
+	@Bean
+	public ResourceAuthExceptionEntryPoint resourceAuthExceptionEntryPoint(ObjectMapper objectMapper) {
+		return new ResourceAuthExceptionEntryPoint(objectMapper);
 	}
 }
