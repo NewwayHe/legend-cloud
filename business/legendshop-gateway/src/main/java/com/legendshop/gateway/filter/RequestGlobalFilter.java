@@ -12,6 +12,7 @@ package com.legendshop.gateway.filter;
 import com.alibaba.fastjson.JSON;
 import com.legendshop.common.core.constant.R;
 import com.legendshop.common.core.constant.RequestLogConstant;
+import com.legendshop.common.core.constant.RpcConstants;
 import com.legendshop.common.core.util.IdGenerateUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -40,13 +41,16 @@ public class RequestGlobalFilter implements GlobalFilter, Ordered {
 
 	@Override
 	public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-
-
 		ServerHttpRequest request = exchange.getRequest();
 		String requestPath = request.getURI().getPath();
+		// 去掉免密登录对外暴露的接口
 		if (DOWNLOAD_PATH.equals(requestPath)) {
 			return this.errorUrl(exchange);
 		}
+		if (requestPath.startsWith(RpcConstants.RPC_API_PREFIX)) {
+			return this.errorUrl(exchange);
+		}
+
 		String method = request.getMethodValue();
 		ServerHttpRequest.Builder builder = exchange.getRequest().mutate();
 		//TODO 转发的请求都加上服务间认证token
