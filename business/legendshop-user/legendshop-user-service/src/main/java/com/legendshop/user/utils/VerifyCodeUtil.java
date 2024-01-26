@@ -11,9 +11,11 @@ package com.legendshop.user.utils;
 import cn.hutool.core.util.RandomUtil;
 import com.legendshop.basic.enums.MsgSendTypeEnum;
 import com.legendshop.basic.enums.SmsTemplateTypeEnum;
+import com.legendshop.common.core.constant.CommonConstants;
 import com.legendshop.common.core.constant.R;
 import com.legendshop.common.core.constant.StringConstant;
 import com.legendshop.common.core.enums.UserTypeEnum;
+import com.legendshop.common.core.properties.EnvironmentProperties;
 import com.legendshop.common.core.util.SpringContextHolder;
 import com.legendshop.user.dto.VerifyCodeDTO;
 import org.apache.commons.lang3.StringUtils;
@@ -29,9 +31,11 @@ import java.util.concurrent.TimeUnit;
 public class VerifyCodeUtil {
 
 	private static final StringRedisTemplate redisTemplate;
+	private static EnvironmentProperties environmentProperties;
 
 	static {
 		redisTemplate = SpringContextHolder.getBean(StringRedisTemplate.class);
+		environmentProperties = SpringContextHolder.getBean(EnvironmentProperties.class);
 	}
 
 
@@ -51,8 +55,15 @@ public class VerifyCodeUtil {
 			return R.fail("验证码已过期，请重新获取！");
 		}
 
-		if (!code.equals(verifyCodeDTO.getCode())) {
-			return R.fail("验证码不正确！");
+		// 非开发/演示环境
+		if (!environmentProperties.isDebug()) {
+			if (!code.equals(verifyCodeDTO.getCode())) {
+				return R.fail("验证码不正确！");
+			}
+		} else {
+			if (!code.equals(CommonConstants.DEFAULT_VERIFICATION_CODE)) {
+				return R.fail("验证码不正确！");
+			}
 		}
 
 		if (delete == null || delete) {
@@ -78,8 +89,16 @@ public class VerifyCodeUtil {
 	public static boolean validateCode(VerifyCodeDTO verifyCodeDTO) {
 		String key = verifyCodeDTO.getUserType() + StringConstant.COLON + MsgSendTypeEnum.VAL + verifyCodeDTO.getSmsTemplateType() + StringConstant.COLON + verifyCodeDTO.getMobile();
 		String code = redisTemplate.opsForValue().get(key);
-		if (StringUtils.isBlank(code) || !code.equals(verifyCodeDTO.getCode())) {
-			return false;
+
+		// 非开发/演示环境
+		if (!environmentProperties.isDebug()) {
+			if (StringUtils.isBlank(code) || !code.equals(verifyCodeDTO.getCode())) {
+				return false;
+			}
+		}else {
+			if (StringUtils.isBlank(code) || !verifyCodeDTO.getCode().equals(CommonConstants.DEFAULT_VERIFICATION_CODE)) {
+				return false;
+			}
 		}
 		redisTemplate.delete(key);
 		return true;

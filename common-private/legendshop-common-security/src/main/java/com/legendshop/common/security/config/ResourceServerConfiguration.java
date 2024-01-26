@@ -9,6 +9,7 @@
 package com.legendshop.common.security.config;
 
 import com.legendshop.common.security.component.PermitAllUrlProperties;
+import com.legendshop.common.security.component.ResourceAuthExceptionEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
@@ -34,6 +35,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 public class ResourceServerConfiguration {
 
 	private final OpaqueTokenIntrospector customizeOpaqueTokenIntrospector;
+	private final ResourceAuthExceptionEntryPoint resourceAuthExceptionEntryPoint;
 	private final PermitAllUrlProperties permitAllUrl;
 
 	@Bean
@@ -54,6 +56,8 @@ public class ResourceServerConfiguration {
 				// 资源服务器向issuer-uri 发起 token 校验
 				.oauth2ResourceServer(oauth2 -> oauth2
 						.opaqueToken(opaqueTokenConfigurer -> opaqueTokenConfigurer.introspector(customizeOpaqueTokenIntrospector))
+						// 自定义异常返回
+						.authenticationEntryPoint(resourceAuthExceptionEntryPoint)
 				)
 				.sessionManagement(AbstractHttpConfigurer::disable);
 		return httpSecurity.build();

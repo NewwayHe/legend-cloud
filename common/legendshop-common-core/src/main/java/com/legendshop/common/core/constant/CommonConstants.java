@@ -21,6 +21,11 @@ public interface CommonConstants {
 	String UTF8 = "UTF-8";
 
 	/**
+	 * JSON 资源
+	 */
+	String CONTENT_TYPE = "application/json; charset=utf-8";
+
+	/**
 	 * 成功标记
 	 */
 	Integer SUCCESS = 1;
@@ -64,4 +69,9 @@ public interface CommonConstants {
 	String NO = "NO";
 
 	String ORDER_INDICATOR = "orderIndicator";
+
+	/**
+	 * 系统默认验证码
+	 */
+	String DEFAULT_VERIFICATION_CODE = "666666";
 }

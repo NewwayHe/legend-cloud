@@ -1,5 +1,5 @@
 [comment]: <> (<p align="center"><img src="./readme/legend-logo.png" height="300" width="400" alt="logo"/></p>)
-![输入图片说明](./readme/legend-logo.png)
+![输入图片说明](./readme/legend-logo.jpg)
 
 <h2 align="center">Legend 企业级开源商城系统</h2>
 <h4 align="center">全新升级 &nbsp; | &nbsp;  SpringBoot3.1.x  &nbsp; | &nbsp;  JDK17 &nbsp; | &nbsp; 全新Spring Cloud版本</h4>
@@ -27,7 +27,7 @@
 <p align="center">
     <a href="https://github.com/legendmall/legend-cloud">Github 仓库</a> &nbsp; | &nbsp;
     <a href="https://gitee.com/legendmall/legend-cloud">Gitee 仓库</a> &nbsp; | &nbsp;&nbsp;
-    <a href="https://gitee.com/legendmall/legend-cloud.wiki.git">wiki文档</a>
+    <a href="https://gitee.com/legendmall/legend-cloud/wikis/Home">wiki文档</a>
 </p>
 
 <h3 align="center"> 如果您觉得有帮助，请点右上角 "Star" 支持一下，万分感谢！</h3>
