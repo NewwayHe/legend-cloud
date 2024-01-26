@@ -81,13 +81,6 @@ public class UserInvoiceController {
 	}
 
 
-	@Operation(summary = "【用户】删除发票")
-	@Parameter(name = "id", description = "id", required = true)
-	@DeleteMapping("/{id}")
-	public R del(@PathVariable Long id) {
-		return userInvoiceService.deleteById(id);
-	}
-
 
 	@Operation(summary = "【用户】设置为默认发票")
 	@Parameter(name = "id", description = "id", required = true)
@@ -101,10 +94,18 @@ public class UserInvoiceController {
 		}
 		return R.ok();
 	}
+	
+	@Operation(summary = "【用户】删除发票")
+	@Parameter(name = "id", description = "id", required = true)
+	@DeleteMapping("/{id}")
+	public R del(@PathVariable Long id) {
+		return userInvoiceService.deleteById(id);
+	}
 
 	@Operation(summary = "【用户】获取用户订单发票列表")
 	@GetMapping(value = "/queryUserInvoiceOrderById")
 	public R<PageSupport<UserInvoiceBO>> queryUserInvoiceOrderById(UserInvoiceQuery query) {
+		// 获取当前用户
 		Long userId = SecurityUtils.getUserId();
 		query.setUserId(userId);
 		return R.ok(this.userInvoiceService.queryUserInvoiceOrderById(query));
