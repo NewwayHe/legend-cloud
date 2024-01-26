@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * 跨域配置
  * @author legendshop
  */
 @Configuration
