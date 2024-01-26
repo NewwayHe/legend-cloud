@@ -47,7 +47,7 @@ public class AdminShopBillPeriodController {
 
 
 	@ExportExcel(name = "结算档期列表", sheet = "结算档期列表")
-	@Operation(summary = "【后台】结算档期列表导出", description = "")
+	@Operation(summary = "【后台】结算档期列表导出", description = "【后台】结算档期列表导出")
 	@PreAuthorize("@pms.hasPermission('admin_bill_period_export')")
 	@GetMapping("/export")
 	public List<ShopBillPeriodExportDTO> exportShopBillPeriod(ShopBillPeriodQuery shopBillPeriodQuery) {
