@@ -61,7 +61,7 @@ public class AmqpTaskJob {
 
 		for (AmqpTaskDTO amqpTask : amqpTasks) {
 			DateTime nowDate = DateUtil.date();
-			long between = DateUtil.between(amqpTask.getDelayTime(), nowDate, DateUnit.SECOND, false);
+			long between = DateUtil.between(nowDate, amqpTask.getDelayTime(), DateUnit.SECOND, false);
 			XxlJobHelper.log("execAmqpTaskJob - 开始发送队列任务，ID：{}，延时时间：{}，当前时间：{}，相隔时间：{}s", amqpTask.getId(), amqpTask.getDelayTime(), nowDate, between);
 
 			amqpSendMsgUtil.convertAndSend(amqpTask.getExchange(), amqpTask.getRoutingKey(), amqpTask.getMessage(), between, ChronoUnit.SECONDS);
