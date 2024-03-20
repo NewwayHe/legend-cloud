@@ -5,6 +5,7 @@
 <h4 align="center">全新升级 &nbsp; | &nbsp;  SpringBoot3.1.x  &nbsp; | &nbsp;  JDK17 &nbsp; | &nbsp; 全新Spring Cloud版本</h4>
 <h4 align="center">基于 Spring Authorization Server 全新适配 OAuth 2.1 协议的企业级微服务架构</h4>
 
+
 ---
 
 <p align="center">
